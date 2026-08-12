@@ -1,0 +1,30 @@
+{
+  "name": "@visapilot/worker",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "lint": "eslint src/",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@visapilot/shared": "workspace:*",
+    "@visapilot/config": "workspace:*",
+    "@visapilot/database": "workspace:*",
+    "@visapilot/ai": "workspace:*",
+    "@visapilot/crawler": "workspace:*",
+    "@visapilot/notifier": "workspace:*",
+    "bullmq": "^5.12.0",
+    "ioredis": "^5.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0"
+  },
+  "files": [
+    "dist"
+  ]
+}

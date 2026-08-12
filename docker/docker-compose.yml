@@ -1,0 +1,118 @@
+version: '3.8'
+
+name: visapilot
+
+services:
+  # ============ PostgreSQL with pgvector ============
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: visapilot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: visapilot
+      POSTGRES_PASSWORD: visapilot
+      POSTGRES_DB: visapilot
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U visapilot']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ============ Redis ============
+  redis:
+    image: redis:7-alpine
+    container_name: visapilot-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ============ Ollama ============
+  ollama:
+    image: ollama/ollama:latest
+    container_name: visapilot-ollama
+    restart: unless-stopped
+    ports:
+      - '11434:11434'
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ['CMD', 'ollama', 'list']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============ API Service ============
+  api:
+    build:
+      context: ..
+      dockerfile: docker/api.Dockerfile
+    container_name: visapilot-api
+    restart: unless-stopped
+    ports:
+      - '4000:4000'
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://visapilot:visapilot@postgres:5432/visapilot
+      REDIS_URL: redis://redis:6379
+      OLLAMA_BASE_URL: http://ollama:11434
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+
+  # ============ Web Frontend ============
+  web:
+    build:
+      context: ..
+      dockerfile: docker/web.Dockerfile
+    container_name: visapilot-web
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+    depends_on:
+      - api
+
+  # ============ Worker ============
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/worker.Dockerfile
+    container_name: visapilot-worker
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://visapilot:visapilot@postgres:5432/visapilot
+      REDIS_URL: redis://redis:6379
+      OLLAMA_BASE_URL: http://ollama:11434
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  redis_data:
+  ollama_data:
+

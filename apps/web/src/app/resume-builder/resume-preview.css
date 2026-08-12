@@ -1,0 +1,443 @@
+/* ================================
+   Resume Preview — Scoped ATS Styles
+   Ported from D:\ResumeBuilder in React\resume\src\resumeNew.css
+   All rules scoped under .resume-preview to avoid Tailwind conflicts
+   ================================ */
+
+/* ---------- CSS Variables ---------- */
+.resume-preview {
+  --rp-ink: #1a1a1a;
+  --rp-muted: #5b6770;
+  --rp-link: #0a66c2;
+  --rp-line: #e7ebef;
+  --rp-accent: #0f172a;
+  --rp-max: 980px;
+}
+
+/* ---------- Base ---------- */
+.resume-preview * {
+  box-sizing: border-box;
+}
+
+.resume-preview {
+  font-family: Arial, Calibri, Roboto, "Helvetica Neue", sans-serif;
+  font-size: 10px;
+  color: var(--rp-ink);
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.resume-preview p,
+.resume-preview li {
+  hyphens: auto;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Page Layout ---------- */
+.resume-preview .rp-page {
+  max-width: var(--rp-max);
+  margin: 0 auto;
+  padding: 28px 20px 48px;
+}
+
+/* ---------- Header ---------- */
+.resume-preview .rp-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid var(--rp-line);
+  padding-bottom: 12px;
+  margin-bottom: 6px;
+}
+
+/* ---------- Typography ---------- */
+.resume-preview h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  color: var(--rp-accent);
+  font-weight: 700;
+  letter-spacing: 0.1px;
+}
+
+.resume-preview .rp-subtitle {
+  margin: 0 0 4px;
+  color: var(--rp-muted);
+}
+
+.resume-preview .rp-contacts,
+.resume-preview .rp-links,
+.resume-preview .rp-open-to {
+  margin: 2px 0;
+  color: var(--rp-muted);
+  font-size: 0.96rem;
+}
+
+.resume-preview a {
+  color: var(--rp-link);
+  text-decoration: none;
+}
+
+.resume-preview a:hover {
+  text-decoration: underline;
+}
+
+/* Section headings */
+.resume-preview h2 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  color: #060652;
+  font-weight: 700;
+}
+
+/* Subheadings */
+.resume-preview h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  color: #3e5689;
+  font-weight: 600;
+}
+
+/* Paragraphs */
+.resume-preview p {
+  margin: 0;
+  line-height: 1.42;
+}
+
+/* ---------- Sections ---------- */
+.resume-preview .rp-section {
+  padding: 4px 4px 0;
+  border-bottom: 1px solid var(--rp-line);
+}
+
+.resume-preview .rp-section:last-of-type {
+  border-bottom: 0;
+}
+
+/* ---------- Work Experience ---------- */
+.resume-preview .rp-role {
+  padding: 4px 0 8px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.resume-preview .rp-role-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.resume-preview .rp-role-heading {
+  display: block;
+  width: 100%;
+  margin: 0 0 2px 0;
+}
+
+.resume-preview .rp-role-meta {
+  display: block;
+  width: 100%;
+  margin-top: 0;
+  color: var(--rp-muted);
+  font-size: 0.95rem;
+}
+
+.resume-preview .rp-role-title {
+  font-weight: 600;
+}
+
+.resume-preview .rp-company {
+  font-weight: 600;
+  color: #3e5689;
+}
+
+.resume-preview .rp-dash {
+  margin: 0 6px;
+  color: var(--rp-muted);
+}
+
+.resume-preview .rp-sep {
+  margin: 0 8px;
+  color: var(--rp-muted);
+}
+
+/* ---------- Bullets ---------- */
+.resume-preview .rp-bullets {
+  margin: 4px 0 0 0;
+  padding-left: 0;
+}
+
+.resume-preview .rp-bullets li {
+  margin: 6px 0;
+  line-height: 1.35;
+  list-style: none;
+  padding-left: 0;
+}
+
+.resume-preview .rp-bullets li::before {
+  content: "- ";
+  color: var(--rp-muted);
+  display: inline-block;
+  width: 1em;
+  margin-right: 0.4em;
+}
+
+/* ---------- Skills (ATS flat) ---------- */
+.resume-preview .rp-skills-flat-line {
+  margin: 6px 0;
+  color: var(--rp-ink);
+  font-size: 1rem;
+  line-height: 1.42;
+}
+
+/* ---------- Projects ---------- */
+.resume-preview .rp-projects-section {
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+.resume-preview .rp-project-tech {
+  list-style: none;
+  padding-left: 1.4em;
+  margin: 2px 0 0 0;
+}
+
+/* ---------- Education & Certificates ---------- */
+.resume-preview .rp-education-section,
+.resume-preview .rp-certificates-section {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* ---------- Cover Letter Content ---------- */
+.resume-preview .rp-cover-letter-content {
+  margin-bottom: 2rem;
+  text-align: justify;
+}
+
+.resume-preview .rp-cover-letter-content p {
+  margin-bottom: 1.2rem;
+  line-height: 1.6;
+}
+
+/* ========================================
+   PRINT-ONLY WINDOW STYLES
+   Applied when the resume is rendered
+   in a standalone print window
+   ======================================== */
+
+/* ---------- Print Window Base ---------- */
+.resume-print-window {
+  font-family: Arial, Calibri, Roboto, "Helvetica Neue", sans-serif;
+  font-size: 10px;
+  color: #1a1a1a;
+  background: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+.resume-print-window .rp-page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 20px 48px;
+}
+
+.resume-print-window .rp-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid #e7ebef;
+  padding-bottom: 12px;
+  margin-bottom: 6px;
+}
+
+.resume-print-window h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.resume-print-window .rp-subtitle {
+  margin: 0 0 4px;
+  color: #5b6770;
+}
+
+.resume-print-window .rp-contacts,
+.resume-print-window .rp-links,
+.resume-print-window .rp-open-to {
+  margin: 2px 0;
+  color: #5b6770;
+  font-size: 0.96rem;
+}
+
+.resume-print-window a {
+  color: #0a66c2;
+  text-decoration: none;
+}
+
+.resume-print-window h2 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  color: #060652;
+  font-weight: 700;
+}
+
+.resume-print-window h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  color: #3e5689;
+  font-weight: 600;
+}
+
+.resume-print-window p {
+  margin: 0;
+  line-height: 1.42;
+}
+
+.resume-print-window .rp-section {
+  padding: 4px 4px 0;
+  border-bottom: 1px solid #e7ebef;
+}
+
+.resume-print-window .rp-section:last-of-type {
+  border-bottom: 0;
+}
+
+.resume-print-window .rp-role {
+  padding: 4px 0 8px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.resume-print-window .rp-role-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.resume-print-window .rp-role-heading {
+  display: block;
+  width: 100%;
+  margin: 0 0 2px 0;
+}
+
+.resume-print-window .rp-role-meta {
+  display: block;
+  width: 100%;
+  color: #5b6770;
+  font-size: 0.95rem;
+}
+
+.resume-print-window .rp-role-title { font-weight: 600; }
+.resume-print-window .rp-company { font-weight: 600; color: #3e5689; }
+.resume-print-window .rp-dash { margin: 0 6px; color: #5b6770; }
+.resume-print-window .rp-sep { margin: 0 8px; color: #5b6770; }
+
+.resume-print-window .rp-bullets {
+  margin: 4px 0 0 0;
+  padding-left: 0;
+}
+
+.resume-print-window .rp-bullets li {
+  margin: 6px 0;
+  line-height: 1.35;
+  list-style: none;
+  padding-left: 0;
+}
+
+.resume-print-window .rp-bullets li::before {
+  content: "- ";
+  color: #5b6770;
+  display: inline-block;
+  width: 1em;
+  margin-right: 0.4em;
+}
+
+.resume-print-window .rp-skills-flat-line {
+  margin: 6px 0;
+  color: #1a1a1a;
+  font-size: 1rem;
+  line-height: 1.42;
+}
+
+.resume-print-window .rp-projects-section {
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+.resume-print-window .rp-cover-letter-content {
+  text-align: justify;
+}
+
+.resume-print-window .rp-cover-letter-content p {
+  margin-bottom: 1.2rem;
+  line-height: 1.6;
+}
+
+/* ---------- Print Media (A4) ---------- */
+@page {
+  size: A4;
+  margin: 14mm 14mm 16mm 14mm;
+}
+
+@media print {
+  body {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-family: Arial, Calibri, Roboto, "Helvetica Neue", sans-serif !important;
+  }
+
+  .resume-print-window a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .resume-print-window .rp-page {
+    padding: 0;
+  }
+
+  .resume-print-window .rp-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+
+  .resume-print-window .rp-role {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .resume-print-window .rp-projects-section {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  section,
+  div,
+  p,
+  ul,
+  li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
