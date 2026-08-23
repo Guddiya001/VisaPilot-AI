@@ -12,7 +12,7 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   private readonly refreshTokens = new Map<string, { userId: string; expiresAt: Date }>();
 
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(private readonly jwtService: JwtService) { }
 
   async register(params: { email: string; password: string; name: string }) {
     const { email, password, name } = params;
@@ -108,13 +108,13 @@ export class AuthService {
 
     this.refreshTokens.set(refreshToken, {
       userId: user.id,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      expiresAt: new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000), // ~100 years (never expire)
     });
 
     return {
       accessToken,
       refreshToken,
-      expiresIn: 900, // 15 min in seconds
+      expiresIn: 100 * 365 * 24 * 60 * 60, // ~100 years in seconds (never expire)
       user: {
         id: user.id,
         email: user.email,

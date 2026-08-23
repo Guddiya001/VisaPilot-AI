@@ -29,12 +29,15 @@ interface GreenhouseJobDetail extends GreenhouseJob {
 export class GreenhouseAdapter extends BaseCrawlerAdapter {
   readonly source = JobSource.GREENHOUSE;
   readonly name = 'Greenhouse';
+  private boardTokens: string[];
 
-constructor(boardToken: string) {
+  constructor(boardTokens: string | string[] = 'github') {
+    const tokens = Array.isArray(boardTokens) ? boardTokens : [boardTokens];
     super(JobSource.GREENHOUSE, {
-      baseUrl: `https://boards-api.greenhouse.io/v1/boards/${boardToken}`,
+      baseUrl: `https://boards-api.greenhouse.io/v1/boards/${tokens[0] || 'github'}`,
       rateLimitPerMinute: 60,
     });
+    this.boardTokens = tokens.length > 0 ? tokens : ['github'];
   }
 
   async initialize(): Promise<void> {
@@ -42,43 +45,29 @@ constructor(boardToken: string) {
   }
 
   async *searchJobs(filters: SearchFilters): AsyncGenerator<Job> {
-    let page = 1;
-    let hasMore = true;
+    for (const token of this.boardTokens) {
+      const boardUrl = `https://boards-api.greenhouse.io/v1/boards/${token}`;
+      try {
+        const url = `${boardUrl}/jobs?page=1&per_page=50&content=true`;
+        const response = await this.makeRequest(url);
+        const data = (await response.json()) as { jobs: GreenhouseJob[] };
 
-    while (hasMore) {
-      const url = `${this.config.baseUrl}/jobs?page=${page}&per_page=100&content=true`;
-      const response = await this.makeRequest(url);
-      const data = (await response.json()) as { jobs: GreenhouseJob[] };
+        if (!data.jobs || data.jobs.length === 0) {
+          continue;
+        }
 
-      if (!data.jobs || data.jobs.length === 0) {
-        hasMore = false;
-        break;
-      }
-
-      for (const rawJob of data.jobs) {
-        try {
-          // Fetch job detail for full description
-          const detailUrl = `${this.config.baseUrl}/jobs/${rawJob.id}`;
-          const detailResponse = await this.makeRequest(detailUrl);
-          const detail = (await detailResponse.json()) as GreenhouseJobDetail;
-
-          const job = this.createJobFromGreenhouse(rawJob, detail);
-
-          if (this.matchesFilters(job, filters)) {
-            yield job;
-          }
-        } catch {
-          // Fallback: yield job without full details
-          const job = this.createJobFromListing(rawJob);
+        for (const rawJob of data.jobs) {
+          const job = this.createJobFromGreenhouse(
+            rawJob,
+            rawJob as unknown as GreenhouseJobDetail,
+            token,
+          );
           if (this.matchesFilters(job, filters)) {
             yield job;
           }
         }
-      }
-
-      page++;
-      if (data.jobs.length < 100) {
-        hasMore = false;
+      } catch {
+        // Skip board on network error
       }
     }
   }
@@ -97,16 +86,23 @@ constructor(boardToken: string) {
     );
   }
 
-private createJobFromGreenhouse(job: GreenhouseJob, detail: GreenhouseJobDetail): Job {
+  private createJobFromGreenhouse(
+    job: GreenhouseJob,
+    detail: GreenhouseJobDetail,
+    token?: string,
+  ): Job {
     const location = job.location?.name || detail.offices?.[0]?.location || 'Unknown';
     const description = this.parseDescription(detail.content || '');
+    const companyName = token
+      ? token.charAt(0).toUpperCase() + token.slice(1)
+      : this.extractCompanyName();
 
     return {
       id: '',
       externalId: String(job.id || detail.internal_job_id),
       title: job.title || '',
-      company: { id: '', name: this.extractCompanyName(), locations: [], createdAt: new Date(), updatedAt: new Date() },
-      description: description.fullDescription,
+      company: { id: '', name: companyName, locations: [], createdAt: new Date(), updatedAt: new Date() },
+      description: description.fullDescription || `Position: ${job.title} at ${companyName}.`,
       requirements: description.requirements,
       responsibilities: description.responsibilities,
       location,

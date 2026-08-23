@@ -14,6 +14,33 @@ import {
 } from './enums';
 
 // ============ User Types ============
+export interface CandidateProfile {
+  currentCountry?: string;
+  targetRoles: string[];
+  skills: string[];
+  targetCountries: string[];
+  visaRequirements: {
+    requiresSponsorship: boolean;
+    h1b: boolean;
+    h1bTransfer: boolean;
+    o1: boolean;
+    euBlueCard: boolean;
+    skilledWorkerUK: boolean;
+    australia482: boolean;
+    australia186: boolean;
+    irelandCriticalSkills: boolean;
+    netherlandsHSM: boolean;
+  };
+  relocation: {
+    willing: boolean;
+    targetTimelineMonths: number;
+  };
+  salaryPreferences?: {
+    currency?: string;
+    minimum?: number;
+  };
+}
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -59,6 +86,27 @@ export interface Language {
 }
 
 // ============ Job Types ============
+export interface JobResult {
+  title: string;
+  company: string;
+  location: string;
+  url: string;
+
+  source: {
+    type: "WEB";
+    url: string;
+    fetchedAt: string;
+  };
+
+  visa?: {
+    status: "CONFIRMED" | "LIKELY" | "UNCLEAR" | "NOT_SUPPORTED";
+    type?: "H1B" | string;
+    evidence?: string;
+  };
+
+  semanticMatch: number;
+}
+
 export interface Job {
   id: string;
   externalId?: string;

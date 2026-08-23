@@ -3,7 +3,15 @@
 import { ResumeData } from '../types';
 import { generatePrintHTML } from './ResumePreview';
 
-export function openPrintWindow(data: ResumeData): void {
+export interface JobInfo {
+  id: string;
+  company: string;
+  title: string;
+  description: string;
+  requirements: string;
+}
+
+export function openPrintWindow(data: ResumeData, jobInfo?: JobInfo | null): void {
   const htmlContent = generatePrintHTML(data);
   
   // Extract only the print CSS. In a real app we'd fetch the CSS file or rely on styled-components.
@@ -23,7 +31,7 @@ export function openPrintWindow(data: ResumeData): void {
       margin: 0 auto;
     }
     .rp-page {
-      padding: 20mm;
+      padding: 0;
       box-sizing: border-box;
       color: #333;
       font-size: 9pt;
@@ -123,18 +131,24 @@ export function openPrintWindow(data: ResumeData): void {
       margin: 0 0 10pt 0;
       line-height: 1.6;
     }
+    @page {
+      margin: 15mm 20mm;
+    }
     @media print {
-      @page { margin: 0; }
       body { margin: 0; }
     }
   `;
+
+  const docTitle = jobInfo
+    ? `Resume_${jobInfo.company.replace(/\s+/g, '_')}_${jobInfo.id}`
+    : `${data.basics.name} - Resume`;
 
   const fullHtml = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
-      <title>${data.basics.name} - Resume</title>
+      <title>${docTitle}</title>
       <style>${printStyles}</style>
     </head>
     <body>
@@ -157,7 +171,7 @@ export function openPrintWindow(data: ResumeData): void {
   }
 }
 
-export function openCoverLetterPrintWindow(data: ResumeData): void {
+export function openCoverLetterPrintWindow(data: ResumeData, jobInfo?: JobInfo | null): void {
   const generateHeader = () => `
     <header class="rp-header">
       <h1 class="rp-name">${data.basics.name}</h1>
@@ -198,7 +212,7 @@ export function openCoverLetterPrintWindow(data: ResumeData): void {
       margin: 0 auto;
     }
     .rp-page {
-      padding: 20mm;
+      padding: 0;
       box-sizing: border-box;
       color: #333;
       font-size: 10pt;
@@ -233,18 +247,24 @@ export function openCoverLetterPrintWindow(data: ResumeData): void {
     .rp-cover-letter-content p {
       margin: 0 0 12pt 0;
     }
+    @page {
+      margin: 15mm 20mm;
+    }
     @media print {
-      @page { margin: 0; }
       body { margin: 0; }
     }
   `;
+
+  const docTitle = jobInfo
+    ? `Cover_Letter_${jobInfo.company.replace(/\s+/g, '_')}_${jobInfo.id}`
+    : `${data.basics.name} - Cover Letter`;
 
   const fullHtml = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
-      <title>${data.basics.name} - Cover Letter</title>
+      <title>${docTitle}</title>
       <style>${printStyles}</style>
     </head>
     <body>

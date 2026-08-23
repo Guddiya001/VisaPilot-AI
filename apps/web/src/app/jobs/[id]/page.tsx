@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, Clock, Globe, Bookmark } from 'lucide-react';
+import { ArrowLeft, Clock, Globe, Bookmark, Sparkles, FileText } from 'lucide-react';
 import { jobsApi } from '@/lib/api';
 
 interface Job {
@@ -157,21 +157,30 @@ export default function JobDetailPage() {
 
               <section className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
                 <h3 className="text-xl font-semibold text-gray-900">How to apply</h3>
-                <p className="mt-3 text-gray-700">Apply through the original job posting using the link below.</p>
-                <div className="flex gap-3">
+                <p className="mt-3 text-gray-700">Apply through the original job posting or generate a tailored resume customized for this position.</p>
+                <div className="flex flex-wrap gap-3 mt-4">
                   <a
                     href={job.sourceUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-full bg-primary-600 px-4 py-2 text-white shadow-sm hover:bg-primary-700 transition-colors"
+                    className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-slate-800 transition-all"
                   >
-                    Visit job posting
+                    <Globe className="w-4 h-4" />
+                    Visit Job Posting
                   </a>
                   <Link
-                    href={`/resume-builder?jobId=${job.id}`}
-                    className="inline-flex items-center gap-2 rounded-full border border-primary-600 px-4 py-2 text-primary-600 hover:bg-primary-50 transition-colors"
+                    href={`/resume-builder?jobId=${job.id}&autoGenerate=true`}
+                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary-600 to-indigo-600 px-5 py-2.5 text-sm font-medium text-white shadow-md hover:from-primary-700 hover:to-indigo-700 transition-all transform hover:-translate-y-0.5"
                   >
-                    Build Resume
+                    <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
+                    Generate Resume for this Job
+                  </Link>
+                  <Link
+                    href={`/resume-builder?jobId=${job.id}`}
+                    className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all"
+                  >
+                    <FileText className="w-4 h-4 text-gray-500" />
+                    Open in Resume Builder
                   </Link>
                 </div>
               </section>

@@ -134,6 +134,7 @@ export default function Home() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
+                defaultValue="Search for newly posted senior software engineering jobs worldwide that support visa sponsorship, relocation assistance, international hiring, work permit support, or remote global hiring for a Senior Full-Stack Engineer based in India with experience in React.js, Next.js, TypeScript, JavaScript, Node.js, Vue.js, Python, GenAI, AWS, Docker, Kubernetes, Kafka, Tailwind CSS, distributed systems, and microservices. Prioritize Germany, Netherlands, Sweden, Denmark, Norway, Estonia, Poland, Ireland, UAE, Singapore, Australia, New Zealand, UK, Canada, and remote worldwide roles. Include only new jobs posted within the last 30 days (preferably last 7 days), direct apply links, sponsorship or relocation evidence, confidence score, ATS match score, and mark the highest-priority roles as APPLY TODAY. Avoid repeating previously reported jobs unless there is a significant update."
                 placeholder="Search jobs, companies, skills..."
                 className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30"
               />

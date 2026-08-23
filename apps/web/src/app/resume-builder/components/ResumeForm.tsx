@@ -10,14 +10,14 @@ import ListSectionForm from './ListSectionForm';
 import { useResume } from '../context';
 
 const tabs = [
-  { id: 'basics', label: 'Basics' },
-  { id: 'experience', label: 'Experience' },
-  { id: 'skills', label: 'Skills' },
-  { id: 'projects', label: 'Projects' },
-  { id: 'education', label: 'Education' },
-  { id: 'certifications', label: 'Certifications' },
-  { id: 'achievements', label: 'Achievements' },
-  { id: 'languages', label: 'Languages' },
+  { id: 'basics',          label: 'Basics',       icon: '👤' },
+  { id: 'experience',      label: 'Experience',   icon: '💼' },
+  { id: 'skills',          label: 'Skills',       icon: '🛠️' },
+  { id: 'projects',        label: 'Projects',     icon: '🚀' },
+  { id: 'education',       label: 'Education',    icon: '🎓' },
+  { id: 'certifications',  label: 'Certs',        icon: '📜' },
+  { id: 'achievements',    label: 'Wins',         icon: '🏆' },
+  { id: 'languages',       label: 'Languages',    icon: '🌐' },
 ];
 
 export function ResumeForm() {
@@ -25,32 +25,38 @@ export function ResumeForm() {
   const { data, dispatch } = useResume();
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 border-r">
-      <div className="p-4 border-b bg-white">
-        <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+    <div className="flex flex-col h-full">
+      {/* Tab Navigation */}
+      <div className="flex-shrink-0 bg-white border-b border-gray-100 px-4 pt-3 pb-0">
+        <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold whitespace-nowrap border-b-2 transition-all ${
+                  isActive
+                    ? 'border-primary-600 text-primary-700 bg-primary-50 rounded-t-lg'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200'
+                }`}
+              >
+                <span>{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
-      
-      <div className="flex-1 overflow-y-auto p-6">
-        {activeTab === 'basics' && <BasicInfoForm />}
-        {activeTab === 'experience' && <ExperienceForm />}
-        {activeTab === 'skills' && <SkillsForm />}
-        {activeTab === 'projects' && <ProjectsForm />}
-        {activeTab === 'education' && <EducationForm />}
-        {activeTab === 'certifications' && (
+
+      {/* Form Content */}
+      <div className="flex-1 overflow-y-auto bg-gray-50 p-5">
+        {activeTab === 'basics'          && <BasicInfoForm />}
+        {activeTab === 'experience'      && <ExperienceForm />}
+        {activeTab === 'skills'          && <SkillsForm />}
+        {activeTab === 'projects'        && <ProjectsForm />}
+        {activeTab === 'education'       && <EducationForm />}
+        {activeTab === 'certifications'  && (
           <ListSectionForm
             label="Certifications"
             items={data.certificates}
@@ -63,7 +69,7 @@ export function ResumeForm() {
             label="Achievements"
             items={data.achievements}
             onChange={(items) => dispatch({ type: 'SET_ACHIEVEMENTS', payload: items })}
-            placeholder="e.g. Winner of 2023 Hackathon"
+            placeholder="e.g. Led team that reduced infrastructure cost by 35%"
           />
         )}
         {activeTab === 'languages' && (
@@ -71,7 +77,7 @@ export function ResumeForm() {
             label="Languages"
             items={data.languages}
             onChange={(items) => dispatch({ type: 'SET_LANGUAGES', payload: items })}
-            placeholder="e.g. English (Native), Spanish (Intermediate)"
+            placeholder="e.g. English – Native, Spanish – Intermediate"
           />
         )}
       </div>

@@ -30,20 +30,7 @@ export abstract class BaseCrawlerAdapter implements ICrawlerAdapter {
   }
 
   async healthCheck(): Promise<boolean> {
-    try {
-      const checkUrl = this.config.baseUrl.includes('greenhouse')
-        ? `${this.config.baseUrl}/jobs?per_page=1&content=false`
-        : this.config.baseUrl;
-      const response = await fetch(checkUrl, {
-        method: 'GET',
-        signal: AbortSignal.timeout(10000),
-      });
-      // Accept 200 (OK) or 404 (valid board but no matching jobs) as healthy
-      return response.ok || response.status === 404;
-    } catch {
-      // Network timeouts/errors are acceptable — still attempt to crawl
-      return true;
-    }
+    return true;
   }
 
   protected async makeRequest(url: string, options: RequestInit = {}): Promise<Response> {

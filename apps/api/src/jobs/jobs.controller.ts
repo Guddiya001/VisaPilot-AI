@@ -10,13 +10,17 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { JobsService } from './jobs.service';
+import { VisaIntelligenceService } from './intelligence/visa-intelligence.service';
 import { Public } from '../common/decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @ApiTags('Jobs')
 @Controller({ path: 'jobs', version: '1' })
 export class JobsController {
-  constructor(private readonly jobsService: JobsService) {}
+  constructor(
+    private readonly jobsService: JobsService,
+    private readonly visaIntelligenceService: VisaIntelligenceService,
+  ) {}
 
   @Get()
   @Public()
@@ -46,6 +50,29 @@ export class JobsController {
       page: Number(page),
       limit: Number(limit),
     });
+  }
+
+  @Get('intelligence/matches')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get personalized, ranked job matches using Visa Intelligence Engine' })
+  @ApiQuery({ name: 'limit', required: false })
+  async getIntelligenceMatches(
+    @CurrentUser('userId') userId: string,
+    @Query('limit') limit = 20,
+  ) {
+    if (!userId) {
+      throw new Error('User ID is required to fetch personalized matches');
+    }
+    const profile = await this.visaIntelligenceService.buildCandidateProfile(userId);
+    const jobs = await this.visaIntelligenceService.discoverAndRankJobs(profile, Number(limit));
+    return {
+      success: true,
+      data: jobs,
+      meta: {
+        total: jobs.length,
+        profile,
+      }
+    };
   }
 
   @Get(':id')

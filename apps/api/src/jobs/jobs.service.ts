@@ -1,10 +1,10 @@
 import { Inject, Injectable, NotFoundException, Logger } from '@nestjs/common';
-import { randomUUID } from 'crypto';
-import { JobSource, VisaSponsorshipStatus } from '@visapilot/shared';
-import { SearchAgent } from '@visapilot/ai';
+import { JobSource, VisaSponsorshipStatus, WorkMode, JobType } from '@visapilot/shared';
+import { SearchAgent, visaDetectionAgent } from '@visapilot/ai';
 import { jobRepository, companyRepository, getPrismaClient } from '@visapilot/database';
 import type { Job, SearchFilters } from '@visapilot/shared';
-import { normalizePersistableSearchResults } from './ai-search-results';
+import { VisaIntelligenceService } from './intelligence/visa-intelligence.service';
+import { crawlerService } from '@visapilot/crawler';
 
 interface SearchParams {
   query?: string;
@@ -22,329 +22,258 @@ export class JobsService {
 
   constructor(
     @Inject('SearchAgent') private readonly searchAgent: SearchAgent,
-  ) {}
+    private readonly visaIntelligenceService: VisaIntelligenceService,
+  ) { }
 
   async search(params: SearchParams) {
-    let aiSearchOutput: Record<string, unknown> | null = null;
-    let querySearchTerms: string[] = [];
-    const newlyPersistedJobIds: string[] = [];
+    this.logger.log(`[JobsService] Starting LLM-first search orchestration for query: "${params.query}"`);
+    this.logger.log('JOB_SEARCH_STARTED');
 
-    if (params.query) {
-      querySearchTerms = params.query
-        .toLowerCase()
-        .split(/[^a-z0-9]+/)
-        .filter(Boolean);
+    // 1. LLM Intent Extraction (First orchestration layer)
+    const intentOutput = await this.searchAgent.process({
+      searchQuery: params.query,
+      searchFilters: {
+        country: params.country,
+        remote: params.remote,
+        visaSponsorship: params.visaSponsorship,
+      },
+    });
+
+    if (!intentOutput.success || !intentOutput.data?.intent) {
+      this.logger.warn(`Intent extraction failed. Returning 0 results as per strict web-only policy.`);
+      return { success: true, data: [], meta: { total: 0, page: params.page, source: 'WEB' } };
+    }
+
+    const intent = intentOutput.data.intent as any;
+    const tools = intent.tools || [];
+    this.logger.log(`LLM_INTENT_EXTRACTED`);
+    this.logger.log(`[JobsService] Extracted intent: ${JSON.stringify(intent)}`);
+
+    let fetchedJobs: any[] = [];
+
+    // 2. Determine required search tools & Search external sources
+    if (tools.includes('search_jobs') && intent.queries?.length > 0) {
+      this.logger.log(`WEB_SEARCH_STARTED`);
+      this.logger.log(`[JobsService] Executing external search with queries: ${intent.queries.join(', ')}`);
+
+      const searchPromises = intent.queries.map((q: string) =>
+        crawlerService.searchJobs({
+          query: q,
+          countries: intent.semanticRequirements?.locations || (params.country ? [params.country] : []),
+          remote: intent.semanticRequirements?.workMode?.includes('Remote') || params.remote,
+          skills: intent.semanticRequirements?.skills || [],
+          limit: 15,
+        })
+      );
 
       try {
-        this.logger.log(`[DEBUG] Starting SearchAgent with query: "${params.query}"`);
-        const agentResult = await this.searchAgent.process({
-          searchQuery: params.query,
-          searchFilters: {
-            country: params.country,
-            remote: params.remote,
-            visaSponsorship: params.visaSponsorship,
-          },
+        const resultsArray = await Promise.all(searchPromises);
+        resultsArray.forEach(res => {
+          if (res.jobs) fetchedJobs.push(...res.jobs);
         });
+        this.logger.log(`WEB_SEARCH_COMPLETED`);
+        this.logger.log(`JOB_PAGES_FETCHED`);
+      } catch (err) {
+        this.logger.error(`Crawler search failed:`, err);
+      }
+    }
 
-        this.logger.log(`[DEBUG] SearchAgent completed. success=${agentResult.success}, confidence=${agentResult.confidence}`);
-        console.log('SearchAgent result:', JSON.stringify(agentResult, null, 2));
+    // 3. Deduplicate fetched jobs (Memory layer)
+    const uniqueJobsMap = new Map();
+    for (const job of fetchedJobs) {
+      const key = job.externalId || `${job.companyName}-${job.title}-${job.location}`;
+      if (!uniqueJobsMap.has(key)) {
+        uniqueJobsMap.set(key, job);
+      }
+    }
+    fetchedJobs = Array.from(uniqueJobsMap.values());
+    this.logger.log(`[JobsService] External search yielded ${fetchedJobs.length} unique jobs.`);
 
-        if (agentResult.success) {
-          const enrichedQuery =
-            (agentResult.data?.enrichedQuery as string) || params.query;
-          const enrichedTerms = enrichedQuery
-            .toLowerCase()
-            .split(/[^a-z0-9]+/)
-            .filter(Boolean);
+    // 4. Fallback to DB is strictly PROHIBITED
+    if (fetchedJobs.length === 0) {
+      this.logger.log(`[JobsService] No current external jobs found. Strict web-only policy returns 0 jobs.`);
+      return { success: true, data: [], meta: { total: 0, page: params.page, source: 'WEB' } };
+    }
 
-          if (enrichedTerms.length) {
-            querySearchTerms = enrichedTerms;
-          }
+    // 5. Validate hard constraints (e.g. visa sponsorship)
+    const requiresVisa = intent.hardConstraints?.some((c: any) => c.type === 'VISA_SPONSORSHIP') || params.visaSponsorship;
 
-          const webResults = Array.isArray(agentResult.data?.webResults)
-            ? (agentResult.data.webResults as Record<string, unknown>[])
-            : [];
-          const ragResults = Array.isArray(agentResult.data?.ragResults)
-            ? (agentResult.data.ragResults as Record<string, unknown>[])
-            : [];
+    if (tools.includes('validate_visa') || requiresVisa) {
+      this.logger.log(`[JobsService] Validating visa sponsorship for ${fetchedJobs.length} jobs.`);
 
-          this.logger.log(`[DEBUG] Web results count: ${webResults.length}`);
-          this.logger.log(`[DEBUG] RAG results count: ${ragResults.length}`);
-          if (webResults.length > 0) {
-            this.logger.log(`[DEBUG] First web result: ${JSON.stringify(webResults[0]?.title)}`);
-          }
+      // Process in small batches or sequentially to avoid rate limits
+      for (const job of fetchedJobs) {
+        try {
+          const visaResult = await visaDetectionAgent.process({
+            jobDescription: job.description,
+            companyName: job.companyName
+          });
 
-          aiSearchOutput = {
-            originalQuery: params.query,
-            enrichedQuery,
-            keywords: agentResult.data?.keywords,
-            recommendations: agentResult.data?.recommendations,
-            webResults,
-            ragResults,
-            metadata: agentResult.metadata,
-          };
+          if (visaResult.success && visaResult.data) {
+            const data = visaResult.data as any;
+            let status = 'UNCLEAR';
 
-          // ===== Persist AI search results to database =====
-          try {
-            const prisma = getPrismaClient();
-            const now = new Date();
-            let savedJobCount = 0;
-
-            // 1. Save jobs found via web search or RAG fallback to the jobs table
-            const persistableResults = normalizePersistableSearchResults({
-              webResults,
-              ragResults,
-            });
-
-            if (persistableResults.length > 0) {
-              for (const result of persistableResults) {
-                try {
-                  const companyName = result.companyName || 'Unknown Company';
-                  const externalId = result.id;
-                  const source = result.source || 'GREENHOUSE';
-
-                  // Check if job already exists by externalId
-                  if (externalId) {
-                    const existingJob = await jobRepository.findByExternalId(externalId);
-                    if (existingJob) {
-                      continue; // Skip if already persisted
-                    }
-                  }
-
-                  // Find or create the company
-                  let company = await companyRepository.findByName(companyName);
-                  if (!company) {
-                    company = await companyRepository.create({
-                      name: companyName,
-                      locations: result.country ? [result.country] : [],
-                    });
-                    this.logger.log(`Created new company: ${companyName}`);
-                  }
-
-                  // Create the job in the database
-                  const createdJob = await jobRepository.create({
-                    externalId: externalId || undefined,
-                    title: result.title || 'Unknown Position',
-                    description: result.description || '',
-                    requirements: '',
-                    location: result.location || '',
-                    country: result.country || '',
-                    remote: result.remote ?? false,
-                    workMode: result.workMode || 'ONSITE',
-                    type: result.type || 'FULL_TIME',
-                    salaryMin: result.salaryMin,
-                    salaryMax: result.salaryMax,
-                    salaryCurrency: result.salaryCurrency,
-                    source: source,
-                    sourceUrl: result.sourceUrl || '',
-                    applyUrl: result.applyUrl || undefined,
-                    visaSponsorship: result.visaSponsorship || 'UNKNOWN',
-                    skills: result.skills || [],
-                    postedAt: result.postedAt ? new Date(result.postedAt) : now,
-                    companyId: company.id,
-                  } as any);
-                  newlyPersistedJobIds.push(createdJob.id);
-                  savedJobCount++;
-                } catch (jobError) {
-                  this.logger.warn(
-                    `Failed to save individual job "${result.title}": ${jobError instanceof Error ? jobError.message : String(jobError)}`,
-                  );
-                  // Continue with next job
-                }
-              }
-              this.logger.log(`Saved ${savedJobCount} new jobs to database from AI search results`);
+            if (data.sponsorsVisa) {
+              status = 'CONFIRMED';
+            } else if (data.confidence > 0.5) {
+              // If model is confident it DOES NOT sponsor
+              status = 'NOT_SUPPORTED';
+            } else {
+              // If positive keywords exist but confidence is low
+              status = (data.keywordAnalysis?.score > 0) ? 'LIKELY' : 'UNCLEAR';
             }
 
-            // 2. Save embedding metadata to embedding_indexes table
-            const queryEmbedding = agentResult.data?.queryEmbedding as number[] | undefined;
-            console.log(`[DEBUG] Query embedding: ${queryEmbedding ? queryEmbedding.length : 'undefined'}`);
-            if (queryEmbedding && Array.isArray(queryEmbedding) && queryEmbedding.length > 0) {
-              const embeddingId = randomUUID();
-              await prisma.embeddingIndex.upsert({
-                where: {
-                  resourceType_resourceId: {
-                    resourceType: 'JOB',
-                    resourceId: `search:${params.query}`,
-                  },
-                },
-                update: {
-                  embedding: JSON.stringify(queryEmbedding),
-                  metadata: JSON.parse(JSON.stringify({
-                    query: params.query,
-                    enrichedQuery,
-                    keywords: Array.isArray(agentResult.data?.keywords)
-                      ? agentResult.data.keywords
-                      : [],
-                    country: params.country,
-                    remote: params.remote,
-                    visaSponsorship: params.visaSponsorship,
-                  })),
-                  model: 'nomic-embed-text',
-                },
-                create: {
-                  id: embeddingId,
-                  resourceType: 'JOB',
-                  resourceId: `search:${params.query}`,
-                  embedding: JSON.stringify(queryEmbedding),
-                  metadata: JSON.parse(JSON.stringify({
-                    query: params.query,
-                    enrichedQuery,
-                    keywords: Array.isArray(agentResult.data?.keywords)
-                      ? agentResult.data.keywords
-                      : [],
-                    country: params.country,
-                    remote: params.remote,
-                    visaSponsorship: params.visaSponsorship,
-                  })),
-                  model: 'nomic-embed-text',
-                },
-              });
-              this.logger.log(`Saved embedding metadata for search query: ${params.query}`);
-            }
+            job.visaSponsorshipData = {
+              status,
+              type: data.visaTypes?.length ? data.visaTypes[0] : 'Unknown',
+              evidence: data.evidence?.[0] || 'No direct evidence extracted',
+              confidence: data.confidence
+            };
 
-            // 3. Save AI analysis to ai_analyses table
-            const analysisId = randomUUID();
-            const analysisData = JSON.parse(JSON.stringify(agentResult.data || {}));
-            const suggestions = Array.isArray(agentResult.data?.recommendations)
-              ? (agentResult.data.recommendations as string[])
-              : [];
-            await prisma.aIAnalysis.create({
-              data: {
-                id: analysisId,
-                resumeId: params.userId || null,
-                userId: params.userId || null,
-                analysis: analysisData as any,
-                matchScore: null,
-                visaProbability: null,
-                suggestions: suggestions,
-                risks: [],
-                confidence: agentResult.confidence ?? 0.85,
-                modelUsed: 'nomic-embed-text',
-                agentType: 'SEARCH',
-                processedAt: now,
-              },
-            });
-            this.logger.log(`Saved AI analysis for search query: ${params.query}`);
-
-            // 4. Save search history (only if userId is available)
-            if (params.userId) {
-              const filterData = JSON.parse(JSON.stringify({
-                country: params.country,
-                remote: params.remote,
-                visaSponsorship: params.visaSponsorship,
-              }));
-              await prisma.searchHistory.create({
-                data: {
-                  userId: params.userId,
-                  query: params.query,
-                  filters: filterData as any,
-                  resultCount: 0,
-                },
-              });
-              this.logger.log(`Saved search history for user: ${params.userId}`);
-            }
-          } catch (persistError) {
-            this.logger.warn(
-              `Failed to persist AI search results: ${persistError instanceof Error ? persistError.message : String(persistError)}`,
-            );
-            // Non-blocking — search results are still returned
+            job.visaSponsorship = status === 'CONFIRMED' ? VisaSponsorshipStatus.SPONSORS : VisaSponsorshipStatus.UNKNOWN;
           }
-        
-        } else {
-          this.logger.warn(
-            `SearchAgent failed for query=${params.query}: ${agentResult.error}`,
-          );
+        } catch (e) {
+          this.logger.warn(`Visa validation failed for job ${job.title}`);
         }
-      } catch (error) {
-        this.logger.error(
-          `SearchAgent execution error for query=${params.query}`,
-          error instanceof Error ? error.stack : String(error),
+      }
+      this.logger.log(`VISA_VALIDATION_COMPLETED`);
+      
+      // Separate results into categories if required by frontend, but the backend can just filter out NOT_SUPPORTED
+      if (requiresVisa) {
+        fetchedJobs = fetchedJobs.filter(job => 
+          job.visaSponsorshipData?.status === 'CONFIRMED' || job.visaSponsorshipData?.status === 'LIKELY'
         );
       }
     }
 
-    const filters: SearchFilters = {
-      query: params.query,
-      countries: params.country ? [params.country] : undefined,
-      remote: params.remote,
-      visaSponsorship: params.visaSponsorship as any,
-      page: params.page,
-      limit: params.limit,
-    };
+    // 6. DB Deduplication & Persistence (Async)
+    this.logger.log(`[JobsService] Starting async persistence for ${fetchedJobs.length} jobs.`);
+    this.persistJobsAsync(fetchedJobs).catch(err => {
+      this.logger.error(`Failed async persistence`, err);
+    });
 
-    if (querySearchTerms.length) {
-      filters.query = querySearchTerms.join(' ');
-    }
-
-    const result = await jobRepository.search(filters);
-
-    // All data comes from the database — both existing and newly persisted jobs
-    let finalData: Job[] = result.data || [];
-    let finalMeta = { ...result.meta };
-
-    // Ensure newly persisted AI search jobs appear even if the search filter didn't match them
-    if (newlyPersistedJobIds.length > 0) {
-      const resultIds = new Set(finalData.map((job) => job.id));
-      const missingIds = newlyPersistedJobIds.filter((id) => !resultIds.has(id));
-
-      if (missingIds.length > 0) {
-        this.logger.log(
-          `[DEBUG] ${missingIds.length} newly persisted jobs not found by search filter — fetching from DB by ID`,
-        );
-        const missingJobs: Job[] = [];
-        for (const id of missingIds) {
-          const job = await jobRepository.findById(id);
-          if (job) missingJobs.push(job);
-        }
-        if (missingJobs.length > 0) {
-          finalData = [...finalData, ...missingJobs];
-          finalMeta.total = finalData.length;
-          finalMeta.totalPages = Math.ceil(finalData.length / params.limit);
-          finalMeta.hasNextPage = params.page < finalMeta.totalPages;
-          finalMeta.hasPreviousPage = params.page > 1;
-        }
-      }
-    }
-
-    // Update search_history resultCount if userId provided
-    if (params.userId && params.query) {
+    // 7. Match against user profile & LLM ranking
+    let finalJobs = fetchedJobs;
+    if (params.userId && tools.includes('rank_jobs')) {
+      this.logger.log(`[JobsService] Matching and ranking jobs for user ${params.userId}`);
       try {
-        const prisma = getPrismaClient();
-        await prisma.searchHistory.updateMany({
-          where: {
-            userId: params.userId,
-            query: params.query,
-          },
-          data: {
-            resultCount: finalMeta.total,
-          },
+        const userProfile = await this.visaIntelligenceService.buildCandidateProfile(params.userId);
+
+        const scoredPromises = fetchedJobs.map(async job => {
+          // Wrap crawled job to match Job interface expected by scoreJobWithAI
+          const jobForScoring: any = { ...job, company: { name: job.companyName } };
+          const matchData = await this.visaIntelligenceService.scoreJobWithAI(jobForScoring, userProfile);
+          job.matchScore = matchData.matchScore;
+          return job;
         });
-      } catch {
-        // Non-blocking
+
+        finalJobs = await Promise.all(scoredPromises);
+        finalJobs.sort((a: any, b: any) => b.matchScore - a.matchScore);
+        this.logger.log(`SEMANTIC_MATCH_COMPLETED`);
+      } catch (err) {
+        this.logger.warn(`Failed to match against user profile:`, err);
+      }
+    } else {
+      // Basic ranking based on visa status if requested
+      if (requiresVisa) {
+        finalJobs.sort((a: any, b: any) => {
+          const aS = a.visaSponsorshipData?.status === 'CONFIRMED' ? 1 : 0;
+          const bS = b.visaSponsorshipData?.status === 'CONFIRMED' ? 1 : 0;
+          return bS - aS;
+        });
       }
     }
 
+    this.logger.log(`RESULTS_RANKED`);
+
+    const jobResults = finalJobs.map(job => ({
+      title: job.title,
+      company: job.companyName,
+      location: job.location,
+      url: job.sourceUrl || job.applyUrl || '',
+      source: {
+        type: 'WEB',
+        url: job.sourceUrl || job.applyUrl || '',
+        fetchedAt: new Date().toISOString()
+      },
+      visa: job.visaSponsorshipData ? {
+        status: job.visaSponsorshipData.status,
+        type: job.visaSponsorshipData.type,
+        evidence: job.visaSponsorshipData.evidence
+      } : undefined,
+      semanticMatch: job.matchScore || 0
+    }));
+
+    this.logger.log(`[JobsService] Job search completed. searchSource="WEB" dbJobSearchCalled=false`);
     return {
       success: true,
-      data: finalData,
+      data: jobResults,
       meta: {
-        ...finalMeta,
-        aiSearch: aiSearchOutput,
+        total: jobResults.length,
+        page: params.page,
+        intent,
       },
     };
+  }
+
+  private async persistJobsAsync(fetchedJobs: any[]) {
+    for (const job of fetchedJobs) {
+      try {
+        let existingJob = null;
+        if (job.externalId) {
+          existingJob = await jobRepository.findByExternalId(job.externalId);
+        }
+
+        if (existingJob) {
+          await jobRepository.update(existingJob.id, {
+            title: job.title,
+            description: job.description,
+            visaSponsorship: job.visaSponsorship,
+          });
+        } else {
+          let company = await companyRepository.findByName(job.companyName || 'Unknown Company');
+          if (!company) {
+            company = await companyRepository.create({
+              name: job.companyName || 'Unknown Company',
+              locations: job.country ? [job.country] : [],
+            });
+          }
+
+          await jobRepository.create({
+            externalId: job.externalId || undefined,
+            title: job.title || 'Unknown Position',
+            description: job.description || '',
+            location: job.location || '',
+            country: job.country || '',
+            remote: job.remote ?? false,
+            workMode: job.workMode || WorkMode.ONSITE,
+            type: job.type || JobType.FULL_TIME,
+            salaryMin: job.salaryMin,
+            salaryMax: job.salaryMax,
+            salaryCurrency: job.salaryCurrency,
+            source: job.source || JobSource.LINKEDIN,
+            sourceUrl: job.sourceUrl || '',
+            visaSponsorship: job.visaSponsorship || VisaSponsorshipStatus.UNKNOWN,
+            skills: job.skills || [],
+            postedAt: job.postedAt ? new Date(job.postedAt) : new Date(),
+            companyId: company.id,
+          } as any);
+        }
+      } catch (err) {
+        this.logger.warn(`Failed to persist job ${job.title}: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
   }
 
   async findById(id: string) {
     const job = await jobRepository.findById(id);
     if (!job) throw new NotFoundException(`Job ${id} not found`);
-
     return { success: true, data: job };
   }
 
   async saveJob(userId: string, jobId: string) {
     const job = await jobRepository.findById(jobId);
     if (!job) throw new NotFoundException(`Job ${jobId} not found`);
-
     this.logger.log(`User ${userId} saved job ${jobId}`);
     return { success: true, message: 'Job saved successfully' };
   }

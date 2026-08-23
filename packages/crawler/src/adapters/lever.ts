@@ -26,14 +26,17 @@ interface LeverJob {
 export class LeverAdapter extends BaseCrawlerAdapter {
   readonly source = JobSource.LEVER;
   readonly name = 'Lever';
+  private boardTokens: string[];
 
-  constructor(baseUrl?: string) {
+  constructor(boardTokens: string | string[] = ['atlassian', 'netflix', 'spotify', 'affirm', 'figma']) {
+    const tokens = Array.isArray(boardTokens) ? boardTokens : [boardTokens];
     super(JobSource.LEVER, {
-      baseUrl: baseUrl || 'https://api.lever.co/v0',
-      rateLimitPerMinute: 30,
-      maxRetries: 3,
-      timeout: 30000,
+      baseUrl: 'https://api.lever.co/v0',
+      rateLimitPerMinute: 60,
+      maxRetries: 2,
+      timeout: 10000,
     });
+    this.boardTokens = tokens.length > 0 ? tokens : ['atlassian'];
   }
 
   async initialize(): Promise<void> {
@@ -41,14 +44,23 @@ export class LeverAdapter extends BaseCrawlerAdapter {
   }
 
   async *searchJobs(filters: SearchFilters): AsyncGenerator<Job> {
-    const url = `${this.config.baseUrl}/postings?limit=100`;
-    const response = await this.makeRequest(url);
-    const data = (await response.json()) as { data: LeverJob[] };
+    for (const company of this.boardTokens) {
+      try {
+        const url = `${this.config.baseUrl}/postings/${company}?limit=50&mode=json`;
+        const response = await this.makeRequest(url);
+        const data = await response.json();
+        const rawJobs: LeverJob[] = Array.isArray(data) ? data : (data as { data?: LeverJob[] })?.data || [];
 
-    for (const rawJob of data.data || []) {
-      const normalizedJob = this.normalizeJob(rawJob as unknown as Record<string, unknown>);
-      if (this.matchesFilters(normalizedJob, filters)) {
-        yield normalizedJob;
+        const companyName = company.charAt(0).toUpperCase() + company.slice(1);
+
+        for (const rawJob of rawJobs) {
+          const normalizedJob = this.createJobFromLever(rawJob, companyName);
+          if (this.matchesFilters(normalizedJob, filters)) {
+            yield normalizedJob;
+          }
+        }
+      } catch {
+        // Skip inaccessible company boards
       }
     }
   }
@@ -57,27 +69,32 @@ export class LeverAdapter extends BaseCrawlerAdapter {
     const url = `${this.config.baseUrl}/postings/${externalId}`;
     const response = await this.makeRequest(url);
     const data = (await response.json()) as LeverJob;
-    return this.normalizeJob(data as unknown as Record<string, unknown>);
+    return this.createJobFromLever(data, 'Unknown Company');
   }
 
   normalizeJob(rawJob: Record<string, unknown>): Job {
-    const job = rawJob as unknown as LeverJob;
+    return this.createJobFromLever(rawJob as unknown as LeverJob, 'Unknown Company');
+  }
+
+  private createJobFromLever(job: LeverJob, companyName: string): Job {
     const description = job.descriptionPlain || job.description || '';
     const lowerDesc = description.toLowerCase();
+    const location = job.categories?.location || 'Remote';
+    const country = this.extractCountry(location);
 
-    const workMode = job.categories?.location?.toLowerCase().includes('remote')
+    const workMode = location.toLowerCase().includes('remote')
       ? WorkMode.REMOTE
-      : WorkMode.ONSITE;
+      : location.toLowerCase().includes('hybrid')
+        ? WorkMode.HYBRID
+        : WorkMode.ONSITE;
 
-    const jobType = job.categories?.commitment?.toLowerCase().includes('full time')
+    const jobType = job.categories?.commitment?.toLowerCase().includes('full time') || job.categories?.commitment?.toLowerCase().includes('full-time')
       ? JobType.FULL_TIME
-      : job.categories?.commitment?.toLowerCase().includes('part time')
+      : job.categories?.commitment?.toLowerCase().includes('part time') || job.categories?.commitment?.toLowerCase().includes('part-time')
         ? JobType.PART_TIME
         : JobType.FULL_TIME;
 
     const skills = this.extractSkills(description);
-    const location = job.categories?.location || 'Remote';
-    const country = this.extractCountry(location);
 
     const sponsorsVisa = lowerDesc.includes('visa sponsorship')
       ? VisaSponsorshipStatus.SPONSORS
@@ -89,8 +106,8 @@ export class LeverAdapter extends BaseCrawlerAdapter {
       id: '',
       externalId: job.id,
       title: job.text || 'Untitled Position',
-      company: { id: '', name: '', locations: [], createdAt: new Date(), updatedAt: new Date() },
-      description: job.description || description,
+      company: { id: '', name: companyName, locations: [location], createdAt: new Date(), updatedAt: new Date() },
+      description: job.description || description || `Role: ${job.text} at ${companyName}.`,
       requirements: this.extractRequirements(job.lists),
       responsibilities: '',
       location,
@@ -99,13 +116,13 @@ export class LeverAdapter extends BaseCrawlerAdapter {
       workMode,
       type: jobType,
       source: JobSource.LEVER,
-      sourceUrl: job.hostedUrl || '',
+      sourceUrl: job.hostedUrl || job.applyUrl || '',
       visaSponsorship: sponsorsVisa,
       skills,
       postedAt: new Date(),
       createdAt: new Date(),
       updatedAt: new Date(),
-    } as Job;
+    };
   }
 
   private extractSkills(description: string): string[] {

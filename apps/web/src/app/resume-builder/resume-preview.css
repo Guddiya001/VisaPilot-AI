@@ -412,7 +412,8 @@
     text-decoration: none;
   }
 
-  .resume-print-window .rp-page {
+  .resume-print-window .rp-page,
+  .resume-preview .rp-page {
     padding: 0;
   }
 

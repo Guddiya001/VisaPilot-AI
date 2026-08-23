@@ -7,16 +7,50 @@ import { Printer, Sparkles, FileText, Trash2, Download, Upload } from 'lucide-re
 interface ToolbarProps {
   onExportPDF: () => void;
   onAnalyze: () => void;
+  jobInfo?: { id: string; company: string; title: string; description: string; requirements: string } | null;
 }
 
-export function Toolbar({ onExportPDF, onAnalyze }: ToolbarProps) {
+export function Toolbar({ onExportPDF, onAnalyze, jobInfo }: ToolbarProps) {
   const { dispatch, exportJSON, importJSON } = useResume();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleClearAll = () => {
-    if (window.confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+    if (window.confirm('Are you sure you want to clear all resume data? This cannot be undone.')) {
       dispatch({ type: 'CLEAR_ALL' });
     }
+  };
+
+  // Fix: actually trigger a file download instead of just returning the JSON string
+  const handleExportJSON = () => {
+    const json = exportJSON();
+    let dataToExport = json;
+    
+    // Save with Job JD for latter refence.
+    if (jobInfo) {
+      try {
+        const parsed = JSON.parse(json);
+        parsed.targetJobInfo = {
+          jobId: jobInfo.id,
+          companyName: jobInfo.company,
+          jobTitle: jobInfo.title,
+          description: jobInfo.description,
+          requirements: jobInfo.requirements
+        };
+        dataToExport = JSON.stringify(parsed, null, 2);
+      } catch (e) {
+        console.error('Failed to parse and append job info to export JSON', e);
+      }
+    }
+
+    const blob = new Blob([dataToExport], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = jobInfo ? `resume_${jobInfo.company.replace(/\s+/g, '_')}_${jobInfo.id}.json` : 'resume-data.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handleImportClick = () => {
@@ -30,67 +64,76 @@ export function Toolbar({ onExportPDF, onAnalyze }: ToolbarProps) {
       reader.onload = (event) => {
         try {
           const content = event.target?.result as string;
-          importJSON(content);
-        } catch (error) {
-          alert('Failed to parse JSON file');
+          const ok = importJSON(content);
+          if (!ok) alert('Invalid resume JSON file. Please check the format.');
+        } catch {
+          alert('Failed to parse JSON file.');
         }
       };
       reader.readAsText(file);
     }
-    // Reset the input so the same file can be loaded again if needed
-    if (e.target) {
-      e.target.value = '';
-    }
+    if (e.target) e.target.value = '';
   };
 
   return (
-    <div className="flex flex-row flex-wrap gap-2 items-center p-4 bg-white border-b border-gray-200">
+    <div className="flex flex-row flex-wrap gap-2 items-center px-4 py-3 bg-white border-b border-gray-100 shadow-sm">
+      {/* Primary actions */}
       <button
+        id="toolbar-export-pdf"
         onClick={onExportPDF}
-        className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-600 to-indigo-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:from-primary-700 hover:to-indigo-700 transition-all hover:-translate-y-0.5"
       >
-        <Printer size={16} />
-        <span className="text-sm font-medium">Export PDF</span>
+        <Printer size={15} />
+        Export PDF
       </button>
 
       <button
+        id="toolbar-ai-analyze"
         onClick={onAnalyze}
-        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:from-violet-600 hover:to-purple-700 transition-all hover:-translate-y-0.5"
       >
-        <Sparkles size={16} className="text-primary-600" />
-        <span className="text-sm font-medium">AI Analyze</span>
+        <Sparkles size={15} />
+        ATS Score
       </button>
 
+      <div className="w-px h-6 bg-gray-200 mx-1" />
+
+      {/* Secondary actions */}
       <button
+        id="toolbar-load-sample"
         onClick={() => dispatch({ type: 'LOAD_SAMPLE' })}
-        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
+        className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all"
       >
-        <FileText size={16} />
-        <span className="text-sm font-medium">Load Sample</span>
+        <FileText size={14} />
+        Sample
       </button>
 
       <button
-        onClick={handleClearAll}
-        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-red-600 rounded hover:bg-red-50 transition-colors ml-auto"
+        id="toolbar-export-json"
+        onClick={handleExportJSON}
+        className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all"
       >
-        <Trash2 size={16} />
-        <span className="text-sm font-medium">Clear All</span>
+        <Download size={14} />
+        Export JSON
       </button>
 
       <button
-        onClick={exportJSON}
-        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
-      >
-        <Download size={16} />
-        <span className="text-sm font-medium">Export JSON</span>
-      </button>
-
-      <button
+        id="toolbar-import-json"
         onClick={handleImportClick}
-        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
+        className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all"
       >
-        <Upload size={16} />
-        <span className="text-sm font-medium">Import JSON</span>
+        <Upload size={14} />
+        Import
+      </button>
+
+      {/* Destructive — pushed to the right */}
+      <button
+        id="toolbar-clear-all"
+        onClick={handleClearAll}
+        className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-red-200 text-red-500 text-sm font-medium rounded-lg hover:bg-red-50 hover:border-red-300 transition-all ml-auto"
+      >
+        <Trash2 size={14} />
+        Clear
       </button>
 
       <input

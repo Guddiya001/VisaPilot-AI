@@ -6,6 +6,7 @@ import { GreenhouseAdapter } from './adapters/greenhouse';
 import { LeverAdapter } from './adapters/lever';
 import { AshbyAdapter } from './adapters/ashby';
 import { RSSAdapter } from './adapters/rss';
+import { LinkedInAdapter } from './adapters/linkedin';
 
 export class CrawlerService {
   private adapters: Map<JobSource, ICrawlerAdapter> = new Map();
@@ -16,23 +17,44 @@ export class CrawlerService {
     this.registerAdapters();
   }
 
-private registerAdapters(): void {
-    // Use real public board tokens and feeds to fetch actual job data
-    const greenhouse = new GreenhouseAdapter('github');  // GitHub uses Greenhouse — public API
-    const greenhouse2 = new GreenhouseAdapter('lever');   // Lever also uses Greenhouse publicly
-    const greenhouse3 = new GreenhouseAdapter('dropbox'); // Dropbox uses Greenhouse
+  private registerAdapters(): void {
+    // Use real public board tokens and feeds to fetch actual live job data
+    const greenhouse = new GreenhouseAdapter([
+      'github',
+      'dropbox',
+      'razorpay',
+      'automattic',
+      'canonical',
+      'postman',
+      'cloudflare',
+    ]);
+    const lever = new LeverAdapter([
+      'atlassian',
+      'netflix',
+      'spotify',
+      'affirm',
+      'figma',
+    ]);
+    const ashby = new AshbyAdapter([
+      'linear',
+      'retool',
+      'openai',
+      'ramp',
+      'brex',
+    ]);
     const rss = new RSSAdapter({ baseUrl: '' });
     rss.configureFeeds([
-      'https://stackoverflow.com/jobs/feed',
-      'https://remoteok.com/remote-jobs.rss',
-      'https://weworkremotely.com/remote-jobs.rss',
-      'https://hnhiring.com/feed.rss',
+      'https://weworkremotely.com/categories/remote-programming-jobs.rss',
+      'https://jobicy.com/?feed=job_feed',
+      'https://nodesk.co/remote-jobs/index.xml',
     ]);
+    const linkedin = new LinkedInAdapter();
 
     this.adapters.set(JobSource.GREENHOUSE, greenhouse);
-    this.adapters.set(JobSource.LEVER, greenhouse2);  // Re-use Greenhouse adapter for Lever source
-    this.adapters.set(JobSource.ASHBY, greenhouse3);   // Re-use Greenhouse adapter for Ashby source
+    this.adapters.set(JobSource.LEVER, lever);
+    this.adapters.set(JobSource.ASHBY, ashby);
     this.adapters.set(JobSource.RSS, rss);
+    this.adapters.set(JobSource.LINKEDIN, linkedin);
   }
 
   async searchJobs(

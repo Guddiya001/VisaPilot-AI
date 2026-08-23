@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback, type ReactNode } from 'react';
-import type { ResumeData, ResumeExperience, ResumeProject, ResumeEducation, CoverLetterData } from './types';
+import type { ResumeData, ResumeExperience, ResumeProject, ResumeEducation, CoverLetterData, GeneratedResumeResult } from './types';
 import { SAMPLE_RESUME_DATA, EMPTY_RESUME_DATA, generateId } from './types';
 
 // ─── Storage Key ───────────────────────────────────────────
@@ -38,6 +38,18 @@ type ResumeAction =
   | { type: 'SET_LANGUAGES'; payload: string[] }
   // Cover Letter
   | { type: 'SET_COVER_LETTER'; payload: CoverLetterData }
+  // Tailor for Job
+  | {
+      type: 'TAILOR_FOR_JOB';
+      payload: {
+        summary: string;
+        addedSkills: string[];
+        coverLetter?: string;
+        bulletImprovements?: Array<{ original: string; improved: string }>;
+      };
+    }
+  // Full Resume Generation
+  | { type: 'GENERATE_FULL_RESUME'; payload: GeneratedResumeResult }
   // Bulk
   | { type: 'LOAD_SAMPLE' }
   | { type: 'CLEAR_ALL' };
@@ -208,6 +220,54 @@ function resumeReducer(state: ResumeData, action: ResumeAction): ResumeData {
     // ─── Cover Letter ───
     case 'SET_COVER_LETTER':
       return { ...state, coverLetter: action.payload };
+
+    // ─── Tailor For Job ───
+    case 'TAILOR_FOR_JOB': {
+      const { summary, addedSkills, coverLetter, bulletImprovements } = action.payload;
+
+      const existingSkillsLower = new Set(state.skillsFlat.map((s) => s.toLowerCase()));
+      const newSkillsToAppend = (addedSkills || []).filter((s) => !existingSkillsLower.has(s.toLowerCase()));
+      const updatedSkills = [...state.skillsFlat, ...newSkillsToAppend];
+
+      let updatedExperience = state.experience;
+      if (bulletImprovements && bulletImprovements.length > 0) {
+        updatedExperience = state.experience.map((exp) => ({
+          ...exp,
+          bullets: exp.bullets.map((bullet) => {
+            const match = bulletImprovements.find((imp) => imp.original && bullet.includes(imp.original));
+            return match ? match.improved : bullet;
+          }),
+        }));
+      }
+
+      const updatedCoverLetter = coverLetter
+        ? { ...state.coverLetter, body: coverLetter }
+        : state.coverLetter;
+
+      return {
+        ...state,
+        basics: {
+          ...state.basics,
+          summary: summary || state.basics.summary,
+        },
+        skillsFlat: updatedSkills,
+        experience: updatedExperience,
+        coverLetter: updatedCoverLetter,
+      };
+    }
+
+    // ─── Full Resume Generation ───
+    case 'GENERATE_FULL_RESUME': {
+      const generated = action.payload.resumeData;
+      // Replace cover letter paragraphs from the pipeline's cover letter text
+      const coverParagraphs = action.payload.coverLetter
+        ? action.payload.coverLetter.split('\n\n').filter(Boolean)
+        : state.coverLetter.paragraphs;
+      return {
+        ...generated,
+        coverLetter: { paragraphs: coverParagraphs },
+      };
+    }
 
     // ─── Bulk ───
     case 'LOAD_SAMPLE':

@@ -4,6 +4,7 @@ import { AIProviderType } from './base';
 import { OllamaProvider } from './ollama';
 import { GroqProvider } from './groq';
 import { GeminiProvider } from './gemini';
+import { AgentRouterProvider } from './agentrouter';
 
 let providerInstance: IProvider | null = null;
 
@@ -20,6 +21,9 @@ export function getAIProvider(): IProvider {
       break;
     case AIProviderType.GEMINI:
       providerInstance = new GeminiProvider();
+      break;
+    case AIProviderType.AGENTROUTER:
+      providerInstance = new AgentRouterProvider();
       break;
     case AIProviderType.LOCAL:
     default:

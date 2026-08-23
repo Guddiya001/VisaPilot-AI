@@ -4,10 +4,8 @@
 
 const API_BASE =
   typeof window !== 'undefined'
-    ? process.env.NEXT_PUBLIC_API_URL
-      ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1`
-      : 'http://localhost:4000/api/v1'
-    : '/api/v1';
+    ? process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
+    : 'http://localhost:4000/api/v1';
 
 interface ApiResponse<T = unknown> {
   success: boolean;
@@ -102,6 +100,80 @@ export const aiApi = {
     return request('/ai/optimize-resume', {
       method: 'POST',
       body: JSON.stringify({ resumeContent, jobDescription }),
+    });
+  },
+
+  tailorResume(params: {
+    resumeData?: Record<string, unknown>;
+    resumeContent?: string;
+    jobTitle?: string;
+    companyName?: string;
+    jobDescription: string;
+  }) {
+    return request<{
+      tailoredSummary: string;
+      addedSkills: string[];
+      bulletImprovements: Array<{ original: string; improved: string; reason: string }>;
+      atsScoreBefore: number;
+      atsScoreAfter: number;
+      keyChanges: string[];
+      coverLetter: string;
+    }>('/ai/tailor-resume', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  },
+
+  generateResume(params: {
+    jobDescription: string;
+    jobTitle?: string;
+    companyName?: string;
+    strategy?: 'A' | 'B' | 'C' | 'auto';
+  }) {
+    return request<{
+      jdAnalysis: {
+        jobTitle: string;
+        companyName: string;
+        country: string;
+        city: string;
+        locationText: string;
+        companyIndustry: string;
+        companyCulture: string[];
+        requiredSkills: string[];
+        preferredSkills: string[];
+        experienceYears: number;
+        domainFocus: string[];
+        visaIndicators: string[];
+        roleLevel: string;
+        keyResponsibilities: string[];
+        techStack: string[];
+      };
+      strategy: 'A' | 'B' | 'C';
+      strategyReason: string;
+      resumeData: Record<string, unknown>;
+      atsScore: number;
+      atsBreakdown: {
+        keywordMatch: number;
+        experienceMatch: number;
+        skillsMatch: number;
+        formattingScore: number;
+        locationMatch: number;
+        companyAlignment: number;
+      };
+      coverLetter: string;
+      networkingTips: string[];
+      interviewProbability: {
+        atsPass: number;
+        recruiterResponse: number;
+        technicalInterview: number;
+        offerProbability: number;
+        expectedTimeline: string;
+      };
+      finalDecision: string;
+      finalDecisionReason: string;
+    }>('/ai/generate-resume', {
+      method: 'POST',
+      body: JSON.stringify(params),
     });
   },
 

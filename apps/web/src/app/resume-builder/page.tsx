@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ResumeProvider, useResume } from './context';
 import { ResumeForm } from './components/ResumeForm';
 import { ResumePreview } from './components/ResumePreview';
@@ -8,24 +9,124 @@ import { CoverLetterPreview } from './components/CoverLetterPreview';
 import { Toolbar } from './components/Toolbar';
 import { ATSAnalysisPanel } from './components/ATSAnalysisPanel';
 import { CoverLetterEditor } from './components/CoverLetterEditor';
+import { GenerateResumeModal } from './components/GenerateResumeModal';
 import { openPrintWindow, openCoverLetterPrintWindow } from './components/PrintableResume';
-import { FileText, Eye, PenLine, FileSignature } from 'lucide-react';
+import { FileText, Eye, PenLine, FileSignature, Sparkles, Briefcase, CheckCircle2, Loader2, Wand2 } from 'lucide-react';
+import { jobsApi, aiApi } from '@/lib/api';
+import type { ResumeData } from './types';
 
 type PreviewMode = 'resume' | 'cover-letter';
 type MobileTab = 'edit' | 'preview';
 
 function ResumeBuilderInner() {
-  const { data } = useResume();
+  const { data, dispatch } = useResume();
+  const searchParams = useSearchParams();
+  const jobId = searchParams ? searchParams.get('jobId') : null;
+  const autoTailorParam = searchParams ? searchParams.get('autoTailor') === 'true' : false;
+  const autoGenerateParam = searchParams ? searchParams.get('autoGenerate') === 'true' : false;
+
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState<PreviewMode>('resume');
   const [mobileTab, setMobileTab] = useState<MobileTab>('edit');
   const [showCoverEditor, setShowCoverEditor] = useState(false);
+  const [generateModalOpen, setGenerateModalOpen] = useState(false);
+
+  const [jobInfo, setJobInfo] = useState<{ id: string; title: string; company: string; description: string; requirements: string } | null>(null);
+  const [tailoring, setTailoring] = useState(false);
+  const [tailoredStatus, setTailoredStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!jobId) return;
+
+    async function loadJob() {
+      const res = await jobsApi.getById(jobId as string);
+      if (res.success && res.data) {
+        const j = res.data as any;
+        const info = {
+          id: j.id,
+          title: j.title || 'Target Role',
+          company: j.company?.name || 'Company',
+          description: j.description || '',
+          requirements: j.requirements || '',
+        };
+        setJobInfo(info);
+
+        if (autoGenerateParam) {
+          // Auto-open the generate modal with JD pre-loaded
+          setGenerateModalOpen(true);
+        } else if (autoTailorParam) {
+          triggerAutoTailor(info);
+        }
+      }
+    }
+
+    loadJob();
+  }, [jobId]);
+
+  const triggerAutoTailor = async (info: { title: string; company: string; description: string; requirements: string }) => {
+    setTailoring(true);
+    setTailoredStatus(null);
+    try {
+      const fullJD = `${info.title} at ${info.company}\n\nDescription:\n${info.description}\n\nRequirements:\n${info.requirements}`;
+      const resumeText = [
+        data.basics.summary,
+        ...data.experience.flatMap((e) => e.bullets),
+        ...data.skillsFlat,
+      ].join(' ');
+
+      const res = await aiApi.tailorResume({
+        resumeContent: resumeText,
+        jobTitle: info.title,
+        companyName: info.company,
+        jobDescription: fullJD,
+      });
+
+      if (res.success && res.data) {
+        dispatch({
+          type: 'TAILOR_FOR_JOB',
+          payload: {
+            summary: res.data.tailoredSummary,
+            addedSkills: res.data.addedSkills,
+            coverLetter: res.data.coverLetter,
+            bulletImprovements: res.data.bulletImprovements,
+          },
+        });
+        setTailoredStatus(`Resume & Cover Letter tailored for ${info.title} at ${info.company}! (${res.data.atsScoreAfter}% ATS Match)`);
+      }
+    } catch (err) {
+      console.error('Tailor failed:', err);
+    } finally {
+      setTailoring(false);
+    }
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleApplyGeneratedResume = (result: any) => {
+    dispatch({
+      type: 'GENERATE_FULL_RESUME',
+      payload: {
+        jdAnalysis: result.jdAnalysis as any,
+        strategy: result.strategy as any,
+        strategyReason: String(result.strategyReason || ''),
+        resumeData: result.resumeData as unknown as ResumeData,
+        atsScore: Number(result.atsScore),
+        atsBreakdown: (result.atsBreakdown || { keywordMatch: 0, experienceMatch: 0, skillsMatch: 0, formattingScore: 0 }) as any,
+        coverLetter: String(result.coverLetter || ''),
+        networkingTips: (result.networkingTips || []) as string[],
+        interviewProbability: (result.interviewProbability || { atsPass: 0, recruiterResponse: 0, technicalInterview: 0, offerProbability: 0, expectedTimeline: '' }) as any,
+        finalDecision: result.finalDecision as any,
+        finalDecisionReason: String(result.finalDecisionReason || ''),
+      },
+    });
+    setGenerateModalOpen(false);
+    setTailoredStatus(`✨ Resume generated with ${result.atsScore}% ATS score (Strategy ${result.strategy})`);
+  };
 
   const handleExportPDF = () => {
     if (previewMode === 'cover-letter') {
-      openCoverLetterPrintWindow(data);
+      openCoverLetterPrintWindow(data, jobInfo);
     } else {
-      openPrintWindow(data);
+      openPrintWindow(data, jobInfo);
     }
   };
 
@@ -37,14 +138,66 @@ function ResumeBuilderInner() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
               <FileText className="w-7 h-7 text-primary-600" />
-              Resume Builder
+              Resume Builder & Tailor
             </h1>
             <p className="text-gray-500 mt-0.5 text-sm">
-              Build your ATS-optimized resume with live preview & AI analysis
+              Build and customize your resume specifically for any Job Description
             </p>
           </div>
+          <button
+            onClick={() => setGenerateModalOpen(true)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-bold text-sm rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5"
+          >
+            <Wand2 className="w-4 h-4 text-yellow-300" />
+            Generate from JD
+          </button>
         </div>
-        <Toolbar onExportPDF={handleExportPDF} onAnalyze={() => setAnalysisOpen(true)} />
+
+        {/* ─── Job Target Banner ─── */}
+        {jobInfo && (
+          <div className="mb-3 bg-gradient-to-r from-slate-900 via-primary-950 to-indigo-950 rounded-xl p-4 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in border border-primary-900/50">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-white/10 rounded-lg backdrop-blur-sm">
+                <Briefcase className="w-6 h-6 text-primary-300" />
+              </div>
+              <div>
+                <div className="text-xs uppercase tracking-wider text-primary-300 font-semibold flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+                  <span>Target Job Description</span>
+                </div>
+                <h2 className="text-lg font-bold text-white mt-0.5">
+                  {jobInfo.title} <span className="font-normal text-gray-300">at {jobInfo.company}</span>
+                </h2>
+              </div>
+            </div>
+            <button
+              onClick={() => triggerAutoTailor(jobInfo)}
+              disabled={tailoring}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-bold text-sm rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {tailoring ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Tailoring Resume...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 text-slate-950" />
+                  <span>Auto-Tailor Resume for JD</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {tailoredStatus && (
+          <div className="mb-3 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center gap-2 shadow-sm animate-fade-in">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            <span className="font-medium">{tailoredStatus}</span>
+          </div>
+        )}
+
+        <Toolbar onExportPDF={handleExportPDF} onAnalyze={() => setAnalysisOpen(true)} jobInfo={jobInfo} />
       </div>
 
       {/* ─── Mobile Tab Switcher ─── */}
@@ -161,6 +314,16 @@ function ResumeBuilderInner() {
 
       {/* ─── ATS Analysis Slide-over ─── */}
       <ATSAnalysisPanel isOpen={analysisOpen} onClose={() => setAnalysisOpen(false)} />
+
+      {/* ─── Generate Resume Modal ─── */}
+      <GenerateResumeModal
+        isOpen={generateModalOpen}
+        onClose={() => setGenerateModalOpen(false)}
+        onApplyResume={handleApplyGeneratedResume}
+        initialJobDescription={jobInfo ? `${jobInfo.title} at ${jobInfo.company}\n\nDescription:\n${jobInfo.description}\n\nRequirements:\n${jobInfo.requirements}` : ''}
+        initialJobTitle={jobInfo?.title || ''}
+        initialCompanyName={jobInfo?.company || ''}
+      />
     </div>
   );
 }
@@ -168,7 +331,9 @@ function ResumeBuilderInner() {
 export default function ResumeBuilderPage() {
   return (
     <ResumeProvider>
-      <ResumeBuilderInner />
+      <Suspense fallback={<div className="p-8 text-center text-gray-500">Loading Resume Builder...</div>}>
+        <ResumeBuilderInner />
+      </Suspense>
     </ResumeProvider>
   );
 }

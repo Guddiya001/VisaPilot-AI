@@ -16,28 +16,31 @@ import {
 import { jobsApi } from '@/lib/api';
 
 interface Job {
-  id: string;
+  id?: string;
   title: string;
-  company: {
-    id: string;
-    name: string;
-    locations: string[];
+  company: string | { id?: string; name?: string; locations?: string[] };
+  description?: string;
+  requirements?: string;
+  location?: string;
+  country?: string;
+  remote?: boolean;
+  workMode?: string;
+  type?: string;
+  salaryMin?: number;
+  salaryMax?: number;
+  salaryCurrency?: string;
+  source?: any;
+  sourceUrl?: string;
+  url?: string;
+  visaSponsorship?: string;
+  visa?: {
+    status: string;
+    type?: string[];
+    evidence?: string;
   };
-  description: string;
-  requirements: string;
-  location: string;
-  country: string;
-  remote: boolean;
-  workMode: string;
-  type: string;
-  salaryMin: number;
-  salaryMax: number;
-  salaryCurrency: string;
-  source: string;
-  sourceUrl: string;
-  visaSponsorship: string;
-  skills: string[];
-  postedAt: string;
+  semanticMatch?: number;
+  skills?: string[];
+  postedAt?: string;
 }
 
 function JobsContent() {
@@ -186,7 +189,7 @@ function JobsContent() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search by title, company, or skill..."
+                placeholder="Search by title, company, skill, or keyword..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
@@ -208,11 +211,26 @@ function JobsContent() {
               className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
             >
               <option value="">All countries</option>
-              <option value="United States">United States</option>
-              <option value="United Kingdom">United Kingdom</option>
-              <option value="Germany">Germany</option>
-              <option value="Canada">Canada</option>
-              <option value="Australia">Australia</option>
+              <option value="United States">🇺🇸 United States</option>
+              <option value="United Kingdom">🇬🇧 United Kingdom</option>
+              <option value="Germany">🇩🇪 Germany</option>
+              <option value="Canada">🇨🇦 Canada</option>
+              <option value="Australia">🇦🇺 Australia</option>
+              <option value="Netherlands">🇳🇱 Netherlands</option>
+              <option value="Ireland">🇮🇪 Ireland</option>
+              <option value="Switzerland">🇨🇭 Switzerland</option>
+              <option value="Singapore">🇸🇬 Singapore</option>
+              <option value="Japan">🇯🇵 Japan</option>
+              <option value="UAE">🇦🇪 UAE</option>
+              <option value="New Zealand">🇳🇿 New Zealand</option>
+              <option value="France">🇫🇷 France</option>
+              <option value="Sweden">🇸🇪 Sweden</option>
+              <option value="Norway">🇳🇴 Norway</option>
+              <option value="India">🇮🇳 India</option>
+              <option value="Poland">🇵🇱 Poland</option>
+              <option value="Spain">🇪🇸 Spain</option>
+              <option value="Denmark">🇩🇰 Denmark</option>
+              <option value="Finland">🇫🇮 Finland</option>
             </select>
             <select
               value={remoteFilter}
@@ -236,11 +254,43 @@ function JobsContent() {
             </select>
           </div>
         </form>
+
+        {/* Quick keyword chips for visa & search refinement */}
+        <div className="mt-3 pt-3 border-t border-gray-50">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-gray-400 font-medium">Quick search:</span>
+            {[
+              { label: '🛂 Visa Sponsorship', query: 'visa sponsorship' },
+              { label: '🇺🇸 H-1B', query: 'H-1B visa sponsor' },
+              { label: '📋 Work Permit', query: 'work permit' },
+              { label: '🇬🇧 Skilled Worker Visa', query: 'skilled worker visa' },
+              { label: '🌍 Relocation', query: 'relocation support' },
+              { label: '🤝 International Welcome', query: 'international candidates welcome' },
+              { label: '💻 Remote Global', query: 'remote worldwide' },
+              { label: '🇪🇺 EU Blue Card', query: 'EU blue card' },
+            ].map((chip) => (
+              <button
+                key={chip.query}
+                type="button"
+                onClick={() => {
+                  setSearchQuery(chip.query);
+                  handleSearch(chip.query, 1);
+                }}
+                className="text-xs px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700 transition-all cursor-pointer whitespace-nowrap"
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {loading && (
         <div className="rounded-xl border border-gray-100 bg-white p-6 text-center text-gray-500">
-          Loading jobs...
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+            <span>Searching jobs{searchQuery ? ` for "${searchQuery}"` : ''}...</span>
+          </div>
         </div>
       )}
 
@@ -251,58 +301,119 @@ function JobsContent() {
       )}
 
       {!loading && !error && jobs.length === 0 && (
-        <div className="rounded-xl border border-gray-100 bg-white p-6 text-center text-gray-500">
-          No jobs found. Try a different keyword or filter.
+        <div className="rounded-xl border border-gray-100 bg-white p-8 text-center">
+          <div className="max-w-md mx-auto">
+            <Globe className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">No jobs found</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Try adjusting your search or filters. Here are some tips:
+            </p>
+            <ul className="text-sm text-gray-500 text-left space-y-1.5 mb-5">
+              <li className="flex items-start gap-2">
+                <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
+                Use broader keywords like &ldquo;software engineer&rdquo; instead of very specific terms
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
+                Try removing country or work mode filters
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
+                Search for skills like &ldquo;React&rdquo;, &ldquo;Python&rdquo;, or &ldquo;AWS&rdquo;
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
+                Use the quick search chips above for visa-specific searches
+              </li>
+            </ul>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery('');
+                setCountryFilter('');
+                setRemoteFilter('');
+                setVisaFilter('');
+                handleSearch('', 1);
+              }}
+              className="text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors"
+            >
+              Clear all filters and show all jobs →
+            </button>
+          </div>
         </div>
       )}
 
       <div className="space-y-3">
-        {jobs.map((job) => (
-          <div key={job.id} className="bg-white rounded-xl p-5 border border-gray-100 hover:shadow-md transition-all">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex gap-4 flex-1">
-                <div className="w-12 h-12 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center text-primary-700 font-bold text-lg">
-                  {job.company.name[0]}
+        {jobs.map((job, index) => {
+          const companyName = typeof job.company === 'string' ? job.company : (job.company?.name || 'Unknown Company');
+          const jobKey = job.id || job.url || job.sourceUrl || `job-${index}`;
+          return (
+            <div key={jobKey} className="bg-white rounded-xl p-5 border border-gray-100 hover:shadow-md transition-all">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex gap-4 flex-1">
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center text-primary-700 font-bold text-lg uppercase">
+                    {companyName.charAt(0) || 'C'}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{job.title}</h3>
+                    <p className="text-sm text-gray-500">{companyName} · {job.location || job.country || 'Unknown location'}</p>
+                    <div className="flex items-center gap-3 mt-2 flex-wrap">
+                      {(job.salaryMin != null || job.salaryMax != null) && (
+                        <span className="text-sm font-medium text-gray-700">{formatSalary(job)}</span>
+                      )}
+                      {job.type && (
+                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{job.type}</span>
+                      )}
+                      {job.visa?.status && job.visa.status !== 'NO_SPONSORSHIP' && (
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
+                          <Globe className="w-3 h-3" /> Visa: {job.visa.status}
+                        </span>
+                      )}
+                      {!job.visa && job.visaSponsorship && job.visaSponsorship !== 'DOES_NOT_SPONSOR' && (
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
+                          <Globe className="w-3 h-3" /> Visa Sponsorship
+                        </span>
+                      )}
+                      {job.semanticMatch !== undefined && (
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
+                          Match: {job.semanticMatch}%
+                        </span>
+                      )}
+                      {job.postedAt && (
+                        <span className="text-xs text-gray-400 flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> {new Date(job.postedAt).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">{job.title}</h3>
-                  <p className="text-sm text-gray-500">{job.company.name} · {job.location}</p>
-                  <div className="flex items-center gap-3 mt-2 flex-wrap">
-                    <span className="text-sm font-medium text-gray-700">{formatSalary(job)}</span>
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{job.type}</span>
-                    {job.visaSponsorship !== 'DOES_NOT_SPONSOR' && (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
-                        <Globe className="w-3 h-3" /> Visa Sponsorship
-                      </span>
+                <div className="flex flex-col items-end gap-2">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-primary-600">
+                    {job.remote ? 'Remote' : 'Onsite'}
+                  </div>
+                  <div className="flex gap-3 mt-1">
+                    {job.id && (
+                      <Link
+                        href={`/resume-builder?jobId=${job.id}`}
+                        className="text-sm font-medium text-slate-600 hover:text-primary-600 flex items-center gap-1"
+                      >
+                        Build Resume
+                      </Link>
                     )}
-                    <span className="text-xs text-gray-400 flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> {new Date(job.postedAt).toLocaleDateString()}
-                    </span>
+                    <a
+                      href={job.url || job.sourceUrl || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-primary-600 hover:text-primary-800"
+                    >
+                      Apply / Details ↗
+                    </a>
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-2">
-                <div className="text-xs font-semibold uppercase tracking-wide text-primary-600">
-                  {job.remote ? 'Remote' : 'Onsite'}
-                </div>
-                <div className="flex gap-3 mt-1">
-                  <Link
-                    href={`/resume-builder?jobId=${job.id}`}
-                    className="text-sm font-medium text-slate-600 hover:text-primary-600 flex items-center gap-1"
-                  >
-                    Build Resume
-                  </Link>
-                  <Link
-                    href={`/jobs/${job.id}`}
-                    className="text-sm font-medium text-primary-600 hover:text-primary-800"
-                  >
-                    View details
-                  </Link>
-                </div>
-              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {totalPages > 1 && (

@@ -2,6 +2,7 @@ export enum AIProviderType {
   LOCAL = 'local',
   GROQ = 'groq',
   GEMINI = 'gemini',
+  AGENTROUTER = 'agentrouter',
 }
 
 export interface CompletionOptions {

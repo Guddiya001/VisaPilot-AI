@@ -55,6 +55,87 @@ export interface ResumeData {
   coverLetter: CoverLetterData;
 }
 
+// ─── Full Resume Generation Pipeline Types ────────────────
+
+export interface JDAnalysis {
+  jobTitle: string;
+  companyName: string;
+  country: string;
+  requiredSkills: string[];
+  preferredSkills: string[];
+  experienceYears: number;
+  domainFocus: string[];
+  visaIndicators: string[];
+  roleLevel: string; // e.g. 'Senior', 'Staff', 'Lead', 'Principal'
+  keyResponsibilities: string[];
+  techStack: string[];
+}
+
+export interface InterviewProbability {
+  atsPass: number;         // 0-100
+  recruiterResponse: number; // 0-100
+  technicalInterview: number; // 0-100
+  offerProbability: number;  // 0-100
+  expectedTimeline: string;  // e.g. '2-4 weeks'
+}
+
+export type ResumeStrategy = 'A' | 'B' | 'C'; // A=Backend, B=AI Platform, C=Full-Stack
+
+export type FinalDecision =
+  | 'APPLY_TODAY'
+  | 'APPLY_WITH_REFERRAL'
+  | 'APPLY_AFTER_RESUME_FIX'
+  | 'SKIP_ROLE';
+
+export interface GeneratedResumeResult {
+  // Phase 1-2: JD Analysis
+  jdAnalysis: JDAnalysis;
+  // Phase 3: Strategy
+  strategy: ResumeStrategy;
+  strategyReason: string;
+  // Phase 4-5: Generated Resume
+  resumeData: ResumeData;
+  // Phase 6-7: ATS Scoring
+  atsScore: number;
+  atsBreakdown: {
+    keywordMatch: number;
+    experienceMatch: number;
+    skillsMatch: number;
+    formattingScore: number;
+  };
+  // Phase 8: Cover Letter
+  coverLetter: string;
+  // Phase 9: Networking & Interview Probability
+  networkingTips: string[];
+  interviewProbability: InterviewProbability;
+  // Phase 10: Final Decision
+  finalDecision: FinalDecision;
+  finalDecisionReason: string;
+}
+
+export type GenerationPhase =
+  | 'idle'
+  | 'analyzing_jd'
+  | 'selecting_strategy'
+  | 'generating_resume'
+  | 'scoring_ats'
+  | 'generating_cover_letter'
+  | 'calculating_probability'
+  | 'final_decision'
+  | 'complete'
+  | 'error';
+
+export const GENERATION_PHASES: { key: GenerationPhase; label: string; icon: string }[] = [
+  { key: 'analyzing_jd', label: 'Analyzing Job Description', icon: '🔍' },
+  { key: 'selecting_strategy', label: 'Selecting Resume Strategy', icon: '🎯' },
+  { key: 'generating_resume', label: 'Generating Optimized Resume', icon: '📝' },
+  { key: 'scoring_ats', label: 'Running ATS Scoring', icon: '📊' },
+  { key: 'generating_cover_letter', label: 'Crafting Cover Letter', icon: '✉️' },
+  { key: 'calculating_probability', label: 'Calculating Interview Probability', icon: '📈' },
+  { key: 'final_decision', label: 'Making Final Recommendation', icon: '✅' },
+  { key: 'complete', label: 'Generation Complete', icon: '🎉' },
+];
+
 // Helper to generate unique IDs
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;

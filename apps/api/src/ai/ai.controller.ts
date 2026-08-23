@@ -65,6 +65,23 @@ export class AiController {
     return this.aiService.optimizeResume(body.resumeContent, body.jobDescription);
   }
 
+  @Post('tailor-resume')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Tailor resume specifically for a job description' })
+  async tailorResume(
+    @Body()
+    body: {
+      resumeData?: Record<string, unknown>;
+      resumeContent?: string;
+      jobTitle?: string;
+      companyName?: string;
+      jobDescription: string;
+    },
+    @CurrentUser('userId') userId?: string,
+  ) {
+    return this.aiService.tailorResume(body);
+  }
+
   @Post('visa-analysis')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Analyze visa sponsorship for a job' })
@@ -83,6 +100,22 @@ export class AiController {
     @CurrentUser('userId') userId?: string,
   ) {
     return this.aiService.interviewPrep(body.jobDescription, body.companyName);
+  }
+
+  @Post('generate-resume')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Generate a full optimized resume from a job description (10-phase pipeline)' })
+  async generateResume(
+    @Body()
+    body: {
+      jobDescription: string;
+      jobTitle?: string;
+      companyName?: string;
+      strategy?: 'A' | 'B' | 'C' | 'auto';
+    },
+    @CurrentUser('userId') userId?: string,
+  ) {
+    return this.aiService.generateFullResume(body);
   }
 }
 

@@ -14,7 +14,8 @@
     "db:push": "pnpm --filter @visapilot/database db:push",
     "db:migrate": "pnpm --filter @visapilot/database db:migrate",
     "db:seed": "pnpm --filter @visapilot/database db:seed",
-    "docker:up": "docker compose -f docker/docker-compose.yml up -d",
+    "docker:build": "docker compose -f docker/docker-compose.yml build",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d --build",
     "docker:down": "docker compose -f docker/docker-compose.yml down"
   },
   "engines": {

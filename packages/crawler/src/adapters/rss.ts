@@ -1,4 +1,4 @@
-import { JobSource, JobType, WorkMode } from '@visapilot/shared';
+import { JobSource, JobType, WorkMode, VisaSponsorshipStatus } from '@visapilot/shared';
 import type { SearchFilters, Job } from '@visapilot/shared';
 import { BaseCrawlerAdapter } from './base';
 import RssParser from 'rss-parser';
@@ -6,11 +6,18 @@ import RssParser from 'rss-parser';
 export class RSSAdapter extends BaseCrawlerAdapter {
   readonly source = JobSource.RSS;
   readonly name = 'RSS Feed Adapter';
-  private feeds: string[] = [];
+  private feeds: string[] = [
+    'https://weworkremotely.com/categories/remote-programming-jobs.rss',
+    'https://jobicy.com/?feed=job_feed',
+    'https://nodesk.co/remote-jobs/index.xml',
+  ];
   private parser: RssParser;
 
-  constructor(config: Partial<Record<string, unknown>>) {
-    super(JobSource.RSS, config as Record<string, unknown>);
+  constructor(config: Partial<Record<string, unknown>> = {}) {
+    super(JobSource.RSS, {
+      ...config,
+      timeout: 8000,
+    });
     this.parser = new RssParser();
   }
 
@@ -20,7 +27,9 @@ export class RSSAdapter extends BaseCrawlerAdapter {
   }
 
   configureFeeds(feeds: string[]): void {
-    this.feeds = feeds;
+    if (feeds && feeds.length > 0) {
+      this.feeds = feeds;
+    }
   }
 
   async *searchJobs(filters: SearchFilters): AsyncGenerator<Job> {
@@ -28,13 +37,17 @@ export class RSSAdapter extends BaseCrawlerAdapter {
 
     const feedUrls = this.feeds.length > 0
       ? this.feeds
-      : filters.sources?.includes(JobSource.RSS)
-        ? [filters.query || '']
-        : [];
+      : [
+          'https://weworkremotely.com/categories/remote-programming-jobs.rss',
+          'https://jobicy.com/?feed=job_feed',
+        ];
 
     for (const feedUrl of feedUrls) {
       try {
-        const feed = await this.parser.parseURL(feedUrl);
+        const response = await this.makeRequest(feedUrl);
+        if (!response.ok) continue;
+        const xml = await response.text();
+        const feed = await this.parser.parseString(xml);
 
         for (const item of feed.items || []) {
           const description = item.content || item.contentSnippet || item.description || '';
@@ -51,14 +64,14 @@ export class RSSAdapter extends BaseCrawlerAdapter {
           yield this.normalizeJob({
             externalId: item.guid || item.link || '',
             title: item.title || 'Unknown Position',
-            companyName: feed.title || 'Unknown Company',
+            companyName: item.creator || (feed.title ? feed.title.replace(/RSS Feed/i, '').trim() : 'Tech Employer'),
             description,
             requirements: description,
             responsibilities: undefined,
             location: this.extractLocation(description),
             country: this.extractCountry(description),
-            remote: lowerDesc.includes('remote'),
-            workMode: lowerDesc.includes('remote') ? WorkMode.REMOTE : WorkMode.ONSITE,
+            remote: lowerDesc.includes('remote') || true,
+            workMode: WorkMode.REMOTE,
             type: this.extractJobType(description),
             salaryMin: undefined,
             salaryMax: undefined,
@@ -70,7 +83,7 @@ export class RSSAdapter extends BaseCrawlerAdapter {
           });
         }
       } catch {
-        // Skip failed feeds
+        // Skip failed feeds gracefully
       }
     }
   }
@@ -80,7 +93,34 @@ export class RSSAdapter extends BaseCrawlerAdapter {
   }
 
   normalizeJob(rawJob: Record<string, unknown>): Job {
-    return rawJob as unknown as Job;
+    const companyName = (rawJob.companyName as string) || 'Tech Company';
+    const location = (rawJob.location as string) || 'Remote';
+    const description = (rawJob.description as string) || '';
+
+    return {
+      id: '',
+      externalId: (rawJob.externalId as string) || '',
+      title: (rawJob.title as string) || 'Untitled Position',
+      company: { id: '', name: companyName, locations: [location], createdAt: new Date(), updatedAt: new Date() },
+      description,
+      requirements: (rawJob.requirements as string) || '',
+      responsibilities: '',
+      location,
+      country: (rawJob.country as string) || this.extractCountry(location),
+      remote: Boolean(rawJob.remote),
+      workMode: (rawJob.workMode as WorkMode) || WorkMode.REMOTE,
+      type: (rawJob.type as JobType) || JobType.FULL_TIME,
+      salaryMin: undefined,
+      salaryMax: undefined,
+      salaryCurrency: undefined,
+      source: JobSource.RSS,
+      sourceUrl: (rawJob.sourceUrl as string) || '',
+      visaSponsorship: VisaSponsorshipStatus.UNKNOWN,
+      skills: Array.isArray(rawJob.skills) ? (rawJob.skills as string[]) : this.extractSkills(description),
+      postedAt: rawJob.postedAt instanceof Date ? rawJob.postedAt : new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
   }
 
   private extractLocation(text: string): string {

@@ -9,6 +9,50 @@ import type {
 
 const prisma = getPrismaClient();
 
+/**
+ * Country alias map — maps canonical names to all known variants.
+ * Used to expand country filters so "United States" also matches "US", "USA", etc.
+ */
+const COUNTRY_ALIASES: Record<string, string[]> = {
+  'united states': ['us', 'usa', 'united states', 'united states of america'],
+  'united kingdom': ['uk', 'gb', 'united kingdom', 'great britain', 'england'],
+  'germany': ['de', 'germany', 'deutschland'],
+  'canada': ['ca', 'canada'],
+  'australia': ['au', 'australia'],
+  'netherlands': ['nl', 'netherlands', 'holland'],
+  'ireland': ['ie', 'ireland'],
+  'switzerland': ['ch', 'switzerland'],
+  'singapore': ['sg', 'singapore'],
+  'japan': ['jp', 'japan'],
+  'uae': ['ae', 'uae', 'united arab emirates', 'dubai'],
+  'new zealand': ['nz', 'new zealand'],
+  'france': ['fr', 'france'],
+  'sweden': ['se', 'sweden'],
+  'norway': ['no', 'norway'],
+  'india': ['in', 'india'],
+  'poland': ['pl', 'poland'],
+  'spain': ['es', 'spain'],
+  'denmark': ['dk', 'denmark'],
+  'finland': ['fi', 'finland'],
+};
+
+/**
+ * Expand a country name to all its known aliases for broader matching.
+ */
+function expandCountryAliases(country: string): string[] {
+  const lower = country.toLowerCase().trim();
+
+  // Check if the input matches any canonical name or alias
+  for (const [, aliases] of Object.entries(COUNTRY_ALIASES)) {
+    if (aliases.includes(lower)) {
+      return aliases;
+    }
+  }
+
+  // No alias found — return the original value
+  return [country];
+}
+
 export class JobRepository {
   async findById(id: string): Promise<Job | null> {
     const job = await prisma.job.findUnique({
@@ -42,24 +86,35 @@ export class JobRepository {
         .map((t) => t.trim())
         .filter(Boolean);
 
-      if (terms.length > 1) {
-        // Match any word in title, description, or requirements (OR across terms)
-        where.OR = terms.flatMap((term) => [
-          { title: { contains: term, mode: 'insensitive' as const } },
-          { description: { contains: term, mode: 'insensitive' as const } },
-          { requirements: { contains: term, mode: 'insensitive' as const } },
-        ]);
-      } else {
-        where.OR = [
-          { title: { contains: filters.query, mode: 'insensitive' } },
-          { description: { contains: filters.query, mode: 'insensitive' } },
-          { requirements: { contains: filters.query, mode: 'insensitive' } },
-        ];
-      }
+      const searchTerms = terms.length > 1 ? terms : [filters.query];
+
+      // Match any term in title, description, requirements, location, country,
+      // company name, or skills (OR across all terms and fields)
+      where.OR = searchTerms.flatMap((term) => [
+        { title: { contains: term, mode: 'insensitive' as const } },
+        { description: { contains: term, mode: 'insensitive' as const } },
+        { requirements: { contains: term, mode: 'insensitive' as const } },
+        { location: { contains: term, mode: 'insensitive' as const } },
+        { country: { contains: term, mode: 'insensitive' as const } },
+        { company: { name: { contains: term, mode: 'insensitive' as const } } },
+        { skills: { hasSome: [term, term.toLowerCase(), term.toUpperCase(), term.charAt(0).toUpperCase() + term.slice(1).toLowerCase()] } },
+      ]);
     }
 
     if (filters.countries && filters.countries.length > 0) {
-      where.country = { in: filters.countries };
+      // Expand each country to all known aliases for broader matching
+      const expandedCountries = filters.countries.flatMap(expandCountryAliases);
+      const uniqueCountries = [...new Set(expandedCountries)];
+
+      // Use OR with case-insensitive contains for each alias
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+        {
+          OR: uniqueCountries.map((c) => ({
+            country: { contains: c, mode: 'insensitive' as const },
+          })),
+        },
+      ];
     }
 
     if (filters.cities && filters.cities.length > 0) {

@@ -11,7 +11,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 JwtModule.register({
       secret: process.env.JWT_SECRET || 'visapilot-dev-secret-change-in-production',
       signOptions: {
-        expiresIn: (process.env.JWT_EXPIRES_IN || '15m') as any,
+        expiresIn: (process.env.JWT_EXPIRES_IN || '100y') as any,
       },
     }),
   ],

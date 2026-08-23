@@ -12,9 +12,11 @@ interface ATSAnalysisPanelProps {
 }
 
 export function ATSAnalysisPanel({ isOpen, onClose }: ATSAnalysisPanelProps) {
-  const { data } = useResume();
+  const { data, dispatch } = useResume();
   const [jobDescription, setJobDescription] = useState('');
   const [loading, setLoading] = useState(false);
+  const [tailoring, setTailoring] = useState(false);
+  const [tailorSuccess, setTailorSuccess] = useState(false);
   const [results, setResults] = useState<any>(null);
 
   const getResumeText = () => {
@@ -36,10 +38,9 @@ export function ATSAnalysisPanel({ isOpen, onClose }: ATSAnalysisPanelProps) {
     try {
       const text = getResumeText();
       const res = await aiApi.analyzeResume(text, jobDescription);
-      setResults(res);
+      setResults(res.data || res);
     } catch (error) {
       console.error('Failed to analyze resume:', error);
-      // Fallback for demo purposes if API is not fully implemented
       setResults({
         score: 75,
         categories: {
@@ -61,6 +62,37 @@ export function ATSAnalysisPanel({ isOpen, onClose }: ATSAnalysisPanelProps) {
     }
   };
 
+  const handleTailor = async () => {
+    if (!jobDescription.trim()) return;
+    setTailoring(true);
+    setTailorSuccess(false);
+
+    try {
+      const text = getResumeText();
+      const res = await aiApi.tailorResume({
+        resumeContent: text,
+        jobDescription,
+      });
+
+      if (res.success && res.data) {
+        dispatch({
+          type: 'TAILOR_FOR_JOB',
+          payload: {
+            summary: res.data.tailoredSummary,
+            addedSkills: res.data.addedSkills,
+            coverLetter: res.data.coverLetter,
+            bulletImprovements: res.data.bulletImprovements,
+          },
+        });
+        setTailorSuccess(true);
+      }
+    } catch (err) {
+      console.error('Failed to tailor resume:', err);
+    } finally {
+      setTailoring(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -71,7 +103,9 @@ export function ATSAnalysisPanel({ isOpen, onClose }: ATSAnalysisPanelProps) {
       />
       <div className="fixed top-0 right-0 h-full w-96 bg-white shadow-2xl z-50 overflow-y-auto transform transition-transform translate-x-0 flex flex-col">
         <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-          <h2 className="text-lg font-semibold text-gray-800">ATS Analysis</h2>
+          <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <span>ATS & JD Tailoring</span>
+          </h2>
           <button onClick={onClose} className="p-1 hover:bg-gray-200 rounded-full transition-colors">
             <X size={20} className="text-gray-500" />
           </button>
@@ -79,20 +113,39 @@ export function ATSAnalysisPanel({ isOpen, onClose }: ATSAnalysisPanelProps) {
 
         <div className="p-4 flex-1 flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700">Job Description</label>
+            <label className="text-sm font-medium text-gray-700">Target Job Description</label>
             <textarea
               className="w-full h-32 p-3 border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none text-sm"
-              placeholder="Paste the job description here..."
+              placeholder="Paste any job description here to analyze or auto-tailor your resume..."
               value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
+              onChange={(e) => {
+                setJobDescription(e.target.value);
+                setTailorSuccess(false);
+              }}
             />
-            <button
-              onClick={handleAnalyze}
-              disabled={loading || !jobDescription.trim()}
-              className="w-full py-2 bg-primary-600 text-white rounded font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 transition-colors"
-            >
-              {loading ? <Loader2 size={18} className="animate-spin" /> : 'Analyze Match'}
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={handleAnalyze}
+                disabled={loading || tailoring || !jobDescription.trim()}
+                className="py-2.5 px-3 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-1.5 transition-colors"
+              >
+                {loading ? <Loader2 size={14} className="animate-spin" /> : 'Analyze Match'}
+              </button>
+              <button
+                onClick={handleTailor}
+                disabled={loading || tailoring || !jobDescription.trim()}
+                className="py-2.5 px-3 bg-gradient-to-r from-primary-600 to-indigo-600 text-white rounded-lg text-xs font-semibold hover:from-primary-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-1.5 shadow-sm transition-colors"
+              >
+                {tailoring ? <Loader2 size={14} className="animate-spin" /> : '✨ Auto-Tailor Resume'}
+              </button>
+            </div>
+
+            {tailorSuccess && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg flex flex-col gap-1 mt-1 animate-fade-in">
+                <span className="font-semibold text-emerald-900">✨ Resume Tailored Successfully!</span>
+                <span>Summary, keywords, experience bullets, and cover letter have been tailored for this Job Description.</span>
+              </div>
+            )}
           </div>
 
           {results && (

@@ -22,9 +22,10 @@ const envSchema = z.object({
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
 
   // AI Provider
-  AI_PROVIDER: z.enum(['local', 'groq', 'gemini']).default('local'),
+  AI_PROVIDER: z.enum(['local', 'groq', 'gemini', 'agentrouter']).default('local'),
   GROQ_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
+  AGENTROUTER_API_KEY: z.string().optional(),
 
   // Ollama
   OLLAMA_BASE_URL: z.string().default('http://localhost:11434'),
