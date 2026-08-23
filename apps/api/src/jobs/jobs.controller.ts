@@ -7,7 +7,10 @@ import {
   Body,
   HttpCode,
   HttpStatus,
+  Sse,
+  MessageEvent,
 } from '@nestjs/common';
+import { Observable } from 'rxjs';
 import { ApiTags, ApiOperation, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
 import { JobsService } from './jobs.service';
 import { VisaIntelligenceService } from './intelligence/visa-intelligence.service';
@@ -49,6 +52,50 @@ export class JobsController {
       userId,
       page: Number(page),
       limit: Number(limit),
+    });
+  }
+
+  @Sse('stream')
+  @Public()
+  @ApiOperation({ summary: 'Stream jobs incrementally as they are found' })
+  @ApiQuery({ name: 'query', required: false })
+  @ApiQuery({ name: 'country', required: false })
+  @ApiQuery({ name: 'remote', required: false })
+  @ApiQuery({ name: 'visaSponsorship', required: false })
+  @ApiQuery({ name: 'userId', required: false })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  streamJobs(
+    @Query('query') query?: string,
+    @Query('country') country?: string,
+    @Query('remote') remote?: string,
+    @Query('visaSponsorship') visaSponsorship?: string,
+    @Query('userId') userId?: string,
+    @Query('page') page = 1,
+    @Query('limit') limit = 20,
+  ): Observable<MessageEvent> {
+    return new Observable<MessageEvent>((subscriber) => {
+      (async () => {
+        try {
+          const stream = this.jobsService.streamSearch({
+            query,
+            country,
+            remote: remote !== undefined ? remote === 'true' : undefined,
+            visaSponsorship,
+            userId,
+            page: Number(page),
+            limit: Number(limit),
+          });
+          
+          for await (const chunk of stream) {
+            subscriber.next({ data: chunk } as MessageEvent);
+          }
+        } catch (error) {
+          subscriber.error(error);
+        } finally {
+          subscriber.complete();
+        }
+      })();
     });
   }
 

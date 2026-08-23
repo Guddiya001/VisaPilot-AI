@@ -7,12 +7,20 @@
 
 export const AGENTROUTER_BASE_URL = 'https://agentrouter.org';
 
-// OpenAI-compatible chat completions endpoint path
-export const AGENTROUTER_CHAT_PATH = '/v1/chat/completions';
+// Anthropic Messages API endpoint
+export const AGENTROUTER_CHAT_PATH = '/v1/messages';
 
-export const DEFAULT_TIMEOUT_MS = 30_000;
+// Required Anthropic API version header
+export const ANTHROPIC_VERSION = '2023-06-01';
 
-export const MAX_RETRY_ATTEMPTS = 3;
+/**
+ * Per-request timeout for a single AgentRouter call.
+ * Kept short (8 s) so the retry+fallback chain stays within the
+ * 12 s SearchAgent race budget and the 30 s outer search timeout.
+ */
+export const DEFAULT_TIMEOUT_MS = 8_000;
+
+export const MAX_RETRY_ATTEMPTS = 2;
 
 export const BASE_DELAY_MS = 500; // for exponential backoff: 500ms, 1s, 2s
 

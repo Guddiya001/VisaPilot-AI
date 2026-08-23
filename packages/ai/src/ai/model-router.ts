@@ -1,22 +1,27 @@
 /**
  * Model router: selects and executes models with fallback.
  *
+ * Uses the Anthropic Messages API format as exposed by AgentRouter:
+ *   POST /v1/messages
+ *   x-api-key: <key>
+ *   anthropic-version: 2023-06-01
+ *
  * Fallback chain: Claude Opus 5 → Claude Opus 4.8 → GPT 5.6
  *
  * Retry policy:
  *   - Transient errors (429, 5xx, timeout): retry with exponential backoff per model.
  *   - Hard errors (400, 401, 403): stop immediately, do NOT retry or fallback.
- *   - content-blocked / model-not-allowed: stop and surface the error.
  */
 
 import {
   AGENTROUTER_BASE_URL,
   AGENTROUTER_CHAT_PATH,
+  ANTHROPIC_VERSION,
   DEFAULT_TIMEOUT_MS,
   getApiKey,
 } from './config';
 import { MODELS, FALLBACK_CHAIN, type ModelId } from './models';
-import { withRetry, throwForStatus, isHardError, AgentRouterError } from './retry';
+import { withRetry, throwForStatus, isHardError } from './retry';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -47,26 +52,66 @@ export interface LLMResult {
   durationMs: number;
 }
 
-interface AgentRouterResponse {
+// Anthropic Messages API response shape
+interface AnthropicResponse {
   id?: string;
+  type?: string;
   model?: string;
-  choices: Array<{
-    message: { content: string };
-    finish_reason?: string;
-  }>;
+  role?: string;
+  content: Array<{ type: string; text: string }>;
+  stop_reason?: string;
   usage?: {
-    prompt_tokens?: number;
-    completion_tokens?: number;
-    total_tokens?: number;
+    input_tokens?: number;
+    output_tokens?: number;
   };
 }
 
 // ---------------------------------------------------------------------------
-// Raw fetch to AgentRouter
+// Helpers — convert messages to Anthropic format
+// ---------------------------------------------------------------------------
+
+interface AnthropicRequest {
+  model: string;
+  max_tokens: number;
+  messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+  system?: string;
+  temperature?: number;
+}
+
+/**
+ * Splits the messages array into an optional system prompt and the
+ * user/assistant conversation turns required by the Anthropic Messages API.
+ */
+function buildAnthropicBody(params: LLMRequestParams): AnthropicRequest {
+  const systemMsg = params.messages.find((m) => m.role === 'system');
+  const turns = params.messages
+    .filter((m) => m.role !== 'system')
+    .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+
+  // Anthropic requires the conversation to start with a user turn
+  const finalTurns =
+    turns.length > 0 && turns[0].role === 'user'
+      ? turns
+      : [{ role: 'user' as const, content: 'Hello' }, ...turns];
+
+  const body: AnthropicRequest = {
+    model: params.model,
+    max_tokens: params.maxTokens ?? 4096,
+    messages: finalTurns,
+  };
+
+  if (systemMsg) body.system = systemMsg.content;
+  if (params.temperature !== undefined) body.temperature = params.temperature;
+
+  return body;
+}
+
+// ---------------------------------------------------------------------------
+// Raw fetch to AgentRouter (Anthropic Messages API)
 // ---------------------------------------------------------------------------
 
 async function callAgentRouter(params: LLMRequestParams): Promise<LLMResult> {
-  const apiKey = getApiKey(); // Throws if missing
+  const apiKey = getApiKey(); // throws if missing
   const url = `${AGENTROUTER_BASE_URL}${AGENTROUTER_CHAT_PATH}`;
   const startMs = Date.now();
 
@@ -78,17 +123,14 @@ async function callAgentRouter(params: LLMRequestParams): Promise<LLMResult> {
     response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        // Standard Bearer auth — key is never logged
-        Authorization: `Bearer ${apiKey}`,
+        'content-type': 'application/json',
+        // Anthropic-style auth — key is NEVER logged
+        'x-api-key': apiKey,
+        'anthropic-version': ANTHROPIC_VERSION,
+        'user-agent': 'claude-cli/2.1.114 (external, cli)',
+        'x-app': 'cli',
       },
-      body: JSON.stringify({
-        model: params.model,
-        messages: params.messages,
-        temperature: params.temperature ?? 0.7,
-        max_tokens: params.maxTokens ?? 4096,
-        stream: false,
-      }),
+      body: JSON.stringify(buildAnthropicBody(params)),
       signal: controller.signal,
     });
   } finally {
@@ -100,17 +142,20 @@ async function callAgentRouter(params: LLMRequestParams): Promise<LLMResult> {
     throwForStatus(response.status, body, params.model);
   }
 
-  const data = (await response.json()) as AgentRouterResponse;
+  const data = (await response.json()) as AnthropicResponse;
   const durationMs = Date.now() - startMs;
 
+  // Anthropic response: content is an array of blocks
+  const text = data.content?.find((c) => c.type === 'text')?.text?.trim() ?? '';
+
   return {
-    content: data.choices[0]?.message?.content?.trim() ?? '',
+    content: text,
     model: data.model ?? params.model,
     usage: data.usage
       ? {
-          inputTokens: data.usage.prompt_tokens ?? 0,
-          outputTokens: data.usage.completion_tokens ?? 0,
-          totalTokens: data.usage.total_tokens ?? 0,
+          inputTokens: data.usage.input_tokens ?? 0,
+          outputTokens: data.usage.output_tokens ?? 0,
+          totalTokens: (data.usage.input_tokens ?? 0) + (data.usage.output_tokens ?? 0),
         }
       : undefined,
     requestId: params.requestId ?? data.id,
@@ -131,7 +176,6 @@ async function callAgentRouter(params: LLMRequestParams): Promise<LLMResult> {
 export async function generateWithFallback(
   params: Omit<LLMRequestParams, 'model'> & { model?: ModelId },
 ): Promise<LLMResult> {
-  // Build the list of models to try: requested model first, then rest of fallback chain
   const requestedModel = params.model ?? MODELS.CLAUDE_OPUS_5;
   const chain: ModelId[] = [
     requestedModel,
@@ -147,26 +191,26 @@ export async function generateWithFallback(
     } catch (err) {
       lastError = err;
 
-      // Hard errors: surface immediately without trying the next model
+      // Hard errors: surface immediately — wrong key, bad request, etc.
       if (isHardError(err)) {
-        throw err;
+        const isModelSpecific = (err as any).statusCode === 403 || (err as any).statusCode === 404;
+        if (!isModelSpecific) {
+          throw err;
+        }
       }
 
-      // Transient errors: log the failure and try the next model
       const errorMsg = err instanceof Error ? err.message : String(err);
       console.warn(
-        `[AgentRouter] Model "${model}" failed (transient): ${errorMsg}. ` +
-          `Trying next model in chain.`,
+        `[AgentRouter] Model "${model}" failed (${isHardError(err) ? 'hard' : 'transient'}): ${errorMsg}. Trying next model.`,
       );
     }
   }
 
-  // All models exhausted
   throw lastError ?? new Error('[AgentRouter] All models in fallback chain failed.');
 }
 
 // ---------------------------------------------------------------------------
-// Streaming support
+// Streaming support (Anthropic SSE format)
 // ---------------------------------------------------------------------------
 
 export interface StreamParams {
@@ -180,8 +224,8 @@ export interface StreamParams {
 }
 
 /**
- * Streams a chat completion from AgentRouter using Server-Sent Events (SSE).
- * Falls back to non-streaming if SSE is not available.
+ * Streams a chat completion using Anthropic's Server-Sent Event format.
+ * Anthropic delta events: content_block_delta → delta.text
  */
 export async function streamFromAgentRouter(params: StreamParams): Promise<void> {
   const apiKey = getApiKey();
@@ -193,34 +237,31 @@ export async function streamFromAgentRouter(params: StreamParams): Promise<void>
   const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
 
   try {
+    const body = buildAnthropicBody({ model, messages: params.messages, temperature: params.temperature, maxTokens: params.maxTokens });
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-        Accept: 'text/event-stream',
+        'content-type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': ANTHROPIC_VERSION,
+        'user-agent': 'claude-cli/2.1.114 (external, cli)',
+        'x-app': 'cli',
+        accept: 'text/event-stream',
       },
-      body: JSON.stringify({
-        model,
-        messages: params.messages,
-        temperature: params.temperature ?? 0.7,
-        max_tokens: params.maxTokens ?? 4096,
-        stream: true,
-      }),
+      body: JSON.stringify({ ...body, stream: true }),
       signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      const body = await response.text().catch(() => '(unreadable body)');
-      throwForStatus(response.status, body, model);
+      const errBody = await response.text().catch(() => '(unreadable body)');
+      throwForStatus(response.status, errBody, model);
     }
 
     const reader = response.body?.getReader();
-    if (!reader) {
-      throw new Error('[AgentRouter] Streaming response body is null.');
-    }
+    if (!reader) throw new Error('[AgentRouter] Streaming response body is null.');
 
     const decoder = new TextDecoder();
     let buffer = '';
@@ -234,17 +275,20 @@ export async function streamFromAgentRouter(params: StreamParams): Promise<void>
       buffer = lines.pop() ?? '';
 
       for (const line of lines) {
+        // Anthropic SSE: lines are "event: ..." or "data: ..."
         if (!line.startsWith('data: ')) continue;
         const data = line.slice(6).trim();
-        if (data === '[DONE]') break;
+        if (data === '[DONE]' || data === 'message_stop') break;
 
         try {
           const parsed = JSON.parse(data) as {
-            choices?: Array<{ delta?: { content?: string } }>;
+            type?: string;
+            delta?: { type?: string; text?: string };
           };
-          const token = parsed.choices?.[0]?.delta?.content;
-          if (token) {
-            params.onToken(token);
+          // Anthropic streaming delta: type=content_block_delta, delta.type=text_delta
+          if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta') {
+            const token = parsed.delta.text;
+            if (token) params.onToken(token);
           }
         } catch {
           // Ignore malformed SSE chunks
@@ -252,8 +296,7 @@ export async function streamFromAgentRouter(params: StreamParams): Promise<void>
       }
     }
 
-    const durationMs = Date.now() - startMs;
-    params.onDone?.({ model, durationMs });
+    params.onDone?.({ model, durationMs: Date.now() - startMs });
   } catch (err) {
     clearTimeout(timeoutId);
     const error = err instanceof Error ? err : new Error(String(err));

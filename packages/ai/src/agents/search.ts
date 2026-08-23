@@ -1,4 +1,4 @@
-import { ollamaClient } from '../ollama/client';
+import { llm } from '../ai/llm-service';
 import {
   AgentType,
   type IAgent,
@@ -46,7 +46,22 @@ export class SearchAgent implements IAgent {
       console.log(`[SearchAgent] ===== STARTING INTENT EXTRACTION =====`);
       console.log(`[SearchAgent] Original query: "${query}"`);
 
-      const intent = await this.extractIntent(query, context);
+      // Timeout the LLM call to prevent hanging search requests.
+      // If the LLM is slow/offline, fall back to deterministic intent immediately.
+      const INTENT_TIMEOUT_MS = 12_000;
+      let intent: JobSearchIntent;
+      try {
+        intent = await Promise.race([
+          this.extractIntent(query, context),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(`Intent extraction timed out after ${INTENT_TIMEOUT_MS}ms`)), INTENT_TIMEOUT_MS),
+          ),
+        ]);
+      } catch (timeoutOrLLMError) {
+        console.warn(`[SearchAgent] LLM intent extraction failed/timed out: ${timeoutOrLLMError instanceof Error ? timeoutOrLLMError.message : timeoutOrLLMError}. Using deterministic fallback.`);
+        intent = this.deterministicFallbackIntent(query);
+      }
+
       console.log(`[SearchAgent] Extracted Intent:`, JSON.stringify(intent, null, 2));
 
       return {
@@ -77,65 +92,102 @@ export class SearchAgent implements IAgent {
     }
   }
 
+  /** Deterministic fallback — never blocks, always returns a usable intent. */
+  private deterministicFallbackIntent(query: string): JobSearchIntent {
+    const lower = (query || '').toLowerCase();
+    const needsVisa =
+      lower.includes('h-1b') || lower.includes('h1b') ||
+      lower.includes('visa') || lower.includes('sponsor');
+
+    const tools: string[] = ['search_jobs'];
+    if (needsVisa) tools.push('validate_visa');
+
+    return {
+      intent: 'JOB_SEARCH',
+      semanticRequirements: { skills: [], roles: [], locations: [] },
+      hardConstraints: needsVisa
+        ? [{ type: 'VISA_SPONSORSHIP', value: 'H-1B', required: true }]
+        : [],
+      preferences: {},
+      queries: query ? [query] : ['software engineer jobs'],
+      tools,
+    };
+  }
+
   private async extractIntent(query: string, context: AgentContext): Promise<JobSearchIntent> {
-    const prompt = `You are an expert job search intent extractor and orchestrator. 
-Extract structured search intent and decide which tools to call based on the user's request.
+    const filters = context.searchFilters || {};
+    const needsVisa = filters.visaSponsorship ||
+      (query || '').toLowerCase().match(/h.?1.?b|visa|sponsor|immigration|work.?permit|work.?authorization/);
 
-Available Tools:
-- search_jobs: Search current external job sources (web/crawler)
-- search_web: General web search for company information
-- get_user_profile: Fetch the user's profile and resume from the database
-- validate_visa: Validate if a job explicitly sponsors visas
-- rank_jobs: Match and rank jobs against the user profile
+    const prompt = `You are an expert job search intent extractor for a worldwide visa-sponsorship job platform.
+Extract structured intent and generate optimized search queries.
 
+CONTEXT:
 User Query: "${query}"
-Context Filters: ${JSON.stringify(context.searchFilters || {})}
-Prior Skills/Context: ${(context.userSkills || []).join(', ')}
+Filters: ${JSON.stringify(filters)}
+Visa/H1B Needed: ${needsVisa ? 'YES' : 'detect from query'}
 
-Instructions:
-1. Identify if this is a job search request (JOB_SEARCH) or something else.
-2. Extract semantic requirements like skills, roles, and locations.
-3. Extract hard constraints like "H-1B sponsorship", "Security Clearance", or explicitly required work modes.
-4. Generate 3-4 optimized search queries (e.g. '"React.js" "H-1B sponsorship" jobs United States').
-5. Decide which tools need to be called. If they ask for visa, include "validate_visa".
+RULES:
+1. Always set intent to "JOB_SEARCH" for job search requests.
+2. Generate 4 diverse search queries targeting WORLDWIDE jobs — include visa sponsorship keyword variations.
+   Use multiple H1B keyword variants: "H-1B sponsorship", "visa sponsorship", "will sponsor", "sponsorship available",
+   "employment visa", "work authorization", "immigration sponsorship", "H1B transfer", "visa support",
+   "sponsor work visa", "immigration assistance".
+3. If visa sponsorship is requested (or inferred), add "validate_visa" tool and set VISA_SPONSORSHIP hard constraint.
+4. Locations should be worldwide by default: ["Worldwide", "United States", "Canada", "United Kingdom", "Germany", "Australia", "Remote"].
+5. Always include "search_jobs" tool.
 
-Respond ONLY with valid JSON matching this exact structure:
+EXAMPLE (for "React engineer H1B jobs"):
 {
   "intent": "JOB_SEARCH",
   "semanticRequirements": {
-    "skills": ["React.js"],
-    "roles": ["Software Engineer"],
-    "locations": ["United States"]
+    "skills": ["React", "JavaScript", "TypeScript"],
+    "roles": ["Frontend Engineer", "React Developer", "Software Engineer"],
+    "locations": ["United States", "Canada", "Remote", "Worldwide"],
+    "workMode": ["Remote", "Hybrid"]
   },
-  "hardConstraints": [
-    {
-      "type": "VISA_SPONSORSHIP",
-      "value": "H-1B",
-      "required": true
-    }
-  ],
+  "hardConstraints": [{ "type": "VISA_SPONSORSHIP", "value": "H-1B", "required": true }],
   "preferences": {},
-  "queries": ["\\"React.js\\" \\"H-1B sponsorship\\" jobs United States"],
-  "tools": ["search_jobs", "validate_visa", "get_user_profile", "rank_jobs"]
-}`;
+  "queries": [
+    "React engineer visa sponsorship jobs",
+    "Frontend developer H-1B sponsorship",
+    "React JavaScript will sponsor immigration",
+    "Software engineer work authorization React remote"
+  ],
+  "tools": ["search_jobs", "validate_visa"]
+}
+
+Now generate for the actual query. Return ONLY valid JSON, no other text:`;
 
     try {
-      const response = await ollamaClient.generateCompletion(prompt, {
+      const result = await llm.generate({
+        task: 'search-intent',
+        prompt,
         temperature: 0.1,
-        maxTokens: 1000,
+        maxTokens: 800,
       });
 
-      console.log("Intent Response: ", response);
+      const response = result.content;
+      console.log('[SearchAgent] Intent LLM response:', response.slice(0, 300));
 
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
+      // Extract JSON from response (handle markdown code blocks too)
+      const jsonMatch = response.match(/```(?:json)?\s*([\s\S]*?)\s*```/) ||
+                        response.match(/(\{[\s\S]*\})/);
+      const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]).trim() : '';
+
+      if (jsonStr) {
+        const parsed = JSON.parse(jsonStr);
+        // Ensure worldwide locations if none specified
+        const locations = parsed.semanticRequirements?.locations?.length
+          ? parsed.semanticRequirements.locations
+          : ['Worldwide', 'United States', 'Canada', 'United Kingdom', 'Germany', 'Remote'];
+
         return {
           intent: parsed.intent || 'JOB_SEARCH',
           semanticRequirements: {
             skills: parsed.semanticRequirements?.skills || [],
             roles: parsed.semanticRequirements?.roles || [],
-            locations: parsed.semanticRequirements?.locations || [],
+            locations,
             seniority: parsed.semanticRequirements?.seniority,
             technologies: parsed.semanticRequirements?.technologies,
             industries: parsed.semanticRequirements?.industries,
@@ -143,27 +195,15 @@ Respond ONLY with valid JSON matching this exact structure:
           },
           hardConstraints: parsed.hardConstraints || [],
           preferences: parsed.preferences || {},
-          queries: parsed.queries && parsed.queries.length > 0 ? parsed.queries : [query],
-          tools: parsed.tools || ['search_jobs', 'rank_jobs']
+          queries: parsed.queries?.length > 0 ? parsed.queries : [query],
+          tools: parsed.tools || ['search_jobs'],
         };
       }
-      //return ( "Ashish");
     } catch (e) {
-      console.log('Error parsing intent:', e);
+      console.warn('[SearchAgent] Error parsing LLM intent response:', e instanceof Error ? e.message : e);
     }
 
-    // Fallback deterministic intent
-    return {
-      intent: 'JOB_SEARCH',
-      semanticRequirements: {
-        skills: [],
-        roles: [],
-        locations: []
-      },
-      hardConstraints: [],
-      preferences: {},
-      queries: [query],
-      tools: ['search_jobs']
-    };
+    // Fallback: deterministic intent if LLM response fails to parse
+    return this.deterministicFallbackIntent(query);
   }
 }

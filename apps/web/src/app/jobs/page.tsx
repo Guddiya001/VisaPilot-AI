@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, Suspense } from 'react';
+import { useEffect, useState, useCallback, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -12,8 +12,9 @@ import {
   Globe,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from 'lucide-react';
-import { jobsApi } from '@/lib/api';
+import { API_BASE, jobsApi } from '@/lib/api';
 
 interface Job {
   id?: string;
@@ -56,6 +57,8 @@ function JobsContent() {
   const [error, setError] = useState('');
   const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
   const [totalPages, setTotalPages] = useState(1);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const eventSourceRef = useRef<EventSource | null>(null);
   const [aiSearchInfo, setAiSearchInfo] = useState<{
     originalQuery?: string;
     enrichedQuery?: string;
@@ -80,43 +83,67 @@ function JobsContent() {
 
   const fetchJobs = useCallback(
     async (query: string, pg: number, country: string, remote: string, visa: string) => {
-      setLoading(true);
-      setError('');
-
-      const result = await jobsApi.search(
-        query || undefined,
-        pg,
-        20,
-        country || undefined,
-        remote || undefined,
-        visa || undefined,
-      );
-      console.log('Jobs API result:', result);
-
-      if (!result.success) {
-        setError(result.error || 'Failed to load jobs.');
-        setJobs([]);
-        setAiSearchInfo(null);
-        setLoading(false);
-        return;
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
       }
 
-      const payload = result.data;
-      const jobsData = Array.isArray(payload)
-        ? (payload as Job[])
-        : ((payload as { data?: Job[] })?.data as Job[]) || [];
+      setLoading(true);
+      setError('');
+      setJobs([]);
+      setAiSearchInfo(null);
+      setIsStreaming(true);
 
-      const topLevelMeta = (result as unknown as { meta?: { page?: number; totalPages?: number; aiSearch?: typeof aiSearchInfo } }).meta;
-      const nestedMeta = !Array.isArray(payload)
-        ? (payload as { meta?: { page?: number; totalPages?: number; aiSearch?: typeof aiSearchInfo } }).meta
-        : undefined;
-      const meta = topLevelMeta ?? nestedMeta;
+      const params = new URLSearchParams();
+      if (query) params.set('query', query);
+      if (country) params.set('country', country);
+      if (remote) params.set('remote', remote);
+      if (visa) params.set('visaSponsorship', visa);
+      params.set('page', String(pg));
 
-      setJobs(jobsData);
-      setPage(meta?.page ?? pg);
-      setTotalPages(meta?.totalPages ?? 1);
-      setAiSearchInfo(meta?.aiSearch ?? null);
-      setLoading(false);
+      const streamUrl = `${API_BASE}/jobs/stream?${params.toString()}`;
+      const es = new EventSource(streamUrl);
+      eventSourceRef.current = es;
+
+      es.onmessage = (event) => {
+        try {
+          const result = JSON.parse(event.data);
+          
+          if (!result.success) {
+            setError(result.meta?.error || 'Stream error');
+            es.close();
+            setIsStreaming(false);
+            setLoading(false);
+            return;
+          }
+
+          if (result.data && Array.isArray(result.data)) {
+            if (result.data.length > 0) {
+              setJobs((prev) => {
+                const existingUrls = new Set(prev.map((j) => j.url || j.sourceUrl));
+                const newJobs = result.data.filter((j: any) => !existingUrls.has(j.url || j.sourceUrl));
+                return [...prev, ...newJobs];
+              });
+            }
+            
+            setAiSearchInfo((prev) => prev || result.meta?.intent || null);
+            setPage(result.meta?.page || pg);
+            setTotalPages(result.meta?.totalPages || 1);
+          }
+          
+          setLoading(false);
+        } catch (err) {
+          console.error('Failed to parse SSE message:', err);
+        }
+      };
+
+      es.onerror = (error) => {
+        // SSE error generally means the stream completed or a network error occurred
+        es.close();
+        eventSourceRef.current = null;
+        setIsStreaming(false);
+        setLoading(false);
+      };
     },
     [],
   );
@@ -129,6 +156,12 @@ function JobsContent() {
     const visa = searchParams.get('visaSponsorship') || '';
     const pg = Number(searchParams.get('page')) || 1;
     fetchJobs(query, pg, country, remote, visa);
+
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleSearch(newQuery = searchQuery, newPage = 1) {
@@ -416,7 +449,16 @@ function JobsContent() {
         })}
       </div>
 
-      {totalPages > 1 && (
+      {isStreaming && !loading && (
+        <div className="flex items-center justify-center py-6 animate-pulse">
+          <div className="flex items-center gap-3 text-primary-600 bg-primary-50 px-6 py-3 rounded-full shadow-sm border border-primary-100">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            <span className="text-sm font-medium">Scanning more sources for jobs...</span>
+          </div>
+        </div>
+      )}
+
+      {totalPages > 1 && !isStreaming && (
         <div className="flex items-center justify-center gap-3 pt-4">
           <button
             type="button"

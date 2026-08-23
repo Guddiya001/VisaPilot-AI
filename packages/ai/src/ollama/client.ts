@@ -1,6 +1,7 @@
 import { config } from '@visapilot/config';
 import { getAIProvider } from '../providers';
 import type { CompletionOptions, ChatMessage } from '../providers/base';
+import { AIProviderType } from '../providers/base';
 
 // Provider-agnostic client that delegates to the configured AI provider
 class AIClient {
@@ -9,9 +10,12 @@ class AIClient {
     options: CompletionOptions = {},
   ): Promise<string> {
     const provider = getAIProvider();
+    // Only default to OLLAMA_MODEL when no model is specified AND using the local provider
+    const model = options.model ||
+      (provider.type === AIProviderType.LOCAL ? config.OLLAMA_MODEL : undefined);
     const response = await provider.generateCompletion(prompt, {
       ...options,
-      model: options.model || config.OLLAMA_MODEL,
+      model,
     });
     return response.response;
   }
@@ -25,9 +29,12 @@ class AIClient {
       role: m.role as ChatMessage['role'],
       content: m.content,
     }));
+    // Only default to OLLAMA_MODEL when no model is specified AND using the local provider
+    const model = options.model ||
+      (provider.type === AIProviderType.LOCAL ? config.OLLAMA_MODEL : undefined);
     const response = await provider.generateChatCompletion(chatMessages, {
       ...options,
-      model: options.model || config.OLLAMA_MODEL,
+      model,
     });
     console.log('Chat response ------------------------:            ', response);
     return response.response;

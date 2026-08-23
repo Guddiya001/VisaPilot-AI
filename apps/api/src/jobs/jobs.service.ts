@@ -26,8 +26,25 @@ export class JobsService {
   ) { }
 
   async search(params: SearchParams) {
-    this.logger.log(`[JobsService] Starting LLM-first search orchestration for query: "${params.query}"`);
+    this.logger.log(`[JobsService] Starting search for: "${params.query}"`);
     this.logger.log('JOB_SEARCH_STARTED');
+
+    // Hard 30-second timeout on the entire search pipeline
+    const SEARCH_TIMEOUT_MS = 30_000;
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Search timeout: exceeded 30 seconds')), SEARCH_TIMEOUT_MS),
+    );
+
+    try {
+      return await Promise.race([this._doSearch(params), timeoutPromise]);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.error(`[JobsService] Search failed: ${msg}`);
+      return { success: false, data: [], meta: { total: 0, page: params.page, totalPages: 1, error: msg } };
+    }
+  }
+
+  private async _doSearch(params: SearchParams) {
 
     // 1. LLM Intent Extraction (First orchestration layer)
     const intentOutput = await this.searchAgent.process({
@@ -51,25 +68,42 @@ export class JobsService {
 
     let fetchedJobs: any[] = [];
 
+    // Determine visa requirement early — used both in crawler filter and validation step
+    const requiresVisa = intent.hardConstraints?.some((c: any) => c.type === 'VISA_SPONSORSHIP') || params.visaSponsorship;
+
     // 2. Determine required search tools & Search external sources
     if (tools.includes('search_jobs') && intent.queries?.length > 0) {
       this.logger.log(`WEB_SEARCH_STARTED`);
       this.logger.log(`[JobsService] Executing external search with queries: ${intent.queries.join(', ')}`);
 
+      // Use worldwide locations when none specified by the user
+      const locations: string[] = (intent.semanticRequirements?.locations?.length > 0
+        ? intent.semanticRequirements.locations
+        : ['Worldwide', 'United States', 'Canada', 'United Kingdom', 'Germany', 'Remote']
+      ).filter((l: string) => l !== 'Worldwide'); // Crawlers don't filter by "Worldwide" — omit it so all countries pass
+
+      const visaSponsorshipFilter = requiresVisa ? 'SPONSORS' : params.visaSponsorship;
+
       const searchPromises = intent.queries.map((q: string) =>
         crawlerService.searchJobs({
           query: q,
-          countries: intent.semanticRequirements?.locations || (params.country ? [params.country] : []),
+          countries: params.country ? [params.country] : locations,
           remote: intent.semanticRequirements?.workMode?.includes('Remote') || params.remote,
+          visaSponsorship: visaSponsorshipFilter as any,
           skills: intent.semanticRequirements?.skills || [],
-          limit: 15,
+          limit: 25,
         })
       );
 
       try {
-        const resultsArray = await Promise.all(searchPromises);
-        resultsArray.forEach(res => {
-          if (res.jobs) fetchedJobs.push(...res.jobs);
+        // Use allSettled so a single failing adapter (rate limit, timeout) doesn't abort everything
+        const settled = await Promise.allSettled(searchPromises);
+        settled.forEach(result => {
+          if (result.status === 'fulfilled' && result.value?.jobs) {
+            fetchedJobs.push(...result.value.jobs);
+          } else if (result.status === 'rejected') {
+            this.logger.warn(`[JobsService] One search query failed: ${result.reason}`);
+          }
         });
         this.logger.log(`WEB_SEARCH_COMPLETED`);
         this.logger.log(`JOB_PAGES_FETCHED`);
@@ -96,52 +130,67 @@ export class JobsService {
     }
 
     // 5. Validate hard constraints (e.g. visa sponsorship)
-    const requiresVisa = intent.hardConstraints?.some((c: any) => c.type === 'VISA_SPONSORSHIP') || params.visaSponsorship;
 
     if (tools.includes('validate_visa') || requiresVisa) {
-      this.logger.log(`[JobsService] Validating visa sponsorship for ${fetchedJobs.length} jobs.`);
+      this.logger.log(`[JobsService] Running visa detection for ${fetchedJobs.length} jobs.`);
 
-      // Process in small batches or sequentially to avoid rate limits
+      // --- Fast pass: keyword-based detection (no LLM, instant) ---
+      const VISA_POSITIVE = ['visa sponsorship', 'will sponsor', 'h-1b', 'h1b', 'h1-b',
+        'work visa', 'work permit', 'visa support', 'immigration support', 'we sponsor',
+        'provides sponsorship', 'sponsorship available', 'immigration assistance', 'global mobility'];
+      const VISA_NEGATIVE = ['no visa sponsorship', 'cannot sponsor', 'do not sponsor',
+        'no sponsorship', 'without sponsorship', 'must be authorized', 'us citizen only',
+        'citizen only', 'must have work authorization', 'must be a us'];
+
+      const ambiguousJobs: any[] = [];
+
       for (const job of fetchedJobs) {
-        try {
-          const visaResult = await visaDetectionAgent.process({
-            jobDescription: job.description,
-            companyName: job.companyName
-          });
+        const desc = (job.description || '').toLowerCase();
+        const hasPositive = VISA_POSITIVE.some(kw => desc.includes(kw));
+        const hasNegative = VISA_NEGATIVE.some(kw => desc.includes(kw));
 
-          if (visaResult.success && visaResult.data) {
-            const data = visaResult.data as any;
-            let status = 'UNCLEAR';
-
-            if (data.sponsorsVisa) {
-              status = 'CONFIRMED';
-            } else if (data.confidence > 0.5) {
-              // If model is confident it DOES NOT sponsor
-              status = 'NOT_SUPPORTED';
-            } else {
-              // If positive keywords exist but confidence is low
-              status = (data.keywordAnalysis?.score > 0) ? 'LIKELY' : 'UNCLEAR';
-            }
-
-            job.visaSponsorshipData = {
-              status,
-              type: data.visaTypes?.length ? data.visaTypes[0] : 'Unknown',
-              evidence: data.evidence?.[0] || 'No direct evidence extracted',
-              confidence: data.confidence
-            };
-
-            job.visaSponsorship = status === 'CONFIRMED' ? VisaSponsorshipStatus.SPONSORS : VisaSponsorshipStatus.UNKNOWN;
-          }
-        } catch (e) {
-          this.logger.warn(`Visa validation failed for job ${job.title}`);
+        if (hasNegative) {
+          job.visaSponsorshipData = { status: 'NOT_SUPPORTED', type: 'None', evidence: 'Negative keywords detected', confidence: 0.9 };
+          job.visaSponsorship = VisaSponsorshipStatus.DOES_NOT_SPONSOR;
+        } else if (hasPositive) {
+          job.visaSponsorshipData = { status: 'CONFIRMED', type: 'H-1B', evidence: 'Positive keywords detected', confidence: 0.85 };
+          job.visaSponsorship = VisaSponsorshipStatus.SPONSORS;
+        } else {
+          job.visaSponsorshipData = { status: 'UNCLEAR', type: 'Unknown', evidence: 'No explicit mention', confidence: 0.3 };
+          ambiguousJobs.push(job);
         }
       }
+
+      // --- LLM pass: only on ambiguous jobs, max 5, run in parallel ---
+      const LLM_BATCH = ambiguousJobs.slice(0, 5);
+      if (LLM_BATCH.length > 0) {
+        this.logger.log(`[JobsService] LLM visa check on ${LLM_BATCH.length} ambiguous jobs.`);
+        await Promise.allSettled(LLM_BATCH.map(async (job) => {
+          try {
+            const visaResult = await visaDetectionAgent.process({
+              jobDescription: job.description,
+              companyName: job.companyName,
+            });
+            if (visaResult.success && visaResult.data) {
+              const data = visaResult.data as any;
+              const status = data.sponsorsVisa ? 'CONFIRMED'
+                : data.confidence > 0.5 ? 'NOT_SUPPORTED'
+                : (data.keywordAnalysis?.score > 0) ? 'LIKELY' : 'UNCLEAR';
+              job.visaSponsorshipData = { status, type: data.visaTypes?.[0] || 'Unknown', evidence: data.evidence?.[0] || 'LLM analysis', confidence: data.confidence };
+              job.visaSponsorship = status === 'CONFIRMED' ? VisaSponsorshipStatus.SPONSORS : VisaSponsorshipStatus.UNKNOWN;
+            }
+          } catch {
+            this.logger.warn(`LLM visa check failed for ${job.title}`);
+          }
+        }));
+      }
+
       this.logger.log(`VISA_VALIDATION_COMPLETED`);
-      
-      // Separate results into categories if required by frontend, but the backend can just filter out NOT_SUPPORTED
+
+      // Filter: keep only jobs that likely sponsor when visa is required
       if (requiresVisa) {
-        fetchedJobs = fetchedJobs.filter(job => 
-          job.visaSponsorshipData?.status === 'CONFIRMED' || job.visaSponsorshipData?.status === 'LIKELY'
+        fetchedJobs = fetchedJobs.filter(job =>
+          job.visaSponsorshipData?.status === 'CONFIRMED' || job.visaSponsorshipData?.status === 'LIKELY',
         );
       }
     }
@@ -205,15 +254,168 @@ export class JobsService {
     }));
 
     this.logger.log(`[JobsService] Job search completed. searchSource="WEB" dbJobSearchCalled=false`);
+    const total = jobResults.length;
+    const page = params.page;
+    const limit = params.limit;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
     return {
       success: true,
       data: jobResults,
       meta: {
-        total: jobResults.length,
-        page: params.page,
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
         intent,
       },
     };
+  }
+
+  async *streamSearch(params: SearchParams) {
+    this.logger.log(`[JobsService] Starting streaming search for: "${params.query}"`);
+    
+    const intentOutput = await this.searchAgent.process({
+      searchQuery: params.query,
+      searchFilters: {
+        country: params.country,
+        remote: params.remote,
+        visaSponsorship: params.visaSponsorship,
+      },
+    });
+
+    if (!intentOutput.success || !intentOutput.data?.intent) {
+      yield { success: true, data: [], meta: { intent: null } };
+      return;
+    }
+
+    const intent = intentOutput.data.intent as any;
+    const tools = intent.tools || [];
+    const requiresVisa = intent.hardConstraints?.some((c: any) => c.type === 'VISA_SPONSORSHIP') || params.visaSponsorship;
+
+    if (!tools.includes('search_jobs') || !intent.queries?.length) {
+      yield { success: true, data: [], meta: { intent } };
+      return;
+    }
+
+    let userProfile = null;
+    if (params.userId && tools.includes('rank_jobs')) {
+      userProfile = await this.visaIntelligenceService.buildCandidateProfile(params.userId).catch(() => null);
+    }
+
+    const locations = (intent.semanticRequirements?.locations?.length > 0
+      ? intent.semanticRequirements.locations
+      : ['Worldwide', 'United States', 'Canada', 'United Kingdom', 'Germany', 'Remote']
+    ).filter((l: string) => l !== 'Worldwide');
+
+    const visaSponsorshipFilter = requiresVisa ? 'SPONSORS' : params.visaSponsorship;
+
+    // Use primary query for streaming to avoid merging multiple async generators
+    const primaryQuery = intent.queries[0];
+    const stream = crawlerService.streamSearchJobs({
+      query: primaryQuery,
+      countries: params.country ? [params.country] : locations,
+      remote: intent.semanticRequirements?.workMode?.includes('Remote') || params.remote,
+      visaSponsorship: visaSponsorshipFilter as any,
+      skills: intent.semanticRequirements?.skills || [],
+      limit: 25,
+    }, undefined, 10);
+
+    const uniqueJobsMap = new Map();
+
+    for await (const batch of stream) {
+      let fetchedJobs: any[] = batch.filter(job => {
+        const key = job.externalId || `${job.companyName}-${job.title}-${job.location}`;
+        if (uniqueJobsMap.has(key)) return false;
+        uniqueJobsMap.set(key, true);
+        return true;
+      });
+
+      if (fetchedJobs.length === 0) continue;
+
+      if (tools.includes('validate_visa') || requiresVisa) {
+        const VISA_POSITIVE = ['visa sponsorship', 'will sponsor', 'h-1b', 'h1b', 'h1-b', 'work visa', 'we sponsor'];
+        const VISA_NEGATIVE = ['no visa sponsorship', 'cannot sponsor', 'do not sponsor', 'no sponsorship', 'us citizen only', 'citizen only'];
+
+        const ambiguousJobs: any[] = [];
+        for (const job of fetchedJobs) {
+          const desc = (job.description || '').toLowerCase();
+          if (VISA_NEGATIVE.some(kw => desc.includes(kw))) {
+            job.visaSponsorshipData = { status: 'NOT_SUPPORTED', type: 'None', evidence: 'Negative keywords detected', confidence: 0.9 };
+            job.visaSponsorship = VisaSponsorshipStatus.DOES_NOT_SPONSOR;
+          } else if (VISA_POSITIVE.some(kw => desc.includes(kw))) {
+            job.visaSponsorshipData = { status: 'CONFIRMED', type: 'H-1B', evidence: 'Positive keywords detected', confidence: 0.85 };
+            job.visaSponsorship = VisaSponsorshipStatus.SPONSORS;
+          } else {
+            job.visaSponsorshipData = { status: 'UNCLEAR', type: 'Unknown', evidence: 'No explicit mention', confidence: 0.3 };
+            ambiguousJobs.push(job);
+          }
+        }
+
+        const LLM_BATCH = ambiguousJobs.slice(0, 5);
+        if (LLM_BATCH.length > 0) {
+          await Promise.allSettled(LLM_BATCH.map(async (job) => {
+            try {
+              const visaResult = await visaDetectionAgent.process({ jobDescription: job.description, companyName: job.companyName });
+              if (visaResult.success && visaResult.data) {
+                const data = visaResult.data as any;
+                const status = data.sponsorsVisa ? 'CONFIRMED' : data.confidence > 0.5 ? 'NOT_SUPPORTED' : (data.keywordAnalysis?.score > 0) ? 'LIKELY' : 'UNCLEAR';
+                job.visaSponsorshipData = { status, type: data.visaTypes?.[0] || 'Unknown', evidence: data.evidence?.[0] || 'LLM analysis', confidence: data.confidence };
+                job.visaSponsorship = status === 'CONFIRMED' ? VisaSponsorshipStatus.SPONSORS : VisaSponsorshipStatus.UNKNOWN;
+              }
+            } catch {}
+          }));
+        }
+
+        if (requiresVisa) {
+          fetchedJobs = fetchedJobs.filter(job => job.visaSponsorshipData?.status === 'CONFIRMED' || job.visaSponsorshipData?.status === 'LIKELY');
+        }
+      }
+
+      this.persistJobsAsync(fetchedJobs).catch(() => {});
+
+      let finalJobs = fetchedJobs;
+      if (userProfile) {
+        finalJobs = await Promise.all(fetchedJobs.map(async job => {
+          const jobForScoring: any = { ...job, company: { name: job.companyName } };
+          const matchData = await this.visaIntelligenceService.scoreJobWithAI(jobForScoring, userProfile);
+          job.matchScore = matchData.matchScore;
+          return job;
+        }));
+        finalJobs.sort((a: any, b: any) => b.matchScore - a.matchScore);
+      } else if (requiresVisa) {
+        finalJobs.sort((a: any, b: any) => {
+          const aS = a.visaSponsorshipData?.status === 'CONFIRMED' ? 1 : 0;
+          const bS = b.visaSponsorshipData?.status === 'CONFIRMED' ? 1 : 0;
+          return bS - aS;
+        });
+      }
+
+      const jobResults = finalJobs.map(job => ({
+        title: job.title,
+        company: job.companyName,
+        location: job.location,
+        url: job.sourceUrl || (job as any).applyUrl || '',
+        source: {
+          type: 'WEB',
+          url: job.sourceUrl || (job as any).applyUrl || '',
+          fetchedAt: new Date().toISOString()
+        },
+        visa: job.visaSponsorshipData ? {
+          status: job.visaSponsorshipData.status,
+          type: job.visaSponsorshipData.type,
+          evidence: job.visaSponsorshipData.evidence
+        } : undefined,
+        semanticMatch: (job as any).matchScore || 0
+      }));
+
+      yield {
+        success: true,
+        data: jobResults,
+        meta: { intent }
+      };
+    }
   }
 
   private async persistJobsAsync(fetchedJobs: any[]) {

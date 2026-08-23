@@ -22,6 +22,10 @@ export const MODELS = {
   CLAUDE_OPUS_48: 'claude-opus-4-8',
   CLAUDE_OPUS_5: 'claude-opus-5',
   GPT_56: 'gpt-5.6-sol',
+  /** Ultra-fast cloud model — ideal for low-latency intent extraction & search routing */
+  MINIMAX_M3: 'minmax-m3:cloud',
+  /** Strong at structured JSON, classification, and visa detection */
+  NEMOTRON_3_ULTRA: 'nemotron-3-ultra:cloud',
 } as const;
 
 export type ModelId = (typeof MODELS)[keyof typeof MODELS];
@@ -51,7 +55,11 @@ export type TaskType =
   | 'coding-assistance'
   | 'job-search'
   | 'application'
-  // Lightweight tasks → GPT 5.6
+  // Fast tasks → MiniMax M3 (ultra-low latency, ideal for search intent)
+  | 'search-intent'
+  | 'fast-extraction'
+  | 'routing'
+  // Lightweight structured tasks → Nemotron 3 Ultra
   | 'classification'
   | 'extraction'
   | 'json-generation'
@@ -74,6 +82,14 @@ const COMPLEX_TASKS = new Set<TaskType>([
   'solution-comparison',
 ]);
 
+/** Fast tasks routed to MiniMax M3 for minimum latency in the search path */
+const FAST_TASKS = new Set<TaskType>([
+  'search-intent',
+  'fast-extraction',
+  'routing',
+]);
+
+/** Structured/classification tasks routed to Nemotron 3 Ultra */
 const LIGHTWEIGHT_TASKS = new Set<TaskType>([
   'classification',
   'extraction',
@@ -93,8 +109,11 @@ export function selectModelForTask(task: TaskType): ModelId {
   if (COMPLEX_TASKS.has(task)) {
     return MODELS.CLAUDE_OPUS_5;
   }
+  if (FAST_TASKS.has(task)) {
+    return MODELS.MINIMAX_M3;
+  }
   if (LIGHTWEIGHT_TASKS.has(task)) {
-    return MODELS.GPT_56;
+    return MODELS.NEMOTRON_3_ULTRA;
   }
   // Default: normal tasks
   return MODELS.CLAUDE_OPUS_48;
@@ -104,8 +123,15 @@ export function selectModelForTask(task: TaskType): ModelId {
  * Fallback chain: try models in this order on failure.
  * Claude Opus 5 → Claude Opus 4.8 → GPT 5.6
  */
+/**
+ * Fallback chain for generateWithFallback().
+ * Order: Claude Opus 5 → Claude Opus 4.8 → MiniMax M3 → Nemotron 3 Ultra → GPT 5.6
+ * MiniMax and Nemotron are included as fast/cheap fallbacks before GPT.
+ */
 export const FALLBACK_CHAIN: ModelId[] = [
   MODELS.CLAUDE_OPUS_5,
   MODELS.CLAUDE_OPUS_48,
+  MODELS.MINIMAX_M3,
+  MODELS.NEMOTRON_3_ULTRA,
   MODELS.GPT_56,
 ];

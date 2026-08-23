@@ -45,7 +45,7 @@ export class GreenhouseAdapter extends BaseCrawlerAdapter {
   }
 
   async *searchJobs(filters: SearchFilters): AsyncGenerator<Job> {
-    for (const token of this.boardTokens) {
+    const promises = this.boardTokens.map(async (token) => {
       const boardUrl = `https://boards-api.greenhouse.io/v1/boards/${token}`;
       try {
         const url = `${boardUrl}/jobs?page=1&per_page=50&content=true`;
@@ -53,9 +53,10 @@ export class GreenhouseAdapter extends BaseCrawlerAdapter {
         const data = (await response.json()) as { jobs: GreenhouseJob[] };
 
         if (!data.jobs || data.jobs.length === 0) {
-          continue;
+          return [];
         }
 
+        const validJobs: Job[] = [];
         for (const rawJob of data.jobs) {
           const job = this.createJobFromGreenhouse(
             rawJob,
@@ -63,11 +64,22 @@ export class GreenhouseAdapter extends BaseCrawlerAdapter {
             token,
           );
           if (this.matchesFilters(job, filters)) {
-            yield job;
+            validJobs.push(job);
           }
         }
+        return validJobs;
       } catch {
         // Skip board on network error
+        return [];
+      }
+    });
+
+    const results = await Promise.allSettled(promises);
+    for (const result of results) {
+      if (result.status === 'fulfilled' && result.value) {
+        for (const job of result.value) {
+          yield job;
+        }
       }
     }
   }
@@ -206,20 +218,50 @@ private detectWorkMode(location: string): WorkMode {
   }
 
 private matchesFilters(job: Job, filters: SearchFilters): boolean {
-    // Countries filter
+    // Query match: split into keywords and require at least one to match title/description
+    // (don't require the full enriched query string — it will never match job titles)
+    if (filters.query) {
+      const STOP_WORDS = new Set(['jobs', 'job', 'for', 'with', 'and', 'the', 'a', 'in', 'at', 'of',
+        'h1b', 'h-1b', 'visa', 'sponsorship', 'remote', 'worldwide', 'global', 'sponsor', 'immigration']);
+      const keywords = filters.query.toLowerCase().split(/\s+/)
+        .filter(w => !STOP_WORDS.has(w));
+
+      if (keywords.length > 0) {
+        const haystack = `${job.title} ${job.description || ''}`.toLowerCase();
+        const hasMatch = keywords.every(kw => {
+          if (kw.length <= 2) {
+            const regex = new RegExp(`\\b${kw}\\b`);
+            return regex.test(haystack);
+          }
+          return haystack.includes(kw);
+        });
+        if (!hasMatch) return false;
+      }
+    }
+
+    // Countries filter: fuzzy matching to handle "San Francisco, CA" → United States
     if (filters.countries?.length) {
-      const jobCountry = (job.country || '').toLowerCase();
-      const matchesCountry = filters.countries.some(c => jobCountry.includes(c.toLowerCase()));
+      const location = (job.location || '').toLowerCase();
+      const country = (job.country || '').toLowerCase();
+
+      const matchesCountry = filters.countries.some(fc => {
+        const fcl = fc.toLowerCase();
+        if (country.includes(fcl) || location.includes(fcl)) return true;
+        if ((fcl === 'united states' || fcl === 'us' || fcl === 'usa') &&
+            /\b(ca|ny|tx|wa|il|co|ma|fl|ga|nj|nc|va|or|az|mn)\b|san francisco|new york|seattle|austin|boston|chicago|los angeles|remote/i.test(location)) return true;
+        if ((fcl === 'united kingdom' || fcl === 'uk') &&
+            /london|manchester|edinburgh|birmingham|bristol/i.test(location)) return true;
+        if (fcl === 'canada' && /toronto|vancouver|montreal|ottawa/i.test(location)) return true;
+        if (fcl === 'germany' && /berlin|munich|hamburg|frankfurt/i.test(location)) return true;
+        if (fcl === 'remote') return job.remote === true;
+        return false;
+      });
       if (!matchesCountry) return false;
     }
+
     // Remote filter
     if (filters.remote === true && !job.remote) return false;
-    // Work mode filter
-    if (filters.workMode?.length && !filters.workMode.includes(job.workMode as any)) return false;
-    // Job type filter
-    if (filters.types?.length && !filters.types.includes(job.type as any)) return false;
 
-    // Don't filter by query here — the SearchAgent handles query matching and scoring
     return true;
   }
 }

@@ -2,7 +2,7 @@
  * API client for communicating with the VisaPilot AI backend.
  */
 
-const API_BASE =
+export const API_BASE =
   typeof window !== 'undefined'
     ? process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
     : 'http://localhost:4000/api/v1';
