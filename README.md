@@ -226,7 +226,7 @@ pnpm --filter @visapilot/api <command>
 | `build` | Build the API (`nest build`) |
 | `dev` | Start in development mode with watch (`nest start --watch`) |
 | `start` | Start the API normally |
-| `start:prod` | Start the production build (`node dist/main`) |
+| `start:prod` | Start the production build (`node dist/src/main`) |
 | `lint` | Lint API source files |
 | `test` | Run unit tests (Jest) |
 | `test:e2e` | Run end-to-end tests |

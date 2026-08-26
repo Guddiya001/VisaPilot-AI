@@ -3,9 +3,10 @@ import {
   LeverAdapter,
   AshbyAdapter,
   RSSAdapter,
+  IndeedAdapter,
   crawlerService,
-} from '@visapilot/crawler';
-import { JobSource } from '@visapilot/shared';
+} from './packages/crawler/src';
+import { JobSource } from './packages/shared/src';
 
 async function testAdapter(name: string, adapterFn: () => AsyncGenerator<any>) {
   console.log(`\n----------------------------------------`);
@@ -51,7 +52,11 @@ async function main() {
   ]);
   await testAdapter('RSS Feed', () => rss.searchJobs({ limit: 5 }));
 
-  // 5. Full CrawlerService Multi-Adapter Aggregator
+  // 5. Indeed Adapter
+  const indeed = new IndeedAdapter();
+  await testAdapter('Indeed', () => indeed.searchJobs({ query: 'Software Engineer', limit: 5 }));
+
+  // 6. Full CrawlerService Multi-Adapter Aggregator
   console.log(`\n----------------------------------------`);
   console.log(`Testing CrawlerService Aggregator...`);
   const results = await crawlerService.searchJobs({

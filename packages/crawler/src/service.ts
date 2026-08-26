@@ -7,6 +7,12 @@ import { LeverAdapter } from './adapters/lever';
 import { AshbyAdapter } from './adapters/ashby';
 import { RSSAdapter } from './adapters/rss';
 import { LinkedInAdapter } from './adapters/linkedin';
+import { WorkdayAdapter } from './adapters/workday';
+import { YCombinatorAdapter } from './adapters/ycombinator';
+import { IndeedAdapter } from './adapters/indeed';
+import { WellfoundAdapter } from './adapters/wellfound';
+import { GoogleJobsAdapter } from './adapters/google';
+import { config } from '@visapilot/config';
 
 export class CrawlerService {
   private adapters: Map<JobSource, ICrawlerAdapter> = new Map();
@@ -85,11 +91,23 @@ export class CrawlerService {
 
     const linkedin = new LinkedInAdapter();
 
+    // New Stubs
+    const workday = new WorkdayAdapter(['netflix', 'target', 'zoom']);
+    const ycombinator = new YCombinatorAdapter();
+    const indeed = new IndeedAdapter();
+    const wellfound = new WellfoundAdapter();
+    const google = new GoogleJobsAdapter(config.SERP_API_KEY);
+
     this.adapters.set(JobSource.GREENHOUSE, greenhouse);
     this.adapters.set(JobSource.LEVER, lever);
     this.adapters.set(JobSource.ASHBY, ashby);
     this.adapters.set(JobSource.RSS, rss);
     this.adapters.set(JobSource.LINKEDIN, linkedin);
+    this.adapters.set(JobSource.WORKDAY, workday);
+    this.adapters.set(JobSource.YCOMBINATOR, ycombinator);
+    this.adapters.set(JobSource.INDEED, indeed);
+    this.adapters.set(JobSource.WELLFOUND, wellfound);
+    this.adapters.set(JobSource.GOOGLE_JOBS, google);
   }
 
   async searchJobs(
@@ -101,7 +119,7 @@ export class CrawlerService {
     const startTime = Date.now();
 
     const activeSources = (sources || Object.values(JobSource).filter(
-      (s) => s !== JobSource.MANUAL && s !== JobSource.COMPANY_CAREER && s !== JobSource.GOOGLE_JOBS,
+      (s) => s !== JobSource.MANUAL && s !== JobSource.COMPANY_CAREER,
     )).filter(s => this.adapters.has(s));
 
     // Run ALL adapters in parallel with a 20-second hard timeout each.
@@ -227,11 +245,11 @@ export class CrawlerService {
     this.errors = [];
 
     const activeSources = (sources || Object.values(JobSource).filter(
-      (s) => s !== JobSource.MANUAL && s !== JobSource.COMPANY_CAREER && s !== JobSource.GOOGLE_JOBS,
+      (s) => s !== JobSource.MANUAL && s !== JobSource.COMPANY_CAREER,
     )).filter(s => this.adapters.has(s));
 
     const ADAPTER_TIMEOUT_MS = 20_000;
-    
+
     let buffer: CrawledJob[] = [];
     let activeAdapters = activeSources.length;
     let notify: () => void;

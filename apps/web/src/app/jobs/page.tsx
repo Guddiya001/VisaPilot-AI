@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  FileText,
 } from 'lucide-react';
 import { API_BASE, jobsApi } from '@/lib/api';
 
@@ -92,7 +93,7 @@ function JobsContent() {
       setError('');
       setJobs([]);
       setAiSearchInfo(null);
-      setIsStreaming(true);
+      setIsStreaming(false);
 
       const params = new URLSearchParams();
       if (query) params.set('query', query);
@@ -100,50 +101,30 @@ function JobsContent() {
       if (remote) params.set('remote', remote);
       if (visa) params.set('visaSponsorship', visa);
       params.set('page', String(pg));
+      params.set('limit', '20');
 
-      const streamUrl = `${API_BASE}/jobs/stream?${params.toString()}`;
-      const es = new EventSource(streamUrl);
-      eventSourceRef.current = es;
+      try {
+        const response = await fetch(`${API_BASE}/jobs?${params.toString()}`);
+        const result = await response.json();
 
-      es.onmessage = (event) => {
-        try {
-          const result = JSON.parse(event.data);
-          
-          if (!result.success) {
-            setError(result.meta?.error || 'Stream error');
-            es.close();
-            setIsStreaming(false);
-            setLoading(false);
-            return;
-          }
-
-          if (result.data && Array.isArray(result.data)) {
-            if (result.data.length > 0) {
-              setJobs((prev) => {
-                const existingUrls = new Set(prev.map((j) => j.url || j.sourceUrl));
-                const newJobs = result.data.filter((j: any) => !existingUrls.has(j.url || j.sourceUrl));
-                return [...prev, ...newJobs];
-              });
-            }
-            
-            setAiSearchInfo((prev) => prev || result.meta?.intent || null);
-            setPage(result.meta?.page || pg);
-            setTotalPages(result.meta?.totalPages || 1);
-          }
-          
+        if (!result.success) {
+          setError(result.meta?.error || result.error || 'Search failed');
           setLoading(false);
-        } catch (err) {
-          console.error('Failed to parse SSE message:', err);
+          return;
         }
-      };
 
-      es.onerror = (error) => {
-        // SSE error generally means the stream completed or a network error occurred
-        es.close();
-        eventSourceRef.current = null;
-        setIsStreaming(false);
+        if (result.data && Array.isArray(result.data)) {
+          setJobs(result.data);
+          setAiSearchInfo(result.meta?.intent || null);
+          setPage(result.meta?.page || pg);
+          setTotalPages(result.meta?.totalPages || 1);
+        }
+      } catch (err) {
+        console.error('Failed to fetch jobs:', err);
+        setError(err instanceof Error ? err.message : 'Network error — is the API running?');
+      } finally {
         setLoading(false);
-      };
+      }
     },
     [],
   );
@@ -425,14 +406,13 @@ function JobsContent() {
                     {job.remote ? 'Remote' : 'Onsite'}
                   </div>
                   <div className="flex gap-3 mt-1">
-                    {job.id && (
-                      <Link
-                        href={`/resume-builder?jobId=${job.id}`}
-                        className="text-sm font-medium text-slate-600 hover:text-primary-600 flex items-center gap-1"
-                      >
-                        Build Resume
-                      </Link>
-                    )}
+                    <Link
+                      href={`/resume-builder?jobTitle=${encodeURIComponent(job.title || '')}&jobCompany=${encodeURIComponent(companyName)}&jobUrl=${encodeURIComponent(job.url || job.sourceUrl || '')}&autoGenerate=true`}
+                      className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-gradient-to-r from-violet-50 to-purple-50 text-violet-700 border border-violet-200 hover:from-violet-100 hover:to-purple-100 hover:border-violet-300 transition-all"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      ATS Resume
+                    </Link>
                     <a
                       href={job.url || job.sourceUrl || '#'}
                       target="_blank"

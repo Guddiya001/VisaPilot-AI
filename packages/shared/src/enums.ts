@@ -22,6 +22,7 @@ export enum JobSource {
 
   GOOGLE_JOBS = 'GOOGLE_JOBS',
   COMPANY_CAREER = 'COMPANY_CAREER',
+  YCOMBINATOR = 'YCOMBINATOR',
 
   RSS = 'RSS',
   API = 'API',

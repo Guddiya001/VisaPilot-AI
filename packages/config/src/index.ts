@@ -60,6 +60,8 @@ const envSchema = z.object({
   CRAWLER_USER_AGENT: z.string().default(
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
   ),
+  SERP_API_KEY: z.string().optional(),
+  PROXY_API_KEY: z.string().optional(),
 
   // Storage
   STORAGE_PROVIDER: z.enum(['local', 's3', 'gcs']).default('local'),

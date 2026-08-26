@@ -4,7 +4,7 @@ export * from './adapters/lever';
 export * from './adapters/ashby';
 export * from './adapters/rss';
 export * from './adapters/linkedin';
+export * from './adapters/indeed';
 export * from './service';
 export * from './normalizer';
 export * from './types';
-

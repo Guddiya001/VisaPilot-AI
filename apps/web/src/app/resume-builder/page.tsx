@@ -35,33 +35,53 @@ function ResumeBuilderInner() {
   const [tailoring, setTailoring] = useState(false);
   const [tailoredStatus, setTailoredStatus] = useState<string | null>(null);
 
+  const jobTitle = searchParams ? searchParams.get('jobTitle') : null;
+  const jobCompany = searchParams ? searchParams.get('jobCompany') : null;
+  const jobUrl = searchParams ? searchParams.get('jobUrl') : null;
+
   useEffect(() => {
-    if (!jobId) return;
+    // Path 1: Load job from DB by ID
+    if (jobId) {
+      async function loadJob() {
+        const res = await jobsApi.getById(jobId as string);
+        if (res.success && res.data) {
+          const j = res.data as any;
+          const info = {
+            id: j.id,
+            title: j.title || 'Target Role',
+            company: j.company?.name || 'Company',
+            description: j.description || '',
+            requirements: j.requirements || '',
+          };
+          setJobInfo(info);
 
-    async function loadJob() {
-      const res = await jobsApi.getById(jobId as string);
-      if (res.success && res.data) {
-        const j = res.data as any;
-        const info = {
-          id: j.id,
-          title: j.title || 'Target Role',
-          company: j.company?.name || 'Company',
-          description: j.description || '',
-          requirements: j.requirements || '',
-        };
-        setJobInfo(info);
-
-        if (autoGenerateParam) {
-          // Auto-open the generate modal with JD pre-loaded
-          setGenerateModalOpen(true);
-        } else if (autoTailorParam) {
-          triggerAutoTailor(info);
+          if (autoGenerateParam) {
+            setGenerateModalOpen(true);
+          } else if (autoTailorParam) {
+            triggerAutoTailor(info);
+          }
         }
       }
+      loadJob();
+      return;
     }
 
-    loadJob();
-  }, [jobId]);
+    // Path 2: Load job info from query params (crawled jobs without DB ID)
+    if (jobTitle) {
+      const info = {
+        id: '',
+        title: jobTitle,
+        company: jobCompany || 'Company',
+        description: '',
+        requirements: '',
+      };
+      setJobInfo(info);
+
+      if (autoGenerateParam) {
+        setGenerateModalOpen(true);
+      }
+    }
+  }, [jobId, jobTitle]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const triggerAutoTailor = async (info: { title: string; company: string; description: string; requirements: string }) => {
     setTailoring(true);
