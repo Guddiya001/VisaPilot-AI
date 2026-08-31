@@ -32,4 +32,7 @@ export type {
   LoginParams,
   AuthResult,
   TokenPayload,
+  IApplicationPackageService,
+  IAutoApplyService,
 } from './interfaces';
+

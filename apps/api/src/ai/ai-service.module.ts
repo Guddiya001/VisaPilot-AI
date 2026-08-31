@@ -9,6 +9,7 @@ import {
   CoverLetterAgent,
   InterviewAgent,
   LearningAgent,
+  ATSOptimizerAgent,
   RAGService,
   embeddingService,
 } from '@visapilot/ai';
@@ -59,6 +60,11 @@ const learningAgentProvider = {
   useValue: new LearningAgent(),
 };
 
+const atsOptimizerAgentProvider = {
+  provide: 'ATSOptimizerAgent',
+  useValue: new ATSOptimizerAgent(),
+};
+
 const ragServiceProvider = {
   provide: 'RAGService',
   useValue: new RAGService(),
@@ -81,6 +87,7 @@ const embeddingServiceProvider = {
     coverLetterAgentProvider,
     interviewAgentProvider,
     learningAgentProvider,
+    atsOptimizerAgentProvider,
     ragServiceProvider,
     embeddingServiceProvider,
   ],
@@ -94,6 +101,7 @@ const embeddingServiceProvider = {
     coverLetterAgentProvider,
     interviewAgentProvider,
     learningAgentProvider,
+    atsOptimizerAgentProvider,
     ragServiceProvider,
     embeddingServiceProvider,
   ],

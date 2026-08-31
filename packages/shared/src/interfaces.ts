@@ -271,3 +271,25 @@ export interface TokenPayload {
   exp: number;
 }
 
+// ============ Application Package Service Interface ============
+export interface IApplicationPackageService {
+  generatePackage(
+    userId: string,
+    jobId: string,
+    jobDescription: string,
+    options?: { maxIterations?: number; targetScore?: number },
+  ): Promise<import('./types').ApplicationPackage>;
+  getPackage(packageId: string): Promise<import('./types').ApplicationPackage | null>;
+  getPackageByJob(userId: string, jobId: string): Promise<import('./types').ApplicationPackage | null>;
+  approvePackage(packageId: string, userId: string): Promise<import('./types').ApplicationPackage>;
+}
+
+// ============ AutoApply Service Interface ============
+export interface IAutoApplyService {
+  queueAutoApply(applicationPackageId: string, userId: string): Promise<import('./types').AutoApplyJob>;
+  getStatus(autoApplyJobId: string): Promise<import('./types').AutoApplyJob | null>;
+  approve(autoApplyJobId: string, userId: string): Promise<import('./types').AutoApplyJob>;
+  submit(autoApplyJobId: string): Promise<import('./types').AutoApplyJob>;
+}
+
+

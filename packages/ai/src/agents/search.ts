@@ -48,7 +48,7 @@ export class SearchAgent implements IAgent {
 
       // Timeout the LLM call to prevent hanging search requests.
       // If the LLM is slow/offline, fall back to deterministic intent immediately.
-      const INTENT_TIMEOUT_MS = 12_000;
+      const INTENT_TIMEOUT_MS = 6_000;
       let intent: JobSearchIntent;
       try {
         intent = await Promise.race([
@@ -92,7 +92,6 @@ export class SearchAgent implements IAgent {
     }
   }
 
-  /** Deterministic fallback — never blocks, always returns a usable intent. */
   private deterministicFallbackIntent(query: string): JobSearchIntent {
     const lower = (query || '').toLowerCase();
     const needsVisa =
@@ -102,6 +101,10 @@ export class SearchAgent implements IAgent {
     const tools: string[] = ['search_jobs'];
     if (needsVisa) tools.push('validate_visa');
 
+    const queries = query 
+      ? query.split(/\s+or\s+|,/i).map(q => q.trim()).filter(q => q.length > 0)
+      : ['software engineer jobs'];
+
     return {
       intent: 'JOB_SEARCH',
       semanticRequirements: { skills: [], roles: [], locations: [] },
@@ -109,7 +112,7 @@ export class SearchAgent implements IAgent {
         ? [{ type: 'VISA_SPONSORSHIP', value: 'H-1B', required: true }]
         : [],
       preferences: {},
-      queries: query ? [query] : ['software engineer jobs'],
+      queries: queries,
       tools,
     };
   }
@@ -129,10 +132,12 @@ Visa/H1B Needed: ${needsVisa ? 'YES' : 'detect from query'}
 
 RULES:
 1. Always set intent to "JOB_SEARCH" for job search requests.
-2. Generate 4 diverse search queries targeting WORLDWIDE jobs — include visa sponsorship keyword variations.
-   Use multiple H1B keyword variants: "H-1B sponsorship", "visa sponsorship", "will sponsor", "sponsorship available",
+2. Generate 4 diverse search queries targeting WORLDWIDE jobs:
+   - At least 2 queries should be PURE tech/role queries WITHOUT any visa keywords (e.g. "React engineer remote", "Python developer"). This is critical because many jobs don't put "visa" in the title but still sponsor.
+   - At least 2 queries should include visa sponsorship or relocation keyword variations.
+   Use multiple H1B/Relocation keyword variants: "H-1B sponsorship", "visa sponsorship", "will sponsor", "sponsorship available",
    "employment visa", "work authorization", "immigration sponsorship", "H1B transfer", "visa support",
-   "sponsor work visa", "immigration assistance".
+   "sponsor work visa", "immigration assistance", "relocation package", "international candidates".
 3. If visa sponsorship is requested (or inferred), add "validate_visa" tool and set VISA_SPONSORSHIP hard constraint.
 4. Locations should be worldwide by default: ["Worldwide", "United States", "Canada", "United Kingdom", "Germany", "Australia", "Remote"].
 5. Always include "search_jobs" tool.
@@ -149,10 +154,10 @@ EXAMPLE (for "React engineer H1B jobs"):
   "hardConstraints": [{ "type": "VISA_SPONSORSHIP", "value": "H-1B", "required": true }],
   "preferences": {},
   "queries": [
-    "React engineer visa sponsorship jobs",
-    "Frontend developer H-1B sponsorship",
+    "React engineer remote",
+    "Frontend developer",
     "React JavaScript will sponsor immigration",
-    "Software engineer work authorization React remote"
+    "Software engineer relocation package React"
   ],
   "tools": ["search_jobs", "validate_visa"]
 }

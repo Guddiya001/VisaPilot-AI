@@ -3,6 +3,20 @@ import type { IAgent, AgentOutput } from '@visapilot/shared';
 import type { AgentContext } from '../types';
 import { AgentType } from '@visapilot/shared';
 import { CoverLetterSchema } from '../types';
+import type { ATSMatchScore, JDAnalysis } from '@visapilot/shared';
+
+export interface EnhancedCoverLetterParams {
+  userName: string;
+  userSkills: string[];
+  jobTitle: string;
+  companyName: string;
+  jobDescription: string;
+  tone?: string;
+  // New: enhanced inputs
+  tailoredResume?: Record<string, unknown>;
+  atsMatchScore?: ATSMatchScore;
+  jdAnalysis?: JDAnalysis;
+}
 
 export class CoverLetterAgent implements IAgent {
   readonly name = 'Cover Letter Agent';
@@ -15,7 +29,7 @@ export class CoverLetterAgent implements IAgent {
   async process(input: Record<string, unknown>): Promise<AgentOutput> {
     try {
       const context = input as unknown as AgentContext;
-      const params = context.coverLetterParams || {
+      const params: EnhancedCoverLetterParams = (context.coverLetterParams as EnhancedCoverLetterParams) || {
         userName: (context as any).userName || 'Candidate',
         userSkills: context.userSkills || [],
         jobTitle: (context as any).jobTitle || '',
@@ -24,17 +38,28 @@ export class CoverLetterAgent implements IAgent {
         tone: (context as any).tone || 'professional',
       };
 
+      // Pull enhanced data from input if available
+      const tailoredResume = (input.tailoredResume as Record<string, unknown>) || params.tailoredResume;
+      const atsMatchScore = (input.atsMatchScore as ATSMatchScore) || params.atsMatchScore;
+      const jdAnalysis = (input.jdAnalysis as JDAnalysis) || params.jdAnalysis;
+
       // Step 1: Analyze job description
-      const jobAnalysis = await this.analyzeJobDescription(params.jobDescription);
+      const jobAnalysis = jdAnalysis
+        ? {
+            requiredSkills: jdAnalysis.requiredSkills,
+            keyResponsibilities: jdAnalysis.keyResponsibilities,
+            companyValues: jdAnalysis.companyCulture,
+            tone: 'professional',
+          }
+        : await this.analyzeJobDescription(params.jobDescription);
 
-      // Step 2: Identify matching points
-      const matchingPoints = this.identifyMatchingPoints(
-        params.userSkills,
-        jobAnalysis.requiredSkills,
-      );
+      // Step 2: Identify matching points (use ATS score if available)
+      const matchingPoints = atsMatchScore
+        ? atsMatchScore.matchedSkills.map((s) => ({ skill: s, matchType: 'exact' as const }))
+        : this.identifyMatchingPoints(params.userSkills, jobAnalysis.requiredSkills);
 
-      // Step 3: Generate cover letter
-      const coverLetter = await this.generateCoverLetter({
+      // Step 3: Generate enhanced cover letter
+      const coverLetter = await this.generateEnhancedCoverLetter({
         userName: params.userName,
         userSkills: params.userSkills,
         jobTitle: params.jobTitle,
@@ -43,6 +68,9 @@ export class CoverLetterAgent implements IAgent {
         tone: params.tone || 'professional',
         jobAnalysis,
         matchingPoints,
+        tailoredResume,
+        atsMatchScore,
+        jdAnalysis,
       });
 
       // Step 4: Extract key points
@@ -58,31 +86,26 @@ export class CoverLetterAgent implements IAgent {
       // Validate
       CoverLetterSchema.parse(result);
 
-      // Step 5: Generate variations if requested
-      const variations = await this.generateVariations(
-        params,
-        coverLetter,
-      );
-
       return {
         success: true,
         data: {
           ...result,
           jobAnalysis,
           matchingPoints,
-          variations,
+          missingSkills: atsMatchScore?.missingSkills || [],
           usage: {
             purpose: `Application for ${params.jobTitle} at ${params.companyName}`,
             targetAudience: 'Hiring Manager / Recruiter',
             suggestedSubject: `Application for ${params.jobTitle} - ${params.userName}`,
           },
         },
-        confidence: 0.85,
+        confidence: tailoredResume ? 0.92 : 0.85,
         metadata: {
           wordCount: result.wordCount,
           keyPointsCount: keyPoints.length,
           matchingSkillsCount: matchingPoints.length,
-          variationsGenerated: variations.length,
+          usedTailoredResume: !!tailoredResume,
+          usedATSScore: !!atsMatchScore,
         },
       };
     } catch (error) {
@@ -181,7 +204,9 @@ Return ONLY valid JSON:`;
     return false;
   }
 
-  private async generateCoverLetter(params: {
+  // ─── Enhanced cover letter generation ───
+
+  private async generateEnhancedCoverLetter(params: {
     userName: string;
     userSkills: string[];
     jobTitle: string;
@@ -190,28 +215,61 @@ Return ONLY valid JSON:`;
     tone: string;
     jobAnalysis: Record<string, unknown>;
     matchingPoints: Array<{ skill: string; matchType: string }>;
+    tailoredResume?: Record<string, unknown>;
+    atsMatchScore?: ATSMatchScore;
+    jdAnalysis?: JDAnalysis;
   }): Promise<string> {
-    const prompt = `Write a compelling cover letter for a job application.
+    // Build context from tailored resume if available
+    let resumeContext = '';
+    if (params.tailoredResume) {
+      const basics = params.tailoredResume.basics as Record<string, string> | undefined;
+      const experience = params.tailoredResume.experience as Array<Record<string, unknown>> | undefined;
+      resumeContext = `
+CANDIDATE SUMMARY (from tailored resume): ${basics?.summary || ''}
+TOP EXPERIENCE: ${(experience || []).slice(0, 2).map((e) => `${e.role} at ${e.company}: ${((e.bullets as string[]) || []).slice(0, 2).join('; ')}`).join('\n')}`;
+    }
+
+    let atsContext = '';
+    if (params.atsMatchScore) {
+      atsContext = `
+STRONGEST QUALIFICATIONS (ATS-verified matches): ${params.atsMatchScore.matchedSkills.slice(0, 6).join(', ')}
+ATS MATCH SCORE: ${params.atsMatchScore.normalizedScore}%`;
+    }
+
+    let companyContext = '';
+    if (params.jdAnalysis) {
+      companyContext = `
+COMPANY INDUSTRY: ${params.jdAnalysis.companyIndustry || 'Technology'}
+COMPANY VALUES: ${params.jdAnalysis.companyCulture.join(', ') || 'innovation, collaboration'}
+LOCATION: ${params.jdAnalysis.locationText || params.jdAnalysis.country || 'Remote'}`;
+    }
+
+    const prompt = `Write a compelling, JD-specific cover letter for a job application.
 
 Candidate Name: ${params.userName}
 Job Title: ${params.jobTitle}
 Company: ${params.companyName}
 Tone: ${params.tone}
-Skills: ${params.userSkills.slice(0, 10).join(', ')}
-Matching Skills: ${params.matchingPoints.map((m) => m.skill).join(', ')}
+Matching Skills (verified): ${params.matchingPoints.map((m) => m.skill).join(', ')}
+${resumeContext}
+${atsContext}
+${companyContext}
 
 Job Description Context:
 ${params.jobDescription.slice(0, 2000)}
 
-Write a professional cover letter that:
-1. Opens with a strong hook mentioning the specific role and company
-2. Highlights 2-3 key achievements or experiences relevant to the role
-3. Demonstrates knowledge of the company/industry
-4. Shows enthusiasm for the role and company
-5. Includes a clear call to action
-6. Uses a ${params.tone} tone throughout
-7. Is between 250-400 words
-8. Does NOT include placeholder text like [Your Name]
+STRICT RULES:
+1. Mention the target role (${params.jobTitle}) by name in the opening.
+2. Reference the company's (${params.companyName}) relevant needs from the JD.
+3. Connect the candidate's ACTUAL experience to those needs — use details from the resume context above.
+4. Highlight the strongest 2-4 qualifications from the matched skills list.
+5. Use JD terminology naturally — do not force keywords unnaturally.
+6. AVOID generic AI language ("I am a results-driven professional", "I am confident", "I am passionate").
+7. Do NOT repeat the entire resume — highlight only the most compelling points.
+8. NEVER fabricate company information or candidate experience.
+9. Keep it concise: 250-400 words, 3 paragraphs maximum.
+10. Do NOT include placeholder text like [Your Name] or [Date].
+11. Use a ${params.tone} tone throughout.
 
 Return ONLY the cover letter content, no additional text:`;
 
@@ -221,10 +279,22 @@ Return ONLY the cover letter content, no additional text:`;
         maxTokens: 1000,
       });
 
-      return response.trim();
+      const text = response.trim();
+      if (text.length > 100) return text;
     } catch {
-      return `Dear Hiring Manager,\n\nI am writing to express my strong interest in the ${params.jobTitle} position at ${params.companyName}. With my background in ${params.userSkills.slice(0, 3).join(', ')}, I am confident that I would be a valuable addition to your team.\n\n[Please regenerate - AI generation failed]\n\nSincerely,\n${params.userName}`;
+      // fall through to fallback
     }
+
+    return `Dear Hiring Manager,
+
+I am writing to express my strong interest in the ${params.jobTitle} position at ${params.companyName}. With my background in ${params.matchingPoints.slice(0, 3).map((m) => m.skill).join(', ')}, I am well-positioned to contribute to your team's goals.
+
+${resumeContext ? `In my current role, I have ${((params.tailoredResume?.experience as Array<Record<string, unknown>>)?.[0]?.bullets as string[])?.[0] || 'delivered impactful results across complex technical projects'}.` : `My experience in ${params.userSkills.slice(0, 3).join(', ')} has prepared me to tackle the challenges described in your job posting.`}
+
+I would welcome the opportunity to discuss how my experience aligns with ${params.companyName}'s needs. Thank you for considering my application.
+
+Sincerely,
+${params.userName}`;
   }
 
   private extractKeyPoints(content: string): string[] {
@@ -234,36 +304,6 @@ Return ONLY the cover letter content, no additional text:`;
       .slice(0, 5)
       .map((s) => s.trim());
   }
-
-  private async generateVariations(
-    params: Record<string, unknown>,
-    original: string,
-  ): Promise<string[]> {
-    const tones = ['professional', 'enthusiastic', 'concise'];
-    const variations: string[] = [];
-
-    for (const tone of tones.slice(0, 2)) {
-      const prompt = `Rewrite this cover letter in a ${tone} tone. Keep the key points but adjust the language.
-
-Original:
-${original.slice(0, 1500)}
-
-Return ONLY the rewritten cover letter:`;
-
-      try {
-        const response = await ollamaClient.generateCompletion(prompt, {
-          temperature: 0.6,
-          maxTokens: 800,
-        });
-        variations.push(response.trim());
-      } catch {
-        // Skip failed variations
-      }
-    }
-
-    return variations;
-  }
 }
 
 export const coverLetterAgent = new CoverLetterAgent();
-

@@ -217,47 +217,9 @@ private detectWorkMode(location: string): WorkMode {
     return commonTechSkills.filter((skill) => lower.includes(skill));
   }
 
-private matchesFilters(job: Job, filters: SearchFilters): boolean {
-    // Query match: split into keywords and require at least one to match title/description
-    // (don't require the full enriched query string — it will never match job titles)
-    if (filters.query) {
-      const STOP_WORDS = new Set(['jobs', 'job', 'for', 'with', 'and', 'the', 'a', 'in', 'at', 'of',
-        'h1b', 'h-1b', 'visa', 'sponsorship', 'remote', 'worldwide', 'global', 'sponsor', 'immigration']);
-      const keywords = filters.query.toLowerCase().split(/\s+/)
-        .filter(w => !STOP_WORDS.has(w));
-
-      if (keywords.length > 0) {
-        const haystack = `${job.title} ${job.description || ''}`.toLowerCase();
-        const hasMatch = keywords.every(kw => {
-          if (kw.length <= 2) {
-            const regex = new RegExp(`\\b${kw}\\b`);
-            return regex.test(haystack);
-          }
-          return haystack.includes(kw);
-        });
-        if (!hasMatch) return false;
-      }
-    }
-
-    // Countries filter: fuzzy matching to handle "San Francisco, CA" → United States
-    if (filters.countries?.length) {
-      const location = (job.location || '').toLowerCase();
-      const country = (job.country || '').toLowerCase();
-
-      const matchesCountry = filters.countries.some(fc => {
-        const fcl = fc.toLowerCase();
-        if (country.includes(fcl) || location.includes(fcl)) return true;
-        if ((fcl === 'united states' || fcl === 'us' || fcl === 'usa') &&
-            /\b(ca|ny|tx|wa|il|co|ma|fl|ga|nj|nc|va|or|az|mn)\b|san francisco|new york|seattle|austin|boston|chicago|los angeles|remote/i.test(location)) return true;
-        if ((fcl === 'united kingdom' || fcl === 'uk') &&
-            /london|manchester|edinburgh|birmingham|bristol/i.test(location)) return true;
-        if (fcl === 'canada' && /toronto|vancouver|montreal|ottawa/i.test(location)) return true;
-        if (fcl === 'germany' && /berlin|munich|hamburg|frankfurt/i.test(location)) return true;
-        if (fcl === 'remote') return job.remote === true;
-        return false;
-      });
-      if (!matchesCountry) return false;
-    }
+  private matchesFilters(job: Job, filters: SearchFilters): boolean {
+    if (!this.matchesQueryFilter(job, filters.query)) return false;
+    if (!this.matchesCountryFilter(job, filters.countries)) return false;
 
     // Remote filter
     if (filters.remote === true && !job.remote) return false;

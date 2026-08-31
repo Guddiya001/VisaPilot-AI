@@ -29,10 +29,10 @@ export class JobsService {
     this.logger.log(`[JobsService] Starting search for: "${params.query}"`);
     this.logger.log('JOB_SEARCH_STARTED');
 
-    // Hard 30-second timeout on the entire search pipeline
-    const SEARCH_TIMEOUT_MS = 30_000;
+    // 60-second budget: LLM intent (~5-8s) + crawlers (~12s) + visa check (~5s) = ~25s typical.
+    const SEARCH_TIMEOUT_MS = 60_000;
     const timeoutPromise = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Search timeout: exceeded 30 seconds')), SEARCH_TIMEOUT_MS),
+      setTimeout(() => reject(new Error('Search timeout: exceeded 60 seconds')), SEARCH_TIMEOUT_MS),
     );
 
     try {
@@ -77,19 +77,27 @@ export class JobsService {
       this.logger.log(`[JobsService] Executing external search with queries: ${intent.queries.join(', ')}`);
 
       // Use worldwide locations when none specified by the user
-      const locations: string[] = (intent.semanticRequirements?.locations?.length > 0
-        ? intent.semanticRequirements.locations
-        : ['Worldwide', 'United States', 'Canada', 'United Kingdom', 'Germany', 'Remote']
-      ).filter((l: string) => l !== 'Worldwide'); // Crawlers don't filter by "Worldwide" — omit it so all countries pass
+      // Only pass a country filter if the user explicitly specified a single country.
+      // When the LLM generates a broad worldwide list, we intentionally skip country
+      // filtering at the crawler level — the adapters would drop too many valid jobs
+      // (e.g. Netherlands, Australia) that aren't in the LLM's enumerated list.
+      const userSpecifiedCountry = params.country ? [params.country] : undefined;
 
-      const visaSponsorshipFilter = requiresVisa ? 'SPONSORS' : params.visaSponsorship;
+      const visaSponsorshipFilter = requiresVisa
+        ? VisaSponsorshipStatus.SPONSORS
+        : (params.visaSponsorship as VisaSponsorshipStatus | undefined);
 
-      const searchPromises = intent.queries.map((q: string) =>
+      // Cap to max 2 queries to stay well within the 60s budget.
+      // The LLM generates 4 queries but running all adapters for each is expensive.
+      const queriesToRun = intent.queries.slice(0, 2);
+      const searchPromises = queriesToRun.map((q: string) =>
         crawlerService.searchJobs({
           query: q,
-          countries: params.country ? [params.country] : locations,
-          remote: intent.semanticRequirements?.workMode?.includes('Remote') || params.remote,
-          visaSponsorship: visaSponsorshipFilter as any,
+          countries: userSpecifiedCountry,
+          remote: intent.semanticRequirements?.workMode?.some(
+            (m: string) => m.toLowerCase() === 'remote'
+          ) || params.remote,
+          visaSponsorship: visaSponsorshipFilter,
           skills: intent.semanticRequirements?.skills || [],
           limit: 25,
         })
@@ -129,68 +137,41 @@ export class JobsService {
       return { success: true, data: [], meta: { total: 0, page: params.page, source: 'WEB' } };
     }
 
-    // 5. Validate hard constraints (e.g. visa sponsorship)
-
+    // 5. Keyword-only visa detection (instant — no LLM blocking the response)
+    // LLM enrichment is intentionally skipped here to keep p50 latency <15s.
     if (tools.includes('validate_visa') || requiresVisa) {
-      this.logger.log(`[JobsService] Running visa detection for ${fetchedJobs.length} jobs.`);
+      this.logger.log(`[JobsService] Running keyword visa detection for ${fetchedJobs.length} jobs.`);
 
-      // --- Fast pass: keyword-based detection (no LLM, instant) ---
       const VISA_POSITIVE = ['visa sponsorship', 'will sponsor', 'h-1b', 'h1b', 'h1-b',
         'work visa', 'work permit', 'visa support', 'immigration support', 'we sponsor',
-        'provides sponsorship', 'sponsorship available', 'immigration assistance', 'global mobility'];
+        'provides sponsorship', 'sponsorship available', 'immigration assistance', 'global mobility',
+        'relocation assistance', 'relocation package', 'relocation support', 'relocation offered',
+        'open to relocation', 'international candidates', 'global talent', 'willing to relocate',
+        'employment authorization', 'sponsorship', 'tier 2 visa', 'skilled worker visa', 'blue card'];
       const VISA_NEGATIVE = ['no visa sponsorship', 'cannot sponsor', 'do not sponsor',
         'no sponsorship', 'without sponsorship', 'must be authorized', 'us citizen only',
         'citizen only', 'must have work authorization', 'must be a us'];
 
-      const ambiguousJobs: any[] = [];
-
       for (const job of fetchedJobs) {
         const desc = (job.description || '').toLowerCase();
-        const hasPositive = VISA_POSITIVE.some(kw => desc.includes(kw));
-        const hasNegative = VISA_NEGATIVE.some(kw => desc.includes(kw));
-
-        if (hasNegative) {
-          job.visaSponsorshipData = { status: 'NOT_SUPPORTED', type: 'None', evidence: 'Negative keywords detected', confidence: 0.9 };
+        if (VISA_NEGATIVE.some(kw => desc.includes(kw))) {
+          job.visaSponsorshipData = { status: 'NOT_SUPPORTED', type: 'None', evidence: 'Negative keywords', confidence: 0.9 };
           job.visaSponsorship = VisaSponsorshipStatus.DOES_NOT_SPONSOR;
-        } else if (hasPositive) {
-          job.visaSponsorshipData = { status: 'CONFIRMED', type: 'H-1B', evidence: 'Positive keywords detected', confidence: 0.85 };
+        } else if (VISA_POSITIVE.some(kw => desc.includes(kw))) {
+          job.visaSponsorshipData = { status: 'CONFIRMED', type: 'H-1B/Relocation', evidence: 'Positive keywords', confidence: 0.85 };
           job.visaSponsorship = VisaSponsorshipStatus.SPONSORS;
         } else {
           job.visaSponsorshipData = { status: 'UNCLEAR', type: 'Unknown', evidence: 'No explicit mention', confidence: 0.3 };
-          ambiguousJobs.push(job);
         }
-      }
-
-      // --- LLM pass: only on ambiguous jobs, max 5, run in parallel ---
-      const LLM_BATCH = ambiguousJobs.slice(0, 5);
-      if (LLM_BATCH.length > 0) {
-        this.logger.log(`[JobsService] LLM visa check on ${LLM_BATCH.length} ambiguous jobs.`);
-        await Promise.allSettled(LLM_BATCH.map(async (job) => {
-          try {
-            const visaResult = await visaDetectionAgent.process({
-              jobDescription: job.description,
-              companyName: job.companyName,
-            });
-            if (visaResult.success && visaResult.data) {
-              const data = visaResult.data as any;
-              const status = data.sponsorsVisa ? 'CONFIRMED'
-                : data.confidence > 0.5 ? 'NOT_SUPPORTED'
-                : (data.keywordAnalysis?.score > 0) ? 'LIKELY' : 'UNCLEAR';
-              job.visaSponsorshipData = { status, type: data.visaTypes?.[0] || 'Unknown', evidence: data.evidence?.[0] || 'LLM analysis', confidence: data.confidence };
-              job.visaSponsorship = status === 'CONFIRMED' ? VisaSponsorshipStatus.SPONSORS : VisaSponsorshipStatus.UNKNOWN;
-            }
-          } catch {
-            this.logger.warn(`LLM visa check failed for ${job.title}`);
-          }
-        }));
       }
 
       this.logger.log(`VISA_VALIDATION_COMPLETED`);
 
-      // Filter: keep only jobs that likely sponsor when visa is required
+      // Keep CONFIRMED + UNCLEAR (many companies sponsor without saying so explicitly)
       if (requiresVisa) {
         fetchedJobs = fetchedJobs.filter(job =>
-          job.visaSponsorshipData?.status === 'CONFIRMED' || job.visaSponsorshipData?.status === 'LIKELY',
+          job.visaSponsorshipData?.status === 'CONFIRMED' ||
+          job.visaSponsorshipData?.status === 'UNCLEAR'
         );
       }
     }
@@ -304,20 +285,22 @@ export class JobsService {
       userProfile = await this.visaIntelligenceService.buildCandidateProfile(params.userId).catch(() => null);
     }
 
-    const locations = (intent.semanticRequirements?.locations?.length > 0
-      ? intent.semanticRequirements.locations
-      : ['Worldwide', 'United States', 'Canada', 'United Kingdom', 'Germany', 'Remote']
-    ).filter((l: string) => l !== 'Worldwide');
+    // Only restrict by country when user explicitly specified one.
+    const userSpecifiedCountry = params.country ? [params.country] : undefined;
 
-    const visaSponsorshipFilter = requiresVisa ? 'SPONSORS' : params.visaSponsorship;
+    const visaSponsorshipFilter = requiresVisa
+      ? VisaSponsorshipStatus.SPONSORS
+      : (params.visaSponsorship as VisaSponsorshipStatus | undefined);
 
     // Use primary query for streaming to avoid merging multiple async generators
     const primaryQuery = intent.queries[0];
     const stream = crawlerService.streamSearchJobs({
       query: primaryQuery,
-      countries: params.country ? [params.country] : locations,
-      remote: intent.semanticRequirements?.workMode?.includes('Remote') || params.remote,
-      visaSponsorship: visaSponsorshipFilter as any,
+      countries: userSpecifiedCountry,
+      remote: intent.semanticRequirements?.workMode?.some(
+        (m: string) => m.toLowerCase() === 'remote'
+      ) || params.remote,
+      visaSponsorship: visaSponsorshipFilter,
       skills: intent.semanticRequirements?.skills || [],
       limit: 25,
     }, undefined, 10);

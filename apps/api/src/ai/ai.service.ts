@@ -1,6 +1,8 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import type { AIService as AIServiceType } from '@visapilot/ai';
-import type { ResumeMatchAgent, ResumeImprovementAgent, CoverLetterAgent, VisaDetectionAgent, InterviewAgent, CoordinatorAgent } from '@visapilot/ai';
+import type { ResumeMatchAgent, ResumeImprovementAgent, CoverLetterAgent, VisaDetectionAgent, InterviewAgent, CoordinatorAgent, ATSOptimizerAgent } from '@visapilot/ai';
+import type { ATSMatchScore, ATSOptimizationResult, JDAnalysis, SkillMatchReport } from '@visapilot/shared';
+import { MAX_ATS_ITERATIONS, TARGET_ATS_SCORE } from '@visapilot/shared';
 
 @Injectable()
 export class AiService {
@@ -14,6 +16,7 @@ export class AiService {
     @Inject('ResumeImprovementAgent') private readonly resumeImprovementAgent: ResumeImprovementAgent,
     @Inject('CoverLetterAgent') private readonly coverLetterAgent: CoverLetterAgent,
     @Inject('InterviewAgent') private readonly interviewAgent: InterviewAgent,
+    @Inject('ATSOptimizerAgent') private readonly atsOptimizerAgent: ATSOptimizerAgent,
   ) {}
 
   async chat(userId: string, message: string, context?: Record<string, unknown>) {
@@ -292,6 +295,15 @@ ${params.userName}`;
     companyName?: string;
     jobDescription: string;
   }) {
+    this.logger.log(`Tailoring resume for job: ${params.jobTitle || 'N/A'}`);
+
+    if (!params.jobDescription || params.jobDescription.trim().length < 150) {
+      return {
+        success: false,
+        error: 'Job description is too short. Please paste the full job description (at least 150 characters) including requirements and responsibilities.',
+        data: null
+      };
+    }
     const { jobTitle = '', companyName = '', jobDescription } = params;
     this.logger.log(`Tailor resume: jobTitle="${jobTitle}", company="${companyName}"`);
 
@@ -608,7 +620,15 @@ Candidate`;
     companyName?: string;
     strategy?: 'A' | 'B' | 'C' | 'auto';
   }) {
-    this.logger.log(`[GenerateResume] Starting 10-phase pipeline for ${params.jobTitle || 'unknown role'}`);
+    this.logger.log(`[GenerateResume] Starting 10-phase pipeline for: ${params.jobTitle || 'N/A'}`);
+
+    if (!params.jobDescription || params.jobDescription.trim().length < 150) {
+      return {
+        success: false,
+        error: 'Job description is too short. Please paste the full job description (at least 150 characters) including requirements and responsibilities.',
+        data: null
+      };
+    }
 
     const jd = params.jobDescription;
     const candidateProfile = this.getCandidateMasterProfile();
@@ -810,17 +830,21 @@ Key Responsibilities: ${(jdAnalysis.keyResponsibilities as string[])?.join('; ')
 FULL JOB DESCRIPTION:
 ${fullJD.slice(0, 3000)}
 
-CRITICAL RULES — FOLLOW EACH ONE STRICTLY:
+CRITICAL RULES — FOLLOW EACH ONE STRICTLY FOR 100% ATS SCORE:
 1. NEVER fabricate information. Do NOT invent companies, job titles, dates, technologies, projects, metrics, or responsibilities. Only use information available in the CANDIDATE MASTER PROFILE.
 2. If a JD skill is NOT in candidate's profile, do NOT falsely add it or invent plausible experience around it.
 3. Rephrase, reorganize, consolidate, and emphasize existing experience to better match the JD natively where supported.
 4. 100% COVERAGE RULE: EVERY skill from 'Required Skills' list above MUST appear at least once in skillsFlat or in an experience bullet — if the candidate profile supports it.
-5. SUMMARY RULE: The summary MUST contain the exact job title (${jdAnalysis.jobTitle}), the company name (${jdAnalysis.companyName}), and at least 3-4 required skills, and reflect the company's industry (${companyIndustry || 'technology'}).
-6. BULLET RULE: Each experience bullet must include at least one keyword from the JD tech stack. Convert weak statements into achievement-oriented bullets with metrics where the underlying achievement exists.
-7. SKILLS GROUPING: Skills must be grouped by category (e.g., Frontend, Backend, AI/GenAI, Cloud) and prioritize the most important JD-matching skills first. Do not add unsupported technologies.
-8. LOCATION RULE: basics.location MUST be: "India → Open to Relocation to ${locationTarget} | Visa Sponsorship Required".
-9. TITLE RULE: basics.title must mirror the exact job title from the JD: "${jdAnalysis.jobTitle}".
-10. CULTURE ALIGNMENT: The tone of the summary and bullets should reflect the company culture keywords: ${companyCulture || 'results-driven, collaborative'}.
+5. DUAL PLACEMENT RULE (CRITICAL): Every required skill must appear in BOTH the skillsFlat section AND at least one experience bullet. This is the #1 factor for ATS pass rates. Example: if "Kafka" is required, it must be in a skills category line AND mentioned in at least one bullet.
+6. SUMMARY RULE: The summary MUST contain the exact job title (${jdAnalysis.jobTitle}), the company name (${jdAnalysis.companyName}), and at least 4-5 required skills, and reflect the company's industry (${companyIndustry || 'technology'}).
+7. ACTION VERB RULE: EVERY experience bullet MUST start with a strong past-tense action verb (Architected, Built, Designed, Engineered, Implemented, Integrated, Led, Migrated, Optimized, Orchestrated, Scaled, Shipped, Spearheaded, etc.). NO bullets starting with "Worked on", "Responsible for", "Helped with", or pronouns.
+8. METRICS RULE: At least 60% of bullets MUST include quantified metrics — percentages (35% improvement), multipliers (3x faster), absolute numbers (15M+ requests), or team sizes (6+ teams). Use realistic metrics from the candidate profile.
+9. SKILLS GROUPING: Skills must be grouped by category (e.g., "Core Languages: TypeScript, Node.js, Python", "Cloud & DevOps: AWS, Kubernetes, Docker"). Prioritize JD-matching skills first in each category. Do not add unsupported technologies.
+10. DATE FORMAT: All experience periods MUST use consistent format: "MMM YYYY – MMM YYYY" (e.g., "Oct 2023 – Present", "Jun 2022 – Mar 2023").
+11. LOCATION RULE: basics.location MUST be: "India → Open to Relocation to ${locationTarget} | Visa Sponsorship Required".
+12. TITLE RULE: basics.title must mirror the exact job title from the JD: "${jdAnalysis.jobTitle}".
+13. CULTURE ALIGNMENT: The tone of the summary and bullets should reflect the company culture keywords: ${companyCulture || 'results-driven, collaborative'}.
+14. NO ATS-BREAKING PATTERNS: No tables, no columns, no images, no headers/footers, no special Unicode characters. Use plain text only.
 
 Return ONLY a valid JSON object with this exact structure:
 {
@@ -833,7 +857,7 @@ Return ONLY a valid JSON object with this exact structure:
     "linkedin": "https://www.linkedin.com/in/ashish-kumar-singh1986",
     "github": "https://github.com/guddiya001",
     "portfolio": "https://ashishkumarsingh.vercel.app",
-    "summary": "3-4 sentence ATS-optimized summary with JD keywords",
+    "summary": "3-4 sentence ATS-optimized summary mentioning exact job title, company name, and 4-5 required skills",
     "openTo": ""
   },
   "experience": [
@@ -842,16 +866,16 @@ Return ONLY a valid JSON object with this exact structure:
       "role": "tailored role title",
       "company": "Company / Client",
       "location": "City, Country",
-      "period": "Month Year - Present",
-      "bullets": ["5-6 powerful bullets with metrics and JD keywords"]
+      "period": "MMM YYYY – Present",
+      "bullets": ["5-6 powerful bullets: action verb + JD keyword + quantified metric"]
     }
   ],
-  "skillsFlat": ["Category: skill1, skill2, skill3 (5 grouped lines)"],
+  "skillsFlat": ["Category: skill1, skill2, skill3 (5-6 grouped lines covering ALL required skills)"],
   "projects": [
     {
       "id": "proj-1",
       "name": "Project Name",
-      "description": "JD-relevant description",
+      "description": "JD-relevant description with required skills",
       "technologies": "Tech1, Tech2"
     }
   ],
@@ -872,7 +896,7 @@ Return ONLY a valid JSON object with this exact structure:
     }
   ],
   "certificates": ["4-5 relevant certifications"],
-  "achievements": ["3-4 quantified achievements"],
+  "achievements": ["3-4 quantified achievements with numbers"],
   "languages": ["English – Full Professional Proficiency"]
 }`;
 
@@ -1414,6 +1438,251 @@ Ashish Kumar Singh`;
         finalDecisionReason: 'Generated with fallback. Review and customize the resume before applying.',
       },
     };
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // ATS REPORT & APPLICATION PACKAGE (NEW)
+  // ═══════════════════════════════════════════════════════════
+
+  /**
+   * Generate a detailed 7-dimension ATS report for a resume against a JD.
+   */
+  async generateATSReport(resumeContent: string, jobDescription: string, jobTitle?: string, companyName?: string) {
+    this.logger.log(`[ATSReport] Generating detailed ATS report`);
+
+    if (!jobDescription || jobDescription.trim().length < 150) {
+      return {
+        success: false,
+        error: 'Job description is too short. Please paste the full job description (at least 150 characters) including requirements and responsibilities.',
+        data: null
+      };
+    }
+
+    try {
+      // Phase 1: Analyze JD
+      const jdAnalysis = await this.phaseAnalyzeJD(jobDescription, jobTitle, companyName) as JDAnalysis;
+
+      // Phase 2: Build resume data from content (or use as-is if structured)
+      let resumeData: Record<string, unknown>;
+      try {
+        resumeData = JSON.parse(resumeContent);
+      } catch {
+        resumeData = {
+          basics: { summary: resumeContent.slice(0, 500), title: '' },
+          experience: [],
+          skillsFlat: [],
+          education: [],
+        };
+      }
+
+      // Phase 3: Calculate detailed ATS score
+      const atsScore = this.atsOptimizerAgent.calculateDetailedATSScore(
+        resumeData,
+        jdAnalysis,
+        jobDescription,
+      );
+
+      return {
+        success: true,
+        data: {
+          atsScore,
+          jdAnalysis,
+          breakdown: {
+            requiredSkills: `${atsScore.requiredSkills.score}/${atsScore.requiredSkills.max}`,
+            preferredSkills: `${atsScore.preferredSkills.score}/${atsScore.preferredSkills.max}`,
+            experienceMatch: `${atsScore.experienceMatch.score}/${atsScore.experienceMatch.max}`,
+            keywords: `${atsScore.keywords.score}/${atsScore.keywords.max}`,
+            responsibilities: `${atsScore.responsibilities.score}/${atsScore.responsibilities.max}`,
+            education: `${atsScore.education.score}/${atsScore.education.max}`,
+            formatting: `${atsScore.formatting.score}/${atsScore.formatting.max}`,
+          },
+          matchedSkills: atsScore.matchedSkills,
+          missingSkills: atsScore.missingSkills,
+          matchedKeywords: atsScore.matchedKeywords,
+          missingKeywords: atsScore.missingKeywords,
+          normalizedScore: atsScore.normalizedScore,
+          matchLevel: atsScore.matchLevel,
+        },
+      };
+    } catch (error) {
+      this.logger.error(`[ATSReport] Failed: ${error instanceof Error ? error.message : 'Unknown'}`);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'ATS report generation failed',
+      };
+    }
+  }
+
+  /**
+   * Generate a full Application Package:
+   * JD Analysis → Resume Generation → ATS Optimization Loop → Cover Letter → Package Assembly
+   */
+  async generateApplicationPackage(params: {
+    jobDescription: string;
+    jobTitle?: string;
+    companyName?: string;
+    strategy?: 'A' | 'B' | 'C' | 'auto';
+    maxIterations?: number;
+    targetScore?: number;
+  }) {
+    this.logger.log(`[ApplicationPackage] Starting full package generation for: ${params.jobTitle || 'N/A'}`);
+
+    if (!params.jobDescription || params.jobDescription.trim().length < 150) {
+      return {
+        success: false,
+        error: 'Job description is too short. Please paste the full job description (at least 150 characters) including requirements and responsibilities.',
+        data: null
+      };
+    }
+
+    const jd = params.jobDescription;
+    const candidateProfile = this.getCandidateMasterProfile();
+    const maxIterations = params.maxIterations || MAX_ATS_ITERATIONS;
+    const targetScore = params.targetScore || TARGET_ATS_SCORE;
+
+    try {
+      // ─── PHASE 1-2: JD Analysis ───
+      this.logger.log('[ApplicationPackage] Phase 1-2: Analyzing JD');
+      const jdAnalysis = await this.phaseAnalyzeJD(jd, params.jobTitle, params.companyName) as JDAnalysis;
+
+      // ─── PHASE 3: Resume Strategy Selection ───
+      this.logger.log('[ApplicationPackage] Phase 3: Selecting strategy');
+      const { strategy, strategyReason } = params.strategy && params.strategy !== 'auto'
+        ? { strategy: params.strategy as 'A' | 'B' | 'C', strategyReason: `User-selected strategy ${params.strategy}` }
+        : await this.phaseSelectStrategy(jdAnalysis);
+
+      // ─── PHASE 4-5: Full Resume Generation ───
+      this.logger.log('[ApplicationPackage] Phase 4-5: Generating resume');
+      const initialResume = await this.phaseGenerateResume(jdAnalysis, strategy, candidateProfile, jd);
+
+      // ─── PHASE 5.5: ITERATIVE ATS OPTIMIZATION LOOP (NEW) ───
+      this.logger.log(`[ApplicationPackage] Phase 5.5: ATS Optimization Loop (max=${maxIterations}, target=${targetScore})`);
+      const candidateSkills = [
+        ...(candidateProfile.coreSkills as string[]),
+        ...(candidateProfile.aiSkills as string[]),
+      ];
+
+      const { optimizationResult, optimizedResume } = await this.atsOptimizerAgent.runOptimizationLoop(
+        initialResume,
+        jdAnalysis,
+        jd,
+        candidateSkills,
+        { maxIterations, targetScore },
+      );
+
+      this.logger.log(
+        `[ApplicationPackage] ATS Optimization: ${optimizationResult.initialScore} → ${optimizationResult.finalScore} ` +
+        `(+${optimizationResult.improvement}) in ${optimizationResult.iterations.length} iterations, ` +
+        `stopped: ${optimizationResult.stoppedReason}`,
+      );
+
+      // ─── PHASE 6-7: Final ATS Scoring (on optimized resume) ───
+      this.logger.log('[ApplicationPackage] Phase 6-7: Final ATS scoring');
+      const finalATSScore = this.atsOptimizerAgent.calculateDetailedATSScore(
+        optimizedResume,
+        jdAnalysis,
+        jd,
+      );
+
+      // ─── PHASE 8: Cover Letter (using optimized resume) ───
+      this.logger.log('[ApplicationPackage] Phase 8: Generating cover letter (from optimized resume)');
+      const coverLetterResult = await this.coverLetterAgent.process({
+        coverLetterParams: {
+          userName: (candidateProfile.name as string) || 'Candidate',
+          userSkills: candidateSkills,
+          jobTitle: jdAnalysis.jobTitle,
+          companyName: jdAnalysis.companyName,
+          jobDescription: jd,
+          tone: 'professional',
+        },
+        userSkills: candidateSkills,
+        jobDescription: jd,
+        companyName: jdAnalysis.companyName,
+        tailoredResume: optimizedResume,
+        atsMatchScore: finalATSScore,
+        jdAnalysis,
+      });
+
+      const coverLetter = coverLetterResult.success && coverLetterResult.data
+        ? String((coverLetterResult.data as Record<string, unknown>).content || '')
+        : await this.phaseGenerateCoverLetter(jdAnalysis, optimizedResume, candidateProfile);
+
+      // ─── PHASE 9: Skill Match Report ───
+      this.logger.log('[ApplicationPackage] Phase 9: Building skill match report');
+      const skillMatchReport: SkillMatchReport = {
+        matched: finalATSScore.matchedSkills,
+        missing: finalATSScore.missingSkills,
+        partial: jdAnalysis.preferredSkills.filter(
+          (s) => !finalATSScore.matchedSkills.includes(s) && !finalATSScore.missingSkills.includes(s),
+        ),
+      };
+
+      // ─── PHASE 10: Interview Probability + Networking ───
+      this.logger.log('[ApplicationPackage] Phase 10: Interview probability');
+      const { interviewProbability, networkingTips } = await this.phaseInterviewProbability(
+        jdAnalysis,
+        finalATSScore.normalizedScore,
+        strategy,
+      );
+
+      // ─── PHASE 11: Final Decision ───
+      const { finalDecision, finalDecisionReason } = this.phaseFinalDecision(
+        finalATSScore.normalizedScore,
+        interviewProbability,
+        jdAnalysis,
+      );
+
+      this.logger.log(
+        `[ApplicationPackage] Pipeline complete: ATS=${finalATSScore.normalizedScore}%, ` +
+        `Decision=${finalDecision}, Level=${finalATSScore.matchLevel}`,
+      );
+
+      return {
+        success: true,
+        data: {
+          // JD Analysis
+          jdAnalysis,
+          strategy,
+          strategyReason,
+
+          // Resume
+          resumeData: optimizedResume,
+
+          // ATS Match Score (7 dimensions)
+          atsMatchScore: finalATSScore,
+          atsScore: finalATSScore.normalizedScore,
+          atsBreakdown: {
+            requiredSkills: finalATSScore.requiredSkills,
+            preferredSkills: finalATSScore.preferredSkills,
+            experienceMatch: finalATSScore.experienceMatch,
+            keywords: finalATSScore.keywords,
+            responsibilities: finalATSScore.responsibilities,
+            education: finalATSScore.education,
+            formatting: finalATSScore.formatting,
+          },
+
+          // Optimization log
+          optimizationResult,
+
+          // Skill Match
+          skillMatchReport,
+
+          // Cover Letter
+          coverLetter,
+
+          // Interview / Networking
+          networkingTips,
+          interviewProbability,
+
+          // Decision
+          finalDecision,
+          finalDecisionReason,
+        },
+      };
+    } catch (error) {
+      this.logger.error(`[ApplicationPackage] Pipeline failed: ${error instanceof Error ? error.message : 'Unknown'}`);
+      return this.generateFullResumeFallback(params, candidateProfile);
+    }
   }
 }
 

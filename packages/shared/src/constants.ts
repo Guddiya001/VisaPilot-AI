@@ -90,3 +90,106 @@ export const COUNTRY_PRIORITY_TIERS: Record<string, number> = {
   // TIER 3
   'Remote worldwide': 3, 'Remote Europe': 3, 'Remote APAC': 3
 };
+
+// ============ ATS Optimization Config ============
+export const MAX_ATS_ITERATIONS = 5;
+export const TARGET_ATS_SCORE = 100;
+
+export const ATS_SCORE_WEIGHTS = {
+  requiredSkills: 30,
+  preferredSkills: 20,
+  experienceMatch: 20,
+  keywords: 15,
+  responsibilities: 10,
+  education: 5,
+  formatting: 5,
+} as const;
+
+export const ATS_SCORE_MAX_TOTAL = Object.values(ATS_SCORE_WEIGHTS).reduce((a, b) => a + b, 0); // 105
+
+export const ATS_MATCH_LEVEL_THRESHOLDS = {
+  EXCELLENT: 95,
+  STRONG: 90,
+  GOOD: 80,
+  NEEDS_OPTIMIZATION: 70,
+} as const;
+
+/**
+ * Skill alias map: maps variant spellings/abbreviations to canonical forms.
+ * All keys MUST be lowercase. Used by the ATS scorer to match equivalent terms.
+ */
+export const SKILL_ALIASES: Record<string, string[]> = {
+  // JavaScript ecosystem
+  'react': ['react.js', 'reactjs', 'react js'],
+  'react.js': ['react', 'reactjs', 'react js'],
+  'next.js': ['nextjs', 'next js', 'next'],
+  'vue.js': ['vuejs', 'vue js', 'vue'],
+  'node.js': ['nodejs', 'node js', 'node'],
+  'express.js': ['expressjs', 'express'],
+  'typescript': ['ts'],
+  'javascript': ['js', 'ecmascript', 'es6', 'es2015'],
+
+  // Python ecosystem
+  'fastapi': ['fast api', 'fast-api'],
+
+  // DevOps / Infrastructure
+  'kubernetes': ['k8s'],
+  'k8s': ['kubernetes'],
+  'docker': ['containerization', 'containers'],
+  'terraform': ['iac', 'infrastructure as code'],
+  'ci/cd': ['cicd', 'ci cd', 'continuous integration', 'continuous delivery', 'continuous deployment'],
+  'cicd': ['ci/cd', 'ci cd'],
+
+  // Cloud
+  'aws': ['amazon web services'],
+  'gcp': ['google cloud', 'google cloud platform'],
+  'azure': ['microsoft azure'],
+
+  // Databases
+  'postgresql': ['postgres', 'pg'],
+  'postgres': ['postgresql', 'pg'],
+  'mongodb': ['mongo'],
+  'mongo': ['mongodb'],
+
+  // Messaging
+  'kafka': ['apache kafka'],
+  'rabbitmq': ['rabbit mq', 'amqp'],
+
+  // AI / ML
+  'genai': ['generative ai', 'gen ai', 'gen-ai'],
+  'generative ai': ['genai', 'gen ai', 'gen-ai'],
+  'llm': ['large language model', 'large language models'],
+  'rag': ['retrieval augmented generation', 'retrieval-augmented generation'],
+  'ai agents': ['agentic ai', 'ai agent', 'intelligent agents'],
+  'agentic ai': ['ai agents', 'ai agent'],
+  'langchain': ['lang chain'],
+  'langgraph': ['lang graph'],
+  'mcp': ['model context protocol'],
+  'model context protocol': ['mcp'],
+
+  // Methodologies
+  'agile': ['scrum', 'kanban'],
+  'scrum': ['agile'],
+  'tdd': ['test driven development', 'test-driven development'],
+  'bdd': ['behavior driven development', 'behavior-driven development'],
+
+  // Architecture
+  'microservices': ['micro-services', 'micro services'],
+  'rest': ['restful', 'rest api', 'rest apis'],
+  'restful': ['rest', 'rest api', 'rest apis'],
+  'graphql': ['graph ql'],
+
+  // Observability
+  'datadog': ['data dog'],
+  'grafana': ['grafana dashboards'],
+  'splunk': ['splunk enterprise'],
+
+  // Testing
+  'jest': ['jestjs'],
+  'cypress': ['cypress.io'],
+  'selenium': ['selenium webdriver'],
+} as const;
+
+// ============ AutoApply Queue ============
+export const QUEUE_AUTO_APPLY = 'auto-apply';
+export const QUEUE_PACKAGE_GENERATION = 'package-generation';

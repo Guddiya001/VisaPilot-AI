@@ -15,6 +15,7 @@ export * from './agents/resume-improvement';
 export * from './agents/cover-letter';
 export * from './agents/interview';
 export * from './agents/learning';
+export * from './agents/ats-optimizer';
 export * from './rag/service';
 export * from './types';
 

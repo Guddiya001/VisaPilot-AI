@@ -11,6 +11,10 @@ import {
   ATSProvider,
   AgentType,
   CrawlerStatus,
+  ApplicationPackageStatus,
+  AutoApplyStatus,
+  ATSMatchLevel,
+  ATSOptimizationStopReason,
 } from './enums';
 
 // ============ User Types ============
@@ -400,4 +404,110 @@ export interface AuditLog {
   userAgent?: string;
   createdAt: Date;
 }
+
+// ============ ATS Match Score (7-Dimension) ============
+export interface ATSScoreDimension {
+  score: number;
+  max: number;
+}
+
+export interface ATSMatchScore {
+  requiredSkills: ATSScoreDimension;
+  preferredSkills: ATSScoreDimension;
+  experienceMatch: ATSScoreDimension;
+  keywords: ATSScoreDimension;
+  responsibilities: ATSScoreDimension;
+  education: ATSScoreDimension;
+  formatting: ATSScoreDimension;
+  total: number;
+  maxTotal: number;
+  normalizedScore: number;
+  matchLevel: ATSMatchLevel;
+  matchedSkills: string[];
+  missingSkills: string[];
+  matchedKeywords: string[];
+  missingKeywords: string[];
+}
+
+// ============ ATS Optimization Loop ============
+export interface ATSIteration {
+  iteration: number;
+  score: number;
+  changes: string[];
+  addedKeywords: string[];
+  skippedKeywords: Array<{ keyword: string; reason: string }>;
+}
+
+export interface ATSOptimizationResult {
+  iterations: ATSIteration[];
+  initialScore: number;
+  finalScore: number;
+  improvement: number;
+  converged: boolean;
+  stoppedReason: ATSOptimizationStopReason;
+}
+
+export interface ATSOptimizationConfig {
+  maxIterations: number;
+  targetScore: number;
+}
+
+// ============ Application Package ============
+export interface ApplicationPackage {
+  id: string;
+  userId: string;
+  jobId: string;
+  applicationId?: string;
+  status: ApplicationPackageStatus;
+  tailoredResume: Record<string, unknown>;
+  coverLetter: string;
+  atsMatchScore: ATSMatchScore;
+  skillMatchReport: SkillMatchReport;
+  applicationAnswers?: Record<string, string>;
+  iterationLog?: ATSOptimizationResult;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SkillMatchReport {
+  matched: string[];
+  missing: string[];
+  partial: string[];
+}
+
+// ============ AutoApply ============
+export interface AutoApplyJob {
+  id: string;
+  applicationPackageId: string;
+  userId: string;
+  status: AutoApplyStatus;
+  approvedBy?: string;
+  approvedAt?: Date;
+  submittedAt?: Date;
+  submissionResult?: Record<string, unknown>;
+  error?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// ============ JD Analysis (structured) ============
+export interface JDAnalysis {
+  jobTitle: string;
+  companyName: string;
+  country: string;
+  city: string;
+  locationText: string;
+  companyIndustry: string;
+  companyCulture: string[];
+  requiredSkills: string[];
+  preferredSkills: string[];
+  experienceYears: number;
+  domainFocus: string[];
+  visaIndicators: string[];
+  roleLevel: string;
+  keyResponsibilities: string[];
+  techStack: string[];
+  [key: string]: unknown;
+}
+
 

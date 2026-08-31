@@ -124,7 +124,7 @@ export class CrawlerService {
 
     // Run ALL adapters in parallel with a 20-second hard timeout each.
     // This cuts total crawl time from O(n*latency) → O(max_single_latency).
-    const ADAPTER_TIMEOUT_MS = 20_000;
+    const ADAPTER_TIMEOUT_MS = 12_000;
 
     const adapterResults = await Promise.allSettled(
       activeSources.map(async (source) => {

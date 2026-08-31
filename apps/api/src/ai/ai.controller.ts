@@ -117,5 +117,43 @@ export class AiController {
   ) {
     return this.aiService.generateFullResume(body);
   }
-}
 
+  @Post('ats-report')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Generate detailed 7-dimension ATS match report' })
+  async atsReport(
+    @Body()
+    body: {
+      resumeContent: string;
+      jobDescription: string;
+      jobTitle?: string;
+      companyName?: string;
+    },
+    @CurrentUser('userId') userId?: string,
+  ) {
+    return this.aiService.generateATSReport(
+      body.resumeContent,
+      body.jobDescription,
+      body.jobTitle,
+      body.companyName,
+    );
+  }
+
+  @Post('generate-package')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Generate full Application Package (resume + cover letter + ATS optimization + skill match)' })
+  async generatePackage(
+    @Body()
+    body: {
+      jobDescription: string;
+      jobTitle?: string;
+      companyName?: string;
+      strategy?: 'A' | 'B' | 'C' | 'auto';
+      maxIterations?: number;
+      targetScore?: number;
+    },
+    @CurrentUser('userId') userId?: string,
+  ) {
+    return this.aiService.generateApplicationPackage(body);
+  }
+}

@@ -7,6 +7,7 @@ import {
   ResumeImprovementAgent,
   CoverLetterAgent,
   InterviewAgent,
+  ATSOptimizerAgent,
 } from '@visapilot/ai';
 
 declare const jest: any;
@@ -24,6 +25,7 @@ describe('Resume Update & Tailoring against Job Description', () => {
   let mockResumeImprovement: Partial<ResumeImprovementAgent>;
   let mockCoverLetter: Partial<CoverLetterAgent>;
   let mockInterview: Partial<InterviewAgent>;
+  let mockATSOptimizer: Partial<ATSOptimizerAgent>;
 
   const sampleCandidateResume = {
     basics: {
@@ -240,6 +242,7 @@ Requirements:
     mockResumeImprovement = { process: jest.fn() };
     mockCoverLetter = { process: jest.fn() };
     mockInterview = { process: jest.fn() };
+    mockATSOptimizer = { process: jest.fn() };
 
     aiService = new AiService(
       mockAiPkgService as AIServiceType,
@@ -249,6 +252,7 @@ Requirements:
       mockResumeImprovement as ResumeImprovementAgent,
       mockCoverLetter as CoverLetterAgent,
       mockInterview as InterviewAgent,
+      mockATSOptimizer as ATSOptimizerAgent,
     );
   });
 
@@ -265,25 +269,25 @@ Requirements:
       expect(result.data).toBeDefined();
 
       // Check ATS score improvement
-      expect(result.data.atsScoreBefore).toBe(68);
-      expect(result.data.atsScoreAfter).toBe(94);
-      expect(result.data.atsScoreAfter).toBeGreaterThan(result.data.atsScoreBefore);
+      expect(result.data!.atsScoreBefore).toBe(68);
+      expect(result.data!.atsScoreAfter).toBe(94);
+      expect(result.data!.atsScoreAfter).toBeGreaterThan(result.data!.atsScoreBefore);
 
       // Check tailored summary matches company & role
-      expect(result.data.tailoredSummary).toContain('Zalando SE');
-      expect(result.data.tailoredSummary).toContain('Senior Backend Platform Engineer');
+      expect(result.data!.tailoredSummary).toContain('Zalando SE');
+      expect(result.data!.tailoredSummary).toContain('Senior Backend Platform Engineer');
 
       // Check added skills extracted from JD
-      expect(result.data.addedSkills).toEqual(
+      expect(result.data!.addedSkills).toEqual(
         expect.arrayContaining(['Kafka', 'Kubernetes', 'TypeScript', 'Node.js', 'PostgreSQL', 'Redis'])
       );
 
       // Check bullet point improvements
-      expect(result.data.bulletImprovements.length).toBeGreaterThan(0);
-      expect(result.data.bulletImprovements[0].improved).toContain('Kafka');
+      expect(result.data!.bulletImprovements.length).toBeGreaterThan(0);
+      expect(result.data!.bulletImprovements[0].improved).toContain('Kafka');
 
       // Check key changes list
-      expect(result.data.keyChanges.length).toBeGreaterThanOrEqual(3);
+      expect(result.data!.keyChanges.length).toBeGreaterThanOrEqual(3);
     });
 
     it('should fallback gracefully and extract skills if LLM call encounters error', async () => {
@@ -297,11 +301,11 @@ Requirements:
       });
 
       expect(result.success).toBe(true);
-      expect(result.data.atsScoreBefore).toBe(65);
-      expect(result.data.atsScoreAfter).toBe(91);
-      expect(result.data.tailoredSummary).toContain('Zalando SE');
-      expect(result.data.addedSkills.length).toBeGreaterThan(0);
-      expect(result.data.bulletImprovements.length).toBeGreaterThan(0);
+      expect(result.data!.atsScoreBefore).toBe(65);
+      expect(result.data!.atsScoreAfter).toBe(91);
+      expect(result.data!.tailoredSummary).toContain('Zalando SE');
+      expect(result.data!.addedSkills.length).toBeGreaterThan(0);
+      expect(result.data!.bulletImprovements.length).toBeGreaterThan(0);
     });
   });
 
@@ -318,39 +322,39 @@ Requirements:
       const data = result.data;
 
       // Phase 1-2: JD Analysis
-      expect(data.jdAnalysis.jobTitle).toContain('Senior Backend Platform Engineer');
-      expect(data.jdAnalysis.companyName).toBe('Zalando SE');
-      expect(data.jdAnalysis.country).toBe('Germany');
-      expect(data.jdAnalysis.requiredSkills).toContain('Kafka');
-      expect(data.jdAnalysis.visaIndicators.length).toBeGreaterThan(0);
+      expect(data!.jdAnalysis.jobTitle).toContain('Senior Backend Platform Engineer');
+      expect(data!.jdAnalysis.companyName).toBe('Zalando SE');
+      expect(data!.jdAnalysis.country).toBe('Germany');
+      expect(data!.jdAnalysis.requiredSkills).toContain('Kafka');
+      expect(data!.jdAnalysis.visaIndicators.length).toBeGreaterThan(0);
 
       // Phase 3: Strategy
-      expect(['A', 'B', 'C']).toContain(data.strategy);
+      expect(['A', 'B', 'C']).toContain(data!.strategy);
 
       // Phase 4-5: Resume Data
-      expect(data.resumeData.basics.name).toBe('Ashish Kumar Singh');
-      expect(data.resumeData.basics.location).toContain('Germany');
-      expect(data.resumeData.basics.summary).toContain('Senior Backend Platform Engineer');
-      expect(data.resumeData.experience.length).toBeGreaterThan(0);
-      expect(data.resumeData.skillsFlat.length).toBeGreaterThan(0);
-      expect(data.resumeData.projects.length).toBeGreaterThan(0);
+      expect(data!.resumeData.basics.name).toBe('Ashish Kumar Singh');
+      expect(data!.resumeData.basics.location).toContain('Germany');
+      expect(data!.resumeData.basics.summary).toContain('Senior Backend Platform Engineer');
+      expect(data!.resumeData.experience.length).toBeGreaterThan(0);
+      expect(data!.resumeData.skillsFlat.length).toBeGreaterThan(0);
+      expect(data!.resumeData.projects.length).toBeGreaterThan(0);
 
       // Phase 6-7: ATS Score
-      expect(data.atsScore).toBe(96);
-      expect(data.atsBreakdown.keywordMatch).toBe(95);
-      expect(data.atsBreakdown.experienceMatch).toBe(97);
+      expect(data!.atsScore).toBe(96);
+      expect(data!.atsBreakdown.keywordMatch).toBe(95);
+      expect(data!.atsBreakdown.experienceMatch).toBe(97);
 
       // Phase 8: Cover Letter
-      expect(data.coverLetter).toBeDefined();
+      expect(data!.coverLetter).toBeDefined();
 
       // Phase 9: Probability
-      expect(data.interviewProbability.atsPass).toBeGreaterThanOrEqual(80);
-      expect(data.interviewProbability.recruiterResponse).toBeGreaterThan(40);
-      expect(data.networkingTips.length).toBeGreaterThan(0);
+      expect(data!.interviewProbability.atsPass).toBeGreaterThanOrEqual(80);
+      expect(data!.interviewProbability.recruiterResponse).toBeGreaterThan(40);
+      expect(data!.networkingTips.length).toBeGreaterThan(0);
 
       // Phase 10: Final Recommendation
-      expect(data.finalDecision).toBe('APPLY_TODAY');
-      expect(data.finalDecisionReason).toContain('Strong match');
+      expect(data!.finalDecision).toBe('APPLY_TODAY');
+      expect(data!.finalDecisionReason).toContain('Strong match');
     });
 
     it('should correctly build fallback structured resume if LLM fails', async () => {
@@ -364,9 +368,9 @@ Requirements:
       });
 
       expect(result.success).toBe(true);
-      expect(result.data.resumeData.basics.name).toBe('Ashish Kumar Singh');
-      expect(result.data.resumeData.experience.length).toBeGreaterThan(0);
-      expect(result.data.atsScore).toBeGreaterThanOrEqual(80);
+      expect(result.data!.resumeData.basics.name).toBe('Ashish Kumar Singh');
+      expect(result.data!.resumeData.experience.length).toBeGreaterThan(0);
+      expect(result.data!.atsScore).toBeGreaterThanOrEqual(80);
     });
   });
 
@@ -449,9 +453,9 @@ Requirements:
       const result = await aiService.analyzeResume(JSON.stringify(sampleCandidateResume), sampleJobDescription);
 
       expect(result.success).toBe(true);
-      expect(result.data.overallScore).toBe(84);
-      expect(result.data.matchedKeywords).toContain('TypeScript');
-      expect(result.data.missingKeywords).toContain('Kafka');
+      expect(result.data!.overallScore).toBe(84);
+      expect(result.data!.matchedKeywords).toContain('TypeScript');
+      expect(result.data!.missingKeywords).toContain('Kafka');
       expect((result.data as any).suggestions.length).toBeGreaterThan(0);
     });
   });
@@ -475,10 +479,10 @@ Requirements:
       const result = await aiService.optimizeResume(JSON.stringify(sampleCandidateResume), sampleJobDescription);
 
       expect(result.success).toBe(true);
-      expect(result.data.optimizedContent).toContain('Optimized resume content');
-      expect(result.data.originalScore).toBe(68);
-      expect(result.data.improvedScore).toBe(92);
-      expect(result.data.changes.length).toBe(2);
+      expect(result.data!.optimizedContent).toContain('Optimized resume content');
+      expect(result.data!.originalScore).toBe(68);
+      expect(result.data!.improvedScore).toBe(92);
+      expect(result.data!.changes.length).toBe(2);
     });
   });
 
@@ -505,9 +509,9 @@ Requirements:
       });
 
       expect(result.success).toBe(true);
-      expect(result.data.content).toContain('Zalando SE');
-      expect(result.data.tone).toBe('professional');
-      expect(result.data.matchingPoints).toContain('Kafka');
+      expect(result.data!.content).toContain('Zalando SE');
+      expect(result.data!.tone).toBe('professional');
+      expect(result.data!.matchingPoints).toContain('Kafka');
     });
 
     it('should fallback cleanly if agent encounters an error', async () => {
@@ -522,8 +526,8 @@ Requirements:
       });
 
       expect(result.success).toBe(true);
-      expect(result.data.content).toContain('Zalando SE');
-      expect(result.data.content).toContain('Ashish Kumar Singh');
+      expect(result.data!.content).toContain('Zalando SE');
+      expect(result.data!.content).toContain('Ashish Kumar Singh');
       expect((result.data as any).keyPoints.length).toBeGreaterThan(0);
     });
   });

@@ -102,11 +102,8 @@ export class AshbyAdapter extends BaseCrawlerAdapter {
   }
 
   private matchesFilters(job: Job, filters: SearchFilters): boolean {
-    if (filters.query && !job.title.toLowerCase().includes(filters.query.toLowerCase()) &&
-        !job.description.toLowerCase().includes(filters.query.toLowerCase())) {
-      return false;
-    }
-    if (filters.countries?.length && !filters.countries.includes(job.country)) return false;
+    if (!this.matchesQueryFilter(job, filters.query)) return false;
+    if (!this.matchesCountryFilter(job, filters.countries)) return false;
     if (filters.types?.length && !filters.types.includes(job.type)) return false;
     return true;
   }
