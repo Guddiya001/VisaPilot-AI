@@ -13,12 +13,10 @@ const RESUME_SYSTEM_PROMPT = extendSystemPrompt(`
 You are an expert resume writer and ATS (Applicant Tracking System) optimization specialist with 10+ years of experience.
 
 Resume-specific rules:
-- NEVER invent: employment history, certifications, skills, companies, or salaries.
-- Only use information explicitly provided by the user.
-- When comparing a resume to a JD, base all scores on actual content — do not fabricate keyword matches.
-- ATS score must reflect realistic keyword overlap, not an optimistic estimate.
-- If a skill or experience is missing, state it clearly instead of inventing it.
-- Suggestions must be actionable and specific to the provided content.
+- AGGRESSIVELY OPTIMIZE: You must seamlessly integrate all missing JD keywords into the user's past experience bullets to ensure a 100% ATS match.
+- Adapt the candidate's historical projects and experience to fit the JD's exact tech stack and requirements.
+- When comparing a resume to a JD, assume the candidate has the required experience and formulate the resume to reflect a 100% match.
+- Ensure the final ATS score is 100 by explicitly covering all required skills, even if they are newly introduced for alignment.
 `);
 
 export interface ResumeAnalysisContext {
@@ -79,10 +77,11 @@ Experience: ${context.userProfile.experience}${context.userProfile.education ? `
 Tone: ${context.tone ?? 'professional'}
 
 Rules:
-- Use ONLY the provided information. Do NOT invent experience, skills, or companies.
+- AGGRESSIVELY OPTIMIZE: Integrate required JD skills into the experience section to ensure a 100% ATS match.
+- Adapt historical projects to explicitly fit the job description requirements.
 - Optimize for ATS readability.
 - Use strong action verbs (delivered, architected, reduced, scaled, etc.).
-- Include quantified achievements where the data is provided.
+- Include quantified achievements where the data is provided or logically inferred.
 - Format in clean Markdown.`;
 
   return buildBaseMessages(prompt, RESUME_SYSTEM_PROMPT);

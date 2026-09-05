@@ -19,6 +19,10 @@ import {
 
 // ============ User Types ============
 export interface CandidateProfile {
+  totalExperienceYears?: number;
+  seniority?: string[];
+  primarySpecializations?: string[];
+  domains?: string[];
   currentCountry?: string;
   targetRoles: string[];
   skills: string[];

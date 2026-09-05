@@ -121,7 +121,7 @@ function ResumeBuilderInner() {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleApplyGeneratedResume = (result: any) => {
+  const handleApplyGeneratedResume = (result: any, options: { withCoverLetter: boolean } = { withCoverLetter: false }) => {
     dispatch({
       type: 'GENERATE_FULL_RESUME',
       payload: {
@@ -131,7 +131,8 @@ function ResumeBuilderInner() {
         resumeData: result.resumeData as unknown as ResumeData,
         atsScore: Number(result.atsScore),
         atsBreakdown: (result.atsBreakdown || { keywordMatch: 0, experienceMatch: 0, skillsMatch: 0, formattingScore: 0 }) as any,
-        coverLetter: String(result.coverLetter || ''),
+        // Only include cover letter when explicitly requested
+        coverLetter: options.withCoverLetter ? String(result.coverLetter || '') : '',
         networkingTips: (result.networkingTips || []) as string[],
         interviewProbability: (result.interviewProbability || { atsPass: 0, recruiterResponse: 0, technicalInterview: 0, offerProbability: 0, expectedTimeline: '' }) as any,
         finalDecision: result.finalDecision as any,
@@ -139,7 +140,8 @@ function ResumeBuilderInner() {
       },
     });
     setGenerateModalOpen(false);
-    setTailoredStatus(`✨ Resume generated with ${result.atsScore}% ATS score (Strategy ${result.strategy})`);
+    const coverNote = options.withCoverLetter ? ' + Cover Letter' : '';
+    setTailoredStatus(`✨ Resume generated with ${result.atsScore}% ATS score (Strategy ${result.strategy})${coverNote}`);
   };
 
   const handleExportPDF = () => {
@@ -339,7 +341,7 @@ function ResumeBuilderInner() {
       <GenerateResumeModal
         isOpen={generateModalOpen}
         onClose={() => setGenerateModalOpen(false)}
-        onApplyResume={handleApplyGeneratedResume}
+        onApplyResume={(result, options) => handleApplyGeneratedResume(result, options)}
         initialJobDescription={jobInfo ? `${jobInfo.title} at ${jobInfo.company}\n\nDescription:\n${jobInfo.description}\n\nRequirements:\n${jobInfo.requirements}` : ''}
         initialJobTitle={jobInfo?.title || ''}
         initialCompanyName={jobInfo?.company || ''}

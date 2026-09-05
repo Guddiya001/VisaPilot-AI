@@ -1,48 +1,41 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
+import { getPrismaClient } from '@visapilot/database';
 import { ApplicationStatus } from '@visapilot/shared';
 
 @Injectable()
 export class ApplicationsService {
   private readonly logger = new Logger(ApplicationsService.name);
+  private readonly db = getPrismaClient();
 
-  private mockApplications = Array.from({ length: 12 }, (_, i) => ({
-    id: `app-${i + 1}`,
-    jobId: `job-${i + 1}`,
-    userId: 'user-1',
+  // ─── Include shape reused across queries ───────────────────────────────────
+  private readonly jobInclude = {
     job: {
-      id: `job-${i + 1}`,
-      title: ['Senior Software Engineer', 'Product Manager', 'Data Scientist', 'DevOps Engineer', 'Full-Stack Developer', 'ML Engineer'][i % 6],
-      company: { name: ['Google', 'Microsoft', 'Stripe', 'Spotify', 'Shopify', 'Airbnb'][i % 6] },
-      location: ['San Francisco, US', 'London, UK', 'Berlin, DE', 'Toronto, CA', 'Sydney, AU', 'Amsterdam, NL'][i % 6],
-      visaSponsorship: i % 3 === 0 ? 'SPONSORS' : i % 3 === 1 ? 'CASE_BY_CASE' : 'DOES_NOT_SPONSOR',
+      include: {
+        company: true,
+      },
     },
-    status: [
-      ApplicationStatus.SAVED,
-      ApplicationStatus.APPLYING,
-      ApplicationStatus.APPLIED,
-      ApplicationStatus.SCREENING,
-      ApplicationStatus.INTERVIEWING,
-      ApplicationStatus.OFFERED,
-      ApplicationStatus.REJECTED,
-      ApplicationStatus.ACCEPTED,
-    ][i % 8],
-    appliedAt: i > 1 ? new Date(Date.now() - i * 3 * 86400000) : undefined,
-    interviewDate: i === 4 ? new Date(Date.now() + 5 * 86400000) : undefined,
-    notes: i % 3 === 0 ? 'Applied via company website' : undefined,
-    createdAt: new Date(Date.now() - i * 86400000),
-    updatedAt: new Date(),
-  }));
+  } as const;
 
-  async getAll(userId: string, params: { status?: string; page: number; limit: number }) {
-    let results = [...this.mockApplications];
+  // ─── GET ALL ───────────────────────────────────────────────────────────────
+  async getAll(
+    userId: string,
+    params: { status?: string; page: number; limit: number },
+  ) {
+    const where = {
+      userId,
+      ...(params.status ? { status: params.status } : {}),
+    };
 
-    if (params.status) {
-      results = results.filter((a) => a.status === params.status);
-    }
-
-    const total = results.length;
-    const start = (params.page - 1) * params.limit;
-    const data = results.slice(start, start + params.limit);
+    const [data, total] = await Promise.all([
+      this.db.application.findMany({
+        where,
+        include: this.jobInclude,
+        orderBy: { createdAt: 'desc' },
+        skip: (params.page - 1) * params.limit,
+        take: params.limit,
+      }),
+      this.db.application.count({ where }),
+    ]);
 
     return {
       success: true,
@@ -56,57 +49,143 @@ export class ApplicationsService {
     };
   }
 
+  // ─── CREATE ────────────────────────────────────────────────────────────────
   async create(userId: string, jobId: string, notes?: string) {
-    const application = {
-      id: `app-${crypto.randomUUID()}`,
-      jobId,
-      userId,
-      status: ApplicationStatus.SAVED,
-      notes,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    // Return existing application if already saved (upsert-like behaviour)
+    const existing = await this.db.application.findUnique({
+      where: { userId_jobId: { userId, jobId } },
+      include: this.jobInclude,
+    });
+
+    if (existing) {
+      this.logger.log(`Application already exists for user=${userId} job=${jobId}, returning existing`);
+      return { success: true, data: existing };
+    }
+
+    const application = await this.db.application.create({
+      data: {
+        userId,
+        jobId,
+        status: ApplicationStatus.SAVED,
+        notes,
+        source: 'MANUAL',
+        sourceUrl: '',
+      },
+      include: this.jobInclude,
+    });
 
     this.logger.log(`Application created: ${application.id}`);
     return { success: true, data: application };
   }
 
+  // ─── UPDATE STATUS ─────────────────────────────────────────────────────────
   async updateStatus(id: string, status: ApplicationStatus, userId: string) {
-    const app = this.mockApplications.find((a) => a.id === id);
+    const app = await this.db.application.findFirst({ where: { id, userId } });
     if (!app) throw new NotFoundException(`Application ${id} not found`);
 
-    app.status = status;
+    // Automatically set relevant date fields on status transitions
+    const dateFields: Partial<{
+      appliedAt: Date;
+      interviewDate: Date;
+      offerDate: Date;
+      rejectionDate: Date;
+    }> = {};
+
+    if (
+      status === ApplicationStatus.APPLIED &&
+      !app.appliedAt
+    ) {
+      dateFields.appliedAt = new Date();
+    }
+    if (
+      status === ApplicationStatus.INTERVIEWING &&
+      !app.interviewDate
+    ) {
+      dateFields.interviewDate = new Date();
+    }
+    if (
+      status === ApplicationStatus.OFFERED &&
+      !app.offerDate
+    ) {
+      dateFields.offerDate = new Date();
+    }
+    if (
+      (status === ApplicationStatus.REJECTED || status === ApplicationStatus.WITHDRAWN) &&
+      !app.rejectionDate
+    ) {
+      dateFields.rejectionDate = new Date();
+    }
+
+    const updated = await this.db.application.update({
+      where: { id },
+      data: { status, ...dateFields },
+      include: this.jobInclude,
+    });
+
     this.logger.log(`Application ${id} status updated to ${status}`);
-
-    return { success: true, data: app };
+    return { success: true, data: updated };
   }
 
+  // ─── GET BY ID ─────────────────────────────────────────────────────────────
   async getById(id: string, userId: string) {
-    const app = this.mockApplications.find((a) => a.id === id);
+    const app = await this.db.application.findFirst({
+      where: { id, userId },
+      include: this.jobInclude,
+    });
     if (!app) throw new NotFoundException(`Application ${id} not found`);
 
     return { success: true, data: app };
   }
 
+  // ─── STATS ─────────────────────────────────────────────────────────────────
   async getStats(userId: string) {
-    const apps = this.mockApplications;
-    const statuses = apps.reduce(
-      (acc, app) => {
-        acc[app.status] = (acc[app.status] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
+    const grouped = await this.db.application.groupBy({
+      by: ['status'],
+      where: { userId },
+      _count: { id: true },
+    });
+
+    const byStatus: Record<string, number> = {};
+    let total = 0;
+
+    for (const row of grouped) {
+      byStatus[row.status] = row._count.id;
+      total += row._count.id;
+    }
+
+    const interviewing =
+      (byStatus[ApplicationStatus.INTERVIEWING] ?? 0) +
+      (byStatus[ApplicationStatus.OFFERED] ?? 0);
+    const offered =
+      (byStatus[ApplicationStatus.OFFERED] ?? 0) +
+      (byStatus[ApplicationStatus.ACCEPTED] ?? 0);
 
     return {
       success: true,
       data: {
-        total: apps.length,
-        byStatus: statuses,
-        interviewRate: apps.filter((a) => a.status === ApplicationStatus.INTERVIEWING || a.status === ApplicationStatus.OFFERED).length / apps.length * 100,
-        offerRate: apps.filter((a) => a.status === ApplicationStatus.OFFERED || a.status === ApplicationStatus.ACCEPTED).length / apps.length * 100,
+        total,
+        byStatus,
+        interviewRate: total > 0 ? (interviewing / total) * 100 : 0,
+        offerRate: total > 0 ? (offered / total) * 100 : 0,
       },
     };
   }
-}
 
+  // ─── DELETE / WITHDRAW ─────────────────────────────────────────────────────
+  async delete(id: string, userId: string) {
+    const app = await this.db.application.findFirst({ where: { id, userId } });
+    if (!app) throw new NotFoundException(`Application ${id} not found`);
+
+    // Mark as WITHDRAWN rather than hard-deleting so history is preserved
+    const updated = await this.db.application.update({
+      where: { id },
+      data: {
+        status: ApplicationStatus.WITHDRAWN,
+        rejectionDate: new Date(),
+      },
+    });
+
+    this.logger.log(`Application ${id} withdrawn by user ${userId}`);
+    return { success: true, data: updated };
+  }
+}

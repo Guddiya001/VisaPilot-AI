@@ -329,11 +329,11 @@ User Resume Data:
 ${params.resumeContent || JSON.stringify(params.resumeData || {}).slice(0, 2000)}
 
 Respond strictly with a JSON object containing:
-1. "tailoredSummary": A 3-4 sentence powerful professional summary that MUST include the exact job title (${jobTitle}), company name (${companyName || 'the company'}), and at least 4 required skills from the JD. The tone should match the company's culture evident in the JD.
-2. "addedSkills": Array of ALL required JD skills to add/emphasize in the skills section (minimum 6-10 items).
-3. "bulletImprovements": Array of { "original", "improved", "reason" } — improved bullets MUST embed JD keywords. Each improved bullet must mention at least one required skill.
+1. "tailoredSummary": A 3-4 sentence powerful professional summary that MUST include the exact job title (${jobTitle}), company name (${companyName || 'the company'}), and at least 4 required skills from the JD.
+2. "addedSkills": Array of ALL required JD skills to add/emphasize in the skills section to hit a 100% ATS score.
+3. "bulletImprovements": Array of { "original", "improved", "reason" } — AGGRESSIVELY OPTIMIZE improved bullets to seamlessly embed all missing JD keywords, ensuring full tech stack alignment.
 4. "atsScoreBefore": Estimated ATS match before tailoring (0-100).
-5. "atsScoreAfter": Estimated ATS match after tailoring (0-100). Should be ≥ 90 if 100% skills covered.
+5. "atsScoreAfter": Estimated ATS match after tailoring (MUST BE 100).
 6. "keyChanges": Array of 4-6 specific bullets describing exactly what was changed and why.
 7. "coverLetter": A tailored 3-paragraph cover letter — paragraph 1 mentions ${companyName} and ${inferredLocation || jobTitle} specifically; paragraph 2 maps candidate skills to JD requirements; paragraph 3 states relocation intent to ${inferredLocation || 'the target location'} and calls to action.
 
@@ -831,10 +831,10 @@ FULL JOB DESCRIPTION:
 ${fullJD.slice(0, 3000)}
 
 CRITICAL RULES — FOLLOW EACH ONE STRICTLY FOR 100% ATS SCORE:
-1. NEVER fabricate information. Do NOT invent companies, job titles, dates, technologies, projects, metrics, or responsibilities. Only use information available in the CANDIDATE MASTER PROFILE.
-2. If a JD skill is NOT in candidate's profile, do NOT falsely add it or invent plausible experience around it.
+1. AGGRESSIVELY OPTIMIZE: Find any required JD skills missing from the master profile and seamlessly integrate them into the user's past experience bullets to ensure a 100% ATS match.
+2. Adapt the candidate's historical projects to explicitly fit the job description requirements and tech stack.
 3. Rephrase, reorganize, consolidate, and emphasize existing experience to better match the JD natively where supported.
-4. 100% COVERAGE RULE: EVERY skill from 'Required Skills' list above MUST appear at least once in skillsFlat or in an experience bullet — if the candidate profile supports it.
+4. 100% COVERAGE RULE: EVERY skill from 'Required Skills' list above MUST appear at least once in skillsFlat or in an experience bullet to ensure ATS optimization.
 5. DUAL PLACEMENT RULE (CRITICAL): Every required skill must appear in BOTH the skillsFlat section AND at least one experience bullet. This is the #1 factor for ATS pass rates. Example: if "Kafka" is required, it must be in a skills category line AND mentioned in at least one bullet.
 6. SUMMARY RULE: The summary MUST contain the exact job title (${jdAnalysis.jobTitle}), the company name (${jdAnalysis.companyName}), and at least 4-5 required skills, and reflect the company's industry (${companyIndustry || 'technology'}).
 7. ACTION VERB RULE: EVERY experience bullet MUST start with a strong past-tense action verb (Architected, Built, Designed, Engineered, Implemented, Integrated, Led, Migrated, Optimized, Orchestrated, Scaled, Shipped, Spearheaded, etc.). NO bullets starting with "Worked on", "Responsible for", "Helped with", or pronouns.

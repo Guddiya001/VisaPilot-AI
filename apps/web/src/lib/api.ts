@@ -177,6 +177,47 @@ export const aiApi = {
     });
   },
 
+  improveResumeScore(params: {
+    resumeContent: string;
+    jobTitle?: string;
+    companyName?: string;
+    jobDescription: string;
+    currentScore: number;
+  }) {
+    return request<{
+      tailoredSummary: string;
+      addedSkills: string[];
+      bulletImprovements: Array<{ original: string; improved: string; reason: string }>;
+      atsScoreBefore: number;
+      atsScoreAfter: number;
+      keyChanges: string[];
+      coverLetter: string;
+    }>('/ai/tailor-resume', {
+      method: 'POST',
+      body: JSON.stringify({
+        resumeContent: params.resumeContent,
+        jobTitle: params.jobTitle,
+        companyName: params.companyName,
+        jobDescription: params.jobDescription,
+        targetScore: 100,
+        currentScore: params.currentScore,
+      }),
+    });
+  },
+
+  generateCoverLetterFromResume(params: {
+    userName: string;
+    jobTitle: string;
+    companyName: string;
+    jobDescription: string;
+    skills: string[];
+  }) {
+    return request<{ coverLetter: string }>('/ai/generate-cover-letter', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  },
+
   analyzeVisa(jobDescription: string, companyName: string) {
     return request('/ai/visa-analysis', {
       method: 'POST',
