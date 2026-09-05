@@ -83,17 +83,11 @@ function JobsContent() {
   );
 
   const fetchJobs = useCallback(
-    async (query: string, pg: number, country: string, remote: string, visa: string) => {
+    async (query: string, pg: number, country: string, remote: string, visa: string, forceRefresh = false) => {
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
         eventSourceRef.current = null;
       }
-
-      setLoading(true);
-      setError('');
-      setJobs([]);
-      setAiSearchInfo(null);
-      setIsStreaming(false);
 
       const params = new URLSearchParams();
       if (query) params.set('query', query);
@@ -102,6 +96,32 @@ function JobsContent() {
       if (visa) params.set('visaSponsorship', visa);
       params.set('page', String(pg));
       params.set('limit', '20');
+      
+      const cacheKey = `searchCache_${params.toString()}`;
+
+      if (!forceRefresh && typeof window !== 'undefined') {
+        try {
+          const cached = sessionStorage.getItem(cacheKey);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (parsed && Array.isArray(parsed.data)) {
+              setJobs(parsed.data);
+              setAiSearchInfo(parsed.meta?.intent || null);
+              setPage(parsed.meta?.page || pg);
+              setTotalPages(parsed.meta?.totalPages || 1);
+              return; // Skip API call
+            }
+          }
+        } catch (e) {
+          console.error('Failed to load search cache', e);
+        }
+      }
+
+      setLoading(true);
+      setError('');
+      setJobs([]);
+      setAiSearchInfo(null);
+      setIsStreaming(false);
 
       try {
         const response = await fetch(`${API_BASE}/jobs?${params.toString()}`);
@@ -115,6 +135,28 @@ function JobsContent() {
 
         if (result.data && Array.isArray(result.data)) {
           setJobs(result.data);
+          
+          if (typeof window !== 'undefined') {
+            try {
+              sessionStorage.setItem(cacheKey, JSON.stringify({
+                data: result.data,
+                meta: result.meta
+              }));
+            } catch (e) {
+              console.error('Failed to save search cache', e);
+            }
+
+            result.data.forEach((job: Job) => {
+              const url = job.url || job.sourceUrl;
+              if (url && (job.description || job.requirements)) {
+                localStorage.setItem(`jd_${url}`, JSON.stringify({
+                  description: job.description || '',
+                  requirements: job.requirements || ''
+                }));
+              }
+            });
+          }
+
           setAiSearchInfo(result.meta?.intent || null);
           setPage(result.meta?.page || pg);
           setTotalPages(result.meta?.totalPages || 1);
@@ -136,7 +178,7 @@ function JobsContent() {
     const remote = searchParams.get('remote') || '';
     const visa = searchParams.get('visaSponsorship') || '';
     const pg = Number(searchParams.get('page')) || 1;
-    fetchJobs(query, pg, country, remote, visa);
+    fetchJobs(query, pg, country, remote, visa, false);
 
     return () => {
       if (eventSourceRef.current) {
@@ -147,7 +189,7 @@ function JobsContent() {
 
   function handleSearch(newQuery = searchQuery, newPage = 1) {
     updateUrl(newQuery, newPage, countryFilter, remoteFilter, visaFilter);
-    fetchJobs(newQuery, newPage, countryFilter, remoteFilter, visaFilter);
+    fetchJobs(newQuery, newPage, countryFilter, remoteFilter, visaFilter, true);
   }
 
   function formatSalary(job: Job) {
@@ -407,7 +449,13 @@ function JobsContent() {
                   </div>
                   <div className="flex gap-3 mt-1">
                     <Link
-                      href={`/resume-builder?jobTitle=${encodeURIComponent(job.title || '')}&jobCompany=${encodeURIComponent(companyName)}&jobUrl=${encodeURIComponent(job.url || job.sourceUrl || '')}&autoGenerate=true`}
+                      href={`/resume-builder?${job.id ? `jobId=${encodeURIComponent(job.id)}&` : ''}jobTitle=${encodeURIComponent(job.title || '')}&jobCompany=${encodeURIComponent(companyName)}&jobUrl=${encodeURIComponent(job.url || job.sourceUrl || '')}&autoGenerate=true`}
+                      onClick={() => {
+                        if (!job.id && (job.description || job.requirements)) {
+                          sessionStorage.setItem('tempJobDescription', job.description || '');
+                          sessionStorage.setItem('tempJobRequirements', job.requirements || '');
+                        }
+                      }}
                       className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-gradient-to-r from-violet-50 to-purple-50 text-violet-700 border border-violet-200 hover:from-violet-100 hover:to-purple-100 hover:border-violet-300 transition-all"
                     >
                       <FileText className="w-3.5 h-3.5" />

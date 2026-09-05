@@ -220,6 +220,8 @@ export class JobsService {
       title: job.title,
       company: job.companyName,
       location: job.location,
+      description: job.description,
+      requirements: job.requirements,
       url: job.sourceUrl || job.applyUrl || '',
       source: {
         type: 'WEB',
@@ -379,6 +381,8 @@ export class JobsService {
         title: job.title,
         company: job.companyName,
         location: job.location,
+        description: job.description,
+        requirements: job.requirements,
         url: job.sourceUrl || (job as any).applyUrl || '',
         source: {
           type: 'WEB',

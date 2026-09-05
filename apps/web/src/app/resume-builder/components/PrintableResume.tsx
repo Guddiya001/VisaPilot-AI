@@ -139,9 +139,10 @@ export function openPrintWindow(data: ResumeData, jobInfo?: JobInfo | null): voi
     }
   `;
 
+  const sanitize = (str: string) => str.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
   const docTitle = jobInfo
-    ? `Resume_${jobInfo.company.replace(/\s+/g, '_')}_${jobInfo.id}`
-    : `${data.basics.name} - Resume`;
+    ? `Resume_${sanitize(jobInfo.title)}_${sanitize(jobInfo.company)}`
+    : `Resume_${sanitize(data.basics.title) || sanitize(data.basics.name) || 'Export'}`;
 
   const fullHtml = `
     <!DOCTYPE html>
@@ -255,9 +256,10 @@ export function openCoverLetterPrintWindow(data: ResumeData, jobInfo?: JobInfo |
     }
   `;
 
+  const sanitize = (str: string) => str.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
   const docTitle = jobInfo
-    ? `Cover_Letter_${jobInfo.company.replace(/\s+/g, '_')}_${jobInfo.id}`
-    : `${data.basics.name} - Cover Letter`;
+    ? `Cover_Letter_${sanitize(jobInfo.title)}_${sanitize(jobInfo.company)}`
+    : `Cover_Letter_${sanitize(data.basics.title) || sanitize(data.basics.name) || 'Export'}`;
 
   const fullHtml = `
     <!DOCTYPE html>

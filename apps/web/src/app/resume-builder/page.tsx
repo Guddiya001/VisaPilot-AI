@@ -68,12 +68,27 @@ function ResumeBuilderInner() {
 
     // Path 2: Load job info from query params (crawled jobs without DB ID)
     if (jobTitle) {
+      let desc = '';
+      let reqs = '';
+      if (typeof window !== 'undefined' && jobUrl) {
+        try {
+          const cached = localStorage.getItem(`jd_${jobUrl}`);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            desc = parsed.description || '';
+            reqs = parsed.requirements || '';
+          }
+        } catch (err) {
+          console.error('Failed to parse cached job description', err);
+        }
+      }
+
       const info = {
         id: '',
         title: jobTitle,
         company: jobCompany || 'Company',
-        description: '',
-        requirements: '',
+        description: desc,
+        requirements: reqs,
       };
       setJobInfo(info);
 
@@ -81,7 +96,7 @@ function ResumeBuilderInner() {
         setGenerateModalOpen(true);
       }
     }
-  }, [jobId, jobTitle]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [jobId, jobTitle, jobUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const triggerAutoTailor = async (info: { title: string; company: string; description: string; requirements: string }) => {
     setTailoring(true);
@@ -342,7 +357,7 @@ function ResumeBuilderInner() {
         isOpen={generateModalOpen}
         onClose={() => setGenerateModalOpen(false)}
         onApplyResume={(result, options) => handleApplyGeneratedResume(result, options)}
-        initialJobDescription={jobInfo ? `${jobInfo.title} at ${jobInfo.company}\n\nDescription:\n${jobInfo.description}\n\nRequirements:\n${jobInfo.requirements}` : ''}
+        initialJobDescription={jobInfo ? (jobInfo.description || jobInfo.requirements ? `${jobInfo.title} at ${jobInfo.company}\n\nDescription:\n${jobInfo.description}\n\nRequirements:\n${jobInfo.requirements}` : '') : ''}
         initialJobTitle={jobInfo?.title || ''}
         initialCompanyName={jobInfo?.company || ''}
       />

@@ -44,9 +44,10 @@ export function Toolbar({ onExportPDF, onAnalyze, jobInfo }: ToolbarProps) {
 
     const blob = new Blob([dataToExport], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
+    const sanitize = (str: string) => str.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
     const a = document.createElement('a');
     a.href = url;
-    a.download = jobInfo ? `resume_${jobInfo.company.replace(/\s+/g, '_')}_${jobInfo.id}.json` : 'resume-data.json';
+    a.download = jobInfo ? `Resume_${sanitize(jobInfo.title)}_${sanitize(jobInfo.company)}.json` : 'Resume.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
