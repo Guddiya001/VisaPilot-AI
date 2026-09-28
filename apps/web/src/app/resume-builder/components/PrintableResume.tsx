@@ -34,115 +34,133 @@ export function openPrintWindow(data: ResumeData, jobInfo?: JobInfo | null): voi
       padding: 0;
       box-sizing: border-box;
       color: #333;
-      font-size: 9pt;
-      line-height: 1.4;
+      font-size: 8.5pt;
+      line-height: 1.32;
     }
     .rp-header {
       text-align: center;
-      margin-bottom: 12pt;
+      margin-bottom: 5pt;
     }
     .rp-name {
-      font-size: 24pt;
+      font-size: 20pt;
       font-weight: 700;
       color: #111;
-      margin: 0 0 4pt 0;
+      margin: 0 0 2pt 0;
+      letter-spacing: -0.2px;
     }
     .rp-subtitle {
-      font-size: 11pt;
-      color: #444;
-      margin: 0 0 6pt 0;
+      font-size: 9.5pt;
+      font-weight: 600;
+      color: #333;
+      margin: 0 0 3pt 0;
     }
     .rp-contacts, .rp-links {
-      font-size: 8.5pt;
+      font-size: 8pt;
       color: #555;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 6pt;
-      margin-bottom: 2pt;
+      align-items: center;
+      gap: 4pt;
+      margin-bottom: 1.5pt;
     }
     .rp-sep {
       color: #ccc;
+      margin: 0 1pt;
+      user-select: none;
     }
     .rp-open-to {
-      font-size: 8.5pt;
+      font-size: 8pt;
       color: #666;
-      margin-top: 4pt;
+      margin-top: 2pt;
       font-style: italic;
     }
     .rp-section {
-      margin-bottom: 12pt;
+      margin-bottom: 6pt;
     }
-    .rp-section-title {
-      font-size: 11pt;
+    .rp-section-title, h2 {
+      font-size: 9.5pt;
       font-weight: 700;
-      color: #111;
+      color: #060652;
       text-transform: uppercase;
       border-bottom: 1pt solid #ddd;
-      padding-bottom: 2pt;
-      margin: 0 0 6pt 0;
+      padding-bottom: 1.5pt;
+      margin: 4pt 0 3pt 0;
+      letter-spacing: 0.3px;
     }
     .rp-role {
-      margin-bottom: 8pt;
+      margin-bottom: 5pt;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
     .rp-role-head {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      margin-bottom: 3pt;
+      margin-bottom: 2pt;
     }
     .rp-role-heading {
       margin: 0;
-      font-size: 10pt;
+      font-size: 9pt;
     }
     .rp-role-title {
       font-weight: 600;
-      color: #222;
+      color: #111;
     }
     .rp-company {
-      font-weight: 500;
-      color: #444;
+      font-weight: 600;
+      color: #2b4374;
     }
     .rp-dash {
-      margin: 0 4pt;
+      margin: 0 3pt;
       color: #888;
     }
     .rp-role-meta {
-      font-size: 8.5pt;
+      font-size: 8pt;
       color: #666;
     }
     .rp-bullets {
       margin: 0;
-      padding-left: 14pt;
+      padding-left: 12pt;
       list-style-type: disc;
     }
     .rp-bullets li {
-      margin-bottom: 2pt;
+      margin-bottom: 1.5pt;
+      line-height: 1.3;
     }
     .rp-skills-flat-line {
-      margin: 0 0 3pt 0;
+      margin: 0 0 2.5pt 0;
+      line-height: 1.32;
     }
     .rp-project-tech {
-      font-size: 8pt;
+      font-size: 7.5pt;
       color: #666;
       font-style: italic;
     }
     .rp-cover-letter-content p {
-      margin: 0 0 10pt 0;
-      line-height: 1.6;
+      margin: 0 0 8pt 0;
+      line-height: 1.5;
     }
     @page {
-      margin: 15mm 20mm;
+      margin: 8mm 12mm;
+      size: A4;
     }
     @media print {
-      body { margin: 0; }
+      body { margin: 0; padding: 0; }
+      .rp-role { page-break-inside: avoid; break-inside: avoid; }
     }
   `;
 
-  const sanitize = (str: string) => str.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
-  const docTitle = jobInfo
-    ? `Resume_${sanitize(jobInfo.title)}_${sanitize(jobInfo.company)}`
-    : `Resume_${sanitize(data.basics.title) || sanitize(data.basics.name) || 'Export'}`;
+  const sanitize = (str: string) => str.trim().replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '');
+  const candidateName = sanitize(data.basics.name) || 'Ashish_Kumar_Singh';
+  const roleName = sanitize(jobInfo?.title || data.basics.title.split('|')[0].trim() || 'Software_Engineer');
+  const companyName = jobInfo?.company && jobInfo.company.toLowerCase() !== 'company'
+    ? sanitize(jobInfo.company)
+    : '';
+
+  const docTitle = companyName
+    ? `${candidateName}_${roleName}_${companyName}_Resume`
+    : `${candidateName}_${roleName}_Resume`;
 
   const fullHtml = `
     <!DOCTYPE html>
@@ -256,10 +274,16 @@ export function openCoverLetterPrintWindow(data: ResumeData, jobInfo?: JobInfo |
     }
   `;
 
-  const sanitize = (str: string) => str.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
-  const docTitle = jobInfo
-    ? `Cover_Letter_${sanitize(jobInfo.title)}_${sanitize(jobInfo.company)}`
-    : `Cover_Letter_${sanitize(data.basics.title) || sanitize(data.basics.name) || 'Export'}`;
+  const sanitize = (str: string) => str.trim().replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '');
+  const candidateName = sanitize(data.basics.name) || 'Ashish_Kumar_Singh';
+  const roleName = sanitize(jobInfo?.title || data.basics.title.split('|')[0].trim() || 'Software_Engineer');
+  const companyName = jobInfo?.company && jobInfo.company.toLowerCase() !== 'company'
+    ? sanitize(jobInfo.company)
+    : '';
+
+  const docTitle = companyName
+    ? `${candidateName}_${roleName}_${companyName}_Cover_Letter`
+    : `${candidateName}_${roleName}_Cover_Letter`;
 
   const fullHtml = `
     <!DOCTYPE html>

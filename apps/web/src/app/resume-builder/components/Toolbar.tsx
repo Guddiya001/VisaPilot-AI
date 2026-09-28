@@ -11,7 +11,7 @@ interface ToolbarProps {
 }
 
 export function Toolbar({ onExportPDF, onAnalyze, jobInfo }: ToolbarProps) {
-  const { dispatch, exportJSON, importJSON } = useResume();
+  const { data, dispatch, exportJSON, importJSON } = useResume();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleClearAll = () => {
@@ -44,10 +44,17 @@ export function Toolbar({ onExportPDF, onAnalyze, jobInfo }: ToolbarProps) {
 
     const blob = new Blob([dataToExport], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const sanitize = (str: string) => str.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+    const sanitize = (str: string) => str.trim().replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_|_$/g, '');
+    const candidateName = sanitize(data.basics.name) || 'Ashish_Kumar_Singh';
+    const roleName = sanitize(jobInfo?.title || data.basics.title.split('|')[0].trim() || 'Software_Engineer');
+    const companyName = jobInfo?.company && jobInfo.company.toLowerCase() !== 'company' ? sanitize(jobInfo.company) : '';
+    const downloadName = companyName
+      ? `${candidateName}_${roleName}_${companyName}_Resume.json`
+      : `${candidateName}_${roleName}_Resume.json`;
+
     const a = document.createElement('a');
     a.href = url;
-    a.download = jobInfo ? `Resume_${sanitize(jobInfo.title)}_${sanitize(jobInfo.company)}.json` : 'Resume.json';
+    a.download = downloadName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -103,10 +110,11 @@ export function Toolbar({ onExportPDF, onAnalyze, jobInfo }: ToolbarProps) {
       <button
         id="toolbar-load-sample"
         onClick={() => dispatch({ type: 'LOAD_SAMPLE' })}
+        title="Reset to Master Resume"
         className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-all"
       >
         <FileText size={14} />
-        Sample
+        Master Resume
       </button>
 
       <button

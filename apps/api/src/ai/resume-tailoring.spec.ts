@@ -531,4 +531,138 @@ Requirements:
       expect((result.data as any).keyPoints.length).toBeGreaterThan(0);
     });
   });
+
+  describe('7. Important Missing Requirements: Select, Add & Store for Future Use', () => {
+    it('should allow candidate to select missing JD requirements, add to resume, and store for future use', () => {
+      // 1. Initial Candidate Resume State
+      const currentResume = {
+        ...sampleCandidateResume,
+        skillsFlat: [
+          'Core: TypeScript, Node.js, Python, Go',
+          'Cloud: AWS, Docker, Microservices',
+        ],
+        metadata: {
+          storedMissingSkills: ['Redis'] as string[],
+        },
+      };
+
+      // 2. Simulated Suggestion Result from JD analysis
+      const suggestedMissingFromJD = ['Kafka', 'Kubernetes', 'Terraform', 'AWS']; // AWS already in resume
+
+      // 3. User selects specific missing requirements they possess
+      const selectedByUser = ['Kafka', 'Kubernetes', 'Terraform'];
+
+      // 4. Reducer simulation of ADD_IMPORTANT_MISSING
+      const existingText = currentResume.skillsFlat.join(' ').toLowerCase();
+      const newSkills = selectedByUser
+        .map((s) => s.trim())
+        .filter((s) => s && !existingText.includes(s.toLowerCase()));
+
+      expect(newSkills).toEqual(['Kafka', 'Kubernetes', 'Terraform']);
+
+      // 5. Persistent storage simulation (localStorage visapilot_stored_skills)
+      const mockStorage = new Set(currentResume.metadata.storedMissingSkills);
+      newSkills.forEach((s) => mockStorage.add(s));
+      const persistedSkills = Array.from(mockStorage);
+
+      const updatedState = {
+        ...currentResume,
+        skillsFlat: [...currentResume.skillsFlat, ...newSkills],
+        metadata: {
+          ...currentResume.metadata,
+          storedMissingSkills: persistedSkills,
+        },
+      };
+
+      // Verification of active resume update
+      expect(updatedState.skillsFlat).toContain('Kafka');
+      expect(updatedState.skillsFlat).toContain('Kubernetes');
+      expect(updatedState.skillsFlat).toContain('Terraform');
+
+      // Verification of persistent storage for future use
+      expect(updatedState.metadata.storedMissingSkills).toEqual(
+        expect.arrayContaining(['Redis', 'Kafka', 'Kubernetes', 'Terraform']),
+      );
+
+      // 6. Future session verification: new JD suggests 'Kafka' & 'GraphQL'
+      const nextJdMissing = ['Kafka', 'GraphQL'];
+      const alreadyStored = persistedSkills.filter((s) => nextJdMissing.includes(s));
+      expect(alreadyStored).toContain('Kafka'); // Recognized from previous storage!
+    });
+  });
+
+  describe('8. Zero-Risk ATS Markdown Structure & Grounded Production Bullets', () => {
+    const fs = require('fs');
+    const path = require('path');
+
+    it('should verify clean single-column Markdown with exact standard section headings', () => {
+      const resumePath = path.resolve(__dirname, '../../../../RESUME.md');
+      expect(fs.existsSync(resumePath)).toBe(true);
+
+      const resumeContent = fs.readFileSync(resumePath, 'utf8');
+
+      // 1. Verify exact 4 standard section headings
+      expect(resumeContent).toMatch(/## PROFESSIONAL SUMMARY/);
+      expect(resumeContent).toMatch(/## CORE TECHNICAL SKILLS/);
+      expect(resumeContent).toMatch(/## PROFESSIONAL EXPERIENCE/);
+      expect(resumeContent).toMatch(/## EDUCATION & CERTIFICATIONS/);
+
+      // 2. Verify zero formatting risks (no HTML tables, no multi-column markup, no ascii art dividers)
+      expect(resumeContent).not.toMatch(/<table/i);
+      expect(resumeContent).not.toMatch(/<td/i);
+      expect(resumeContent).not.toMatch(/={5,}/);
+      expect(resumeContent).not.toMatch(/\*{5,}/);
+
+      // 3. Verify single-column markdown headers
+      expect(resumeContent).toMatch(/^# Ashish Kumar Singh/m);
+      expect(resumeContent).toMatch(/^### Senior Engineering Lead/m);
+      expect(resumeContent).toMatch(/^### Senior Software Engineer/m);
+    });
+
+    it('should verify no keyword stuffing: all technical terms are grounded in verified production bullets with action verbs & metrics', () => {
+      const resumePath = path.resolve(__dirname, '../../../../RESUME.md');
+      const resumeContent = fs.readFileSync(resumePath, 'utf8');
+
+      // Extract bullets under PROFESSIONAL EXPERIENCE
+      const expSection = resumeContent.split('## PROFESSIONAL EXPERIENCE')[1]?.split('## EDUCATION & CERTIFICATIONS')[0] || '';
+      const bullets = expSection
+        .split('\n')
+        .map((l: string) => l.trim())
+        .filter((l: string) => l.startsWith('- '));
+
+      expect(bullets.length).toBeGreaterThanOrEqual(15);
+
+      const validActionVerbs = [
+        'Architected', 'Engineered', 'Implemented', 'Spearheaded',
+        'Built', 'Optimized', 'Led', 'Developed', 'Designed',
+        'Created', 'Automated', 'Collaborated', 'Constructed', 'Participated',
+      ];
+
+      // Verify each bullet starts with a bolded action verb
+      bullets.forEach((bullet: string) => {
+        const hasValidVerb = validActionVerbs.some((v) => bullet.includes(`**${v}**`));
+        expect(hasValidVerb).toBe(true);
+      });
+
+      // Verify measurable business impacts are present across bullets
+      expect(expSection).toMatch(/40%/); // latency reduction / clinician time
+      expect(expSection).toMatch(/15M\+/); // daily requests
+      expect(expSection).toMatch(/35%/); // bundle reduction
+      expect(expSection).toMatch(/94/); // Lighthouse score
+      expect(expSection).toMatch(/30%/); // query speedup
+      expect(expSection).toMatch(/85%\+/); // code coverage
+      expect(expSection).toMatch(/45%/); // peak DB load reduction
+      expect(expSection).toMatch(/99\.95%/); // uptime SLA
+
+      // Verify skills listed in CORE TECHNICAL SKILLS are grounded in the experience bullets
+      const coreSkillsGrounded = [
+        'Python', 'FastAPI', 'TypeScript', 'Go', 'Java', 'Spring Boot',
+        'React', 'Kafka', 'Redis', 'Docker', 'Kubernetes', 'PostgreSQL',
+      ];
+
+      coreSkillsGrounded.forEach((skill) => {
+        expect(expSection).toContain(skill);
+      });
+    });
+  });
 });

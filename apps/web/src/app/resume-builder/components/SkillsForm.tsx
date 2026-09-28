@@ -1,11 +1,17 @@
 'use client';
 
-import { useResume } from '../context';
-import { Plus, X, Lightbulb } from 'lucide-react';
+import { useResume, getStoredSkills } from '../context';
+import { Plus, X, Lightbulb, Database, Check } from 'lucide-react';
 
 export default function SkillsForm() {
   const { data, dispatch } = useResume();
   const { skillsFlat: skills } = data;
+
+  const storedSkills = getStoredSkills();
+  const existingSkillsText = skills.join(' ').toLowerCase();
+  const unaddedStoredSkills = storedSkills.filter(
+    (s) => !existingSkillsText.includes(s.toLowerCase().trim())
+  );
 
   return (
     <div className="space-y-4">
@@ -60,6 +66,64 @@ export default function SkillsForm() {
           </button>
         </div>
       </div>
+
+      {/* Stored Skills from Past JDs card */}
+      {storedSkills.length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-2.5 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-1 bg-primary-50 rounded text-primary-600">
+                <Database className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Stored Skills ({storedSkills.length})
+                </h4>
+                <p className="text-[11px] text-slate-500">
+                  Persisted from previously accepted JD suggestions
+                </p>
+              </div>
+            </div>
+            {unaddedStoredSkills.length > 0 && (
+              <button
+                onClick={() => dispatch({ type: 'ADD_SKILLS', payload: unaddedStoredSkills })}
+                className="text-xs font-semibold px-2.5 py-1 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg transition-colors"
+              >
+                + Add All to Resume ({unaddedStoredSkills.length})
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {storedSkills.map((s, idx) => {
+              const inResume = existingSkillsText.includes(s.toLowerCase().trim());
+              return (
+                <span
+                  key={idx}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${
+                    inResume
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                      : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  }`}
+                >
+                  {inResume && <Check className="w-3 h-3 text-emerald-600" />}
+                  <span>{s}</span>
+                  {!inResume && (
+                    <button
+                      onClick={() => dispatch({ type: 'ADD_SKILLS', payload: [s] })}
+                      className="ml-1 hover:bg-primary-200 text-primary-600 rounded-full w-4 h-4 flex items-center justify-center font-bold"
+                      title={`Add ${s} to resume`}
+                    >
+                      +
+                    </button>
+                  )}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

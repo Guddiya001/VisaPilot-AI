@@ -5,7 +5,47 @@ import type { ResumeData, ResumeExperience, ResumeProject, ResumeEducation, Cove
 import { SAMPLE_RESUME_DATA, EMPTY_RESUME_DATA, generateId } from './types';
 
 // ─── Storage Key ───────────────────────────────────────────
-const STORAGE_KEY = 'visapilot_resume_data';
+const STORAGE_KEY = 'visapilot_resume_data_v2_1';
+const LEGACY_STORAGE_KEY = 'visapilot_resume_data';
+const V2_STORAGE_KEY = 'visapilot_resume_data_v2';
+export const STORED_SKILLS_KEY = 'visapilot_stored_skills';
+
+/**
+ * Retrieve user-confirmed skills stored across past JD evaluations
+ */
+export function getStoredSkills(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(STORED_SKILLS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Persist user-confirmed skills permanently for future JD optimizations
+ */
+export function saveStoredSkills(skills: string[]): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const current = getStoredSkills();
+    const currentSet = new Set(current.map((s) => s.toLowerCase().trim()));
+    const merged = [...current];
+    for (const s of skills) {
+      const trimmed = s.trim();
+      if (trimmed && !currentSet.has(trimmed.toLowerCase())) {
+        currentSet.add(trimmed.toLowerCase());
+        merged.push(trimmed);
+      }
+    }
+    localStorage.setItem(STORED_SKILLS_KEY, JSON.stringify(merged));
+    return merged;
+  } catch (e) {
+    console.error('Failed to save stored skills:', e);
+    return [];
+  }
+}
 
 // ─── Actions ───────────────────────────────────────────────
 type ResumeAction =
@@ -24,6 +64,14 @@ type ResumeAction =
   | { type: 'ADD_SKILL_LINE'; payload?: string }
   | { type: 'UPDATE_SKILL_LINE'; payload: { index: number; value: string } }
   | { type: 'REMOVE_SKILL_LINE'; payload: number }
+  | { type: 'ADD_SKILLS'; payload: string[] }
+  | {
+      type: 'ADD_IMPORTANT_MISSING';
+      payload: {
+        skills: string[];
+        persistForFuture?: boolean;
+      };
+    }
   // Projects
   | { type: 'ADD_PROJECT'; payload?: Partial<ResumeProject> }
   | { type: 'UPDATE_PROJECT'; payload: { id: string; data: Partial<ResumeProject> } }
@@ -152,6 +200,82 @@ function resumeReducer(state: ResumeData, action: ResumeAction): ResumeData {
     case 'REMOVE_SKILL_LINE':
       return { ...state, skillsFlat: state.skillsFlat.filter((_, i) => i !== action.payload) };
 
+    case 'ADD_SKILLS':
+    case 'ADD_IMPORTANT_MISSING': {
+      const skillsToAdd = 'skills' in action.payload ? action.payload.skills : action.payload;
+      const persist = 'persistForFuture' in action.payload ? action.payload.persistForFuture !== false : true;
+
+      // Check if skill already exists in any form (as standalone or inside a grouped line)
+      const existingText = state.skillsFlat.join(' ').toLowerCase();
+      const newSkills = skillsToAdd
+        .map((s) => s.trim())
+        .filter((s) => {
+          if (!s) return false;
+          const sLower = s.toLowerCase();
+          // Regex boundary or exact check
+          return !existingText.includes(sLower);
+        });
+
+      if (newSkills.length === 0) return state;
+
+      if (persist) {
+        saveStoredSkills(newSkills);
+      }
+
+      const prevStored = (state.metadata?.storedMissingSkills as string[]) || [];
+      const updatedStored = Array.from(new Set([...prevStored, ...newSkills]));
+
+      const updatedSkills = [...state.skillsFlat];
+      const unassigned: string[] = [];
+
+      for (const skill of newSkills) {
+        const sTrim = skill.trim();
+        const lower = sTrim.toLowerCase();
+        let merged = false;
+        if (/cloud|devops|aws|azure|gcp|docker|kubernetes|terraform|helm/i.test(lower)) {
+          const idx = updatedSkills.findIndex((l) => /^cloud\s*&?\s*devops/i.test(l));
+          if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
+        } else if (/python|typescript|javascript|golang|go\b|java\b|rust|c#|\.net|sql/i.test(lower)) {
+          const idx = updatedSkills.findIndex((l) => /^programming languages|^core languages|^languages/i.test(l));
+          if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
+        } else if (/ai|genai|llm|rag|mcp|langchain|langgraph|agent|prompt|vector/i.test(lower)) {
+          const idx = updatedSkills.findIndex((l) => /ai\b|generative/i.test(l));
+          if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
+        } else if (/react|next|vue|angular|frontend|html|css|tailwind/i.test(lower)) {
+          const idx = updatedSkills.findIndex((l) => /frontend/i.test(l));
+          if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
+        } else if (/postgres|mongo|mysql|redis|kafka|database|dynamo/i.test(lower)) {
+          const idx = updatedSkills.findIndex((l) => /database/i.test(l));
+          if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
+        } else if (/api|microservice|backend|grpc|rest|graphql/i.test(lower)) {
+          const idx = updatedSkills.findIndex((l) => /backend/i.test(l));
+          if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
+        }
+
+        if (!merged) {
+          unassigned.push(sTrim);
+        }
+      }
+
+      if (unassigned.length > 0) {
+        const addIdx = updatedSkills.findIndex((l) => /^additional skills|^core competencies/i.test(l));
+        if (addIdx !== -1) {
+          updatedSkills[addIdx] = `${updatedSkills[addIdx]}, ${unassigned.join(', ')}`;
+        } else {
+          updatedSkills.push(`Additional Skills: ${unassigned.join(', ')}`);
+        }
+      }
+
+      return {
+        ...state,
+        skillsFlat: updatedSkills,
+        metadata: {
+          ...state.metadata,
+          storedMissingSkills: updatedStored,
+        },
+      };
+    }
+
     // ─── Projects ───
     case 'ADD_PROJECT':
       return {
@@ -271,7 +395,7 @@ function resumeReducer(state: ResumeData, action: ResumeAction): ResumeData {
 
     // ─── Bulk ───
     case 'LOAD_SAMPLE':
-      return { ...SAMPLE_RESUME_DATA };
+      return JSON.parse(JSON.stringify(SAMPLE_RESUME_DATA));
 
     case 'CLEAR_ALL':
       return { ...EMPTY_RESUME_DATA };
@@ -297,11 +421,17 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     // Try to load from localStorage on mount
     if (typeof window !== 'undefined') {
       try {
+        // Clean up stale legacy storage
+        localStorage.removeItem(LEGACY_STORAGE_KEY);
+        localStorage.removeItem(V2_STORAGE_KEY);
+
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored);
-          // Merge with defaults to handle missing fields from older saves
-          return { ...initial, ...parsed };
+          // Only load if it matches profileVersion 2.1 and candidate profile
+          if (parsed.metadata?.profileVersion === '2.1' && parsed.basics?.name === 'Ashish Kumar Singh') {
+            return { ...initial, ...parsed };
+          }
         }
       } catch {
         // Ignore parse errors, use default

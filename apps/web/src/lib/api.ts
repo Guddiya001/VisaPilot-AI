@@ -290,6 +290,40 @@ export const jobsApi = {
   },
 };
 
+export const applicationsApi = {
+  getAll(status?: string, page = 1, limit = 50) {
+    const params = new URLSearchParams();
+    if (status) params.set('status', status);
+    params.set('page', String(page));
+    params.set('limit', String(limit));
+    return request<{ data: any[]; meta: any }>(`/applications?${params.toString()}`);
+  },
+
+  create(jobId: string, notes?: string) {
+    return request('/applications', {
+      method: 'POST',
+      body: JSON.stringify({ jobId, notes }),
+    });
+  },
+
+  updateStatus(id: string, status: string) {
+    return request(`/applications/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  },
+
+  delete(id: string) {
+    return request(`/applications/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  getStats() {
+    return request<{ data: any }>('/applications/stats');
+  },
+};
+
 // Auth
 export const authApi = {
   login(email: string, password: string) {

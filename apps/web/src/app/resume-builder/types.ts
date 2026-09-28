@@ -169,20 +169,98 @@ export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+export const MASTER_RESUME_TEXT = `# Ashish Kumar Singh
+**Senior Software Engineer | Senior Backend Engineer | AI / GenAI Engineer**
+
+Location: Noida, India (Open to Relocation: Germany, Netherlands, Ireland, UK, USA, Singapore | Visa Sponsorship Required)  
+Email: ashish.singh.careers@gmail.com | Phone: +91 7982169443  
+LinkedIn: https://www.linkedin.com/in/ashish-kumar-singh1986 | GitHub: https://github.com/guddiya001 | Portfolio: https://ashishkumarsingh.vercel.app
+
+---
+
+## PROFESSIONAL SUMMARY
+Staff- and Senior-level Software Engineer with 9+ years of experience architecting, scaling, and operating high-throughput backend systems, cloud-native microservices, and production-grade Generative AI platforms across enterprise healthcare, Tier-1 banking, and global retail e-commerce. Proven expertise in building autonomous agentic workflows using Python (FastAPI), Model Context Protocol (MCP), LangChain, LangGraph, and RAG retrieval pipelines, alongside resilient distributed backends with Node.js, TypeScript, Go, and Java (Spring Boot). Track record of driving 0-to-1 greenfield engineering initiatives, optimizing high-scale databases (PostgreSQL, Redis, Kafka), lowering latency by 40%, and maintaining 99.95% production availability for systems handling millions of daily requests.
+
+---
+
+## CORE TECHNICAL SKILLS
+- **Programming Languages:** Python (Asyncio, FastAPI), TypeScript, JavaScript (ES6+), Go (Golang), Java (Spring Boot), SQL
+- **AI & Generative AI:** Agentic Systems, Model Context Protocol (MCP), LangChain, LangGraph, RAG (Retrieval-Augmented Generation), Vector Databases (pgvector, ChromaDB), Embeddings, LLM Evaluation & Guardrails
+- **Backend & Distributed Systems:** Microservices Architecture, RESTful APIs, gRPC, Event-Driven Architecture, Message Queues (Apache Kafka, RabbitMQ), Distributed Caching (Redis), High-Concurrency Systems
+- **Databases & Data Engineering:** PostgreSQL, MySQL, MongoDB, DynamoDB, Oracle SQL, Database Indexing, Schema Optimization, Data Ingestion Pipelines
+- **Cloud & DevOps:** Amazon Web Services (AWS - ECS, EKS, Lambda, S3, RDS, SQS), Microsoft Azure, Google Cloud (GCP), Docker, Kubernetes, Helm, Terraform, CI/CD (GitHub Actions, GitLab CI, Jenkins)
+- **Frontend & Web Technologies:** React.js, Next.js, Redux Toolkit, Webpack Module Federation (Micro-frontends), HTML5, CSS3/Tailwind CSS, Core Web Vitals
+- **Engineering Best Practices:** System Design, Observability (DataDog, Prometheus, Grafana, OpenTelemetry), TDD (Jest, PyTest, JUnit), MAS/HIPAA Regulatory Compliance, Agile/Scrum Leadership
+
+---
+
+## PROFESSIONAL EXPERIENCE
+
+### Senior Engineering Lead | Persistent Systems Ltd. — UnitedHealth Group
+*Noida, India | Oct 2023 – Present*
+- **Architected** and deployed enterprise-grade Generative AI context retrieval and agentic orchestration platforms using Python, FastAPI, LangGraph, and Model Context Protocol (MCP), automating clinical workflows and decreasing manual clinician research time by 40%.
+- **Engineered** high-performance distributed backend microservices and REST/gRPC APIs using Python and Go, handling 15M+ daily requests with a 40% reduction in endpoint latency.
+- **Implemented** secure Model Context Protocol (MCP) clients and servers to standardize tool execution and data retrieval across fragmented clinical records, enforcing strict healthcare compliance and RBAC guardrails.
+- **Spearheaded** an enterprise micro-frontend architecture utilizing Webpack Module Federation and React 18, enabling independent continuous deployment across 6+ distributed engineering teams.
+- **Built** comprehensive end-to-end AI observability pipelines incorporating OpenTelemetry, DataDog, and Prometheus to monitor LLM token consumption, latency budgets, retrieval relevance, and system uptime.
+- **Optimized** client-side application bundle sizes by 35% and improved Core Web Vitals (Lighthouse score 62 → 94), delivering a 40% uplift in web application load performance.
+- **Led** technical architecture reviews, code quality governance, and mentorship for 12+ engineers across Agile sprints, establishing reusable backend libraries and CI/CD pipelines.
+
+### Senior Software Engineer | LTIMindtree Ltd. — DBS Bank
+*Singapore (Remote/Onsite Support) | Jul 2022 – Oct 2023*
+- **Developed** resilient, high-volume consumer banking microservices and transaction processing engines using Java (Spring Boot), Python, and PostgreSQL under strict Monetary Authority of Singapore (MAS) regulatory standards.
+- **Designed** highly scalable RESTful APIs and asynchronous event processing modules with zero transaction data loss and automated audit trail logging.
+- **Optimized** high-concurrency database queries, table indexing, and partition schemes in PostgreSQL and Oracle, decreasing transaction query execution times by 30% for financial reporting.
+- **Created** reusable modular web applications using React.js and TypeScript, integrating banking authentication workflows, real-time balance feeds, and end-to-end type safety.
+- **Implemented** automated integration and unit testing suites using JUnit, Mockito, and Jest, maintaining 85%+ test coverage across core financial components.
+- **Collaborated** directly with enterprise security auditors, technical product managers, and infrastructure teams to ensure fault tolerance, zero-trust network policies, and seamless deployments.
+
+### Senior Software Engineer | Coforge Ltd. — Walmart
+*Noida, India | Oct 2020 – Jun 2022*
+- **Engineered** distributed backend microservices and customer-facing order workflows using Node.js, Express, TypeScript, and Spring Boot for Walmart's global retail e-commerce platform during peak retail spikes.
+- **Architected** high-throughput event streaming and messaging pipelines utilizing Apache Kafka and RabbitMQ, guaranteeing idempotent order ingestion and real-time inventory synchronization.
+- **Implemented** multi-tier caching architectures with Redis and tuned relational/document databases (PostgreSQL, MongoDB), reducing peak load on primary databases by 45%.
+- **Automated** continuous delivery and blue/green deployment workflows using Jenkins, Docker, and Kubernetes, eliminating deployment downtime across bi-weekly production release cycles.
+- **Collaborated** with international site reliability engineering (SRE) and QA teams to instrument application health checks and distributed tracing, maintaining a 99.95% production service availability record.
+
+### Software Engineer | Previous Technology Organizations
+*India | Jan 2016 – Oct 2020*
+- **Built** full-stack web applications and scalable RESTful API backends using Python (Django/Flask), Node.js, React.js, MySQL, and PostgreSQL across healthcare, insurance, and SaaS domains.
+- **Designed** normalized relational database models, views, and stored procedures to handle high-concurrency data transactions and reliable analytics exports.
+- **Constructed** responsive, cross-browser frontend user interfaces using React, JavaScript (ES6+), HTML5, and CSS3, integrating state management and API services.
+- **Implemented** security controls including OAuth 2.0 authentication, JWT token validation, role-based access control (RBAC), and sanitization middleware to mitigate OWASP Top 10 vulnerabilities.
+- **Participated** in all phases of the Agile software development lifecycle (SDLC), contributing to sprint planning, backlog grooming, peer code reviews, and production release support.
+
+---
+
+## EDUCATION & CERTIFICATIONS
+
+### Education
+- **Master of Computer Applications (MCA)** — Uttar Pradesh Technical University (UPTU), India | *2013 – 2016*
+- **Bachelor of Computer Applications (BCA)** — UPRTO University, India | *2009 – 2012*
+
+### Certifications & Continuous Learning
+- **DeepLearning.AI**: Generative AI with Large Language Models
+- **DeepLearning.AI**: LangChain for LLM Application Development
+- **HackerRank**: Python (Advanced), Problem Solving (Advanced), JavaScript (Advanced), SQL (Advanced)
+- **Anthropic / Community**: Model Context Protocol (MCP) Architecture & Agentic Workflow Design
+- **AWS**: Cloud Practitioner / Cloud-Native Architecture Specialization
+`;
+
 // Default sample data (from the reference project)
 export const SAMPLE_RESUME_DATA: ResumeData = {
   basics: {
     name: "Ashish Kumar Singh",
 
     title:
-      "Senior Software Engineer | AI/ML | Agentic AI | Backend | Full Stack",
+      "Senior Software Engineer | Senior Backend Engineer | AI / GenAI Engineer",
 
     email: "ashish.singh.careers@gmail.com",
 
     phone: "+91 7982169443",
 
     location:
-      "India | Open to Relocation | Visa Sponsorship Required",
+      "Noida, India (Open to Relocation: Germany, Netherlands, Ireland, UK, USA, Singapore | Visa Sponsorship Required)",
 
     linkedin:
       "https://www.linkedin.com/in/ashish-kumar-singh1986",
@@ -194,10 +272,10 @@ export const SAMPLE_RESUME_DATA: ResumeData = {
       "https://ashishkumarsingh.vercel.app",
 
     summary:
-      "Senior Software Engineer with 9+ years of experience designing, building, and scaling production-grade AI, backend, full-stack, cloud-native, and distributed systems. Strong expertise in Generative AI, AI agents, agentic workflows, RAG, LLM integrations, MCP, LangChain, LangGraph, vector databases, AI observability, Python, Node.js, TypeScript, React, Next.js, REST APIs, microservices, PostgreSQL, AWS, Azure, GCP, Docker, Kubernetes, Terraform, and CI/CD. Experienced across healthcare, banking, retail, enterprise SaaS, and AI platforms, with proven ownership of architecture, 0-to-1 product development, production engineering, performance optimization, technical leadership, mentoring, and cross-functional delivery.",
+      "Staff- and Senior-level Software Engineer with 9+ years of experience architecting, scaling, and operating high-throughput backend systems, cloud-native microservices, and production-grade Generative AI platforms across enterprise healthcare, Tier-1 banking, and global retail e-commerce. Proven expertise in building autonomous agentic workflows using Python (FastAPI), Model Context Protocol (MCP), LangChain, LangGraph, and RAG retrieval pipelines, alongside resilient distributed backends with Node.js, TypeScript, Go, and Java (Spring Boot). Track record of driving 0-to-1 greenfield engineering initiatives, optimizing high-scale databases (PostgreSQL, Redis, Kafka), lowering latency by 40%, and maintaining 99.95% production availability for systems handling millions of daily requests.",
 
     openTo:
-      "Open to international relocation and visa-sponsored opportunities across USA, UK, Ireland, Germany, Netherlands, Poland, UAE, Singapore, and Australia."
+      "Germany, Netherlands, Ireland, UK, USA, Singapore | Visa Sponsorship Required"
   },
 
   candidateProfile: {
@@ -689,15 +767,10 @@ export const SAMPLE_RESUME_DATA: ResumeData = {
   experience: [
     {
       id: "exp-1",
-
       role: "Senior Engineering Lead",
-
-      company: "Persistent Systems Ltd / UnitedHealth Group",
-
+      company: "Persistent Systems Ltd. — UnitedHealth Group",
       location: "Noida, India",
-
-      period: "Oct 2023 - Present",
-
+      period: "Oct 2023 – Present",
       focus: [
         "AI",
         "Generative AI",
@@ -708,33 +781,15 @@ export const SAMPLE_RESUME_DATA: ResumeData = {
         "Architecture",
         "Technical Leadership"
       ],
-
       bullets: [
-        "Lead AI, backend, and full-stack engineering initiatives for enterprise healthcare applications using Python, FastAPI, Node.js, TypeScript, React, REST APIs, microservices, AWS, Azure, GCP, Docker, Kubernetes, and CI/CD.",
-
-        "Architect and build production-grade Generative AI applications integrating LLMs, AI agents, agentic workflows, RAG, embeddings, vector databases, prompt engineering, and enterprise business workflows.",
-
-        "Design agentic workflows using LangChain and LangGraph to orchestrate LLMs, tools, retrieval systems, APIs, application state, and business operations.",
-
-        "Implement Model Context Protocol (MCP) integrations enabling AI agents and LLM-powered applications to securely interact with enterprise tools, services, and data.",
-
-        "Design retrieval orchestration and contextual AI services that provide governed access to fragmented enterprise healthcare data.",
-
-        "Build scalable REST APIs and backend microservices using Python, FastAPI, Node.js, and distributed-system architecture.",
-
-        "Develop AI observability capabilities covering metrics, logs, traces, workflow behavior, retrieval quality, system reliability, and production performance.",
-
-        "Design and implement cloud-native applications using AWS, Azure, GCP, Docker, Kubernetes, Terraform, and CI/CD.",
-
-        "Architect reusable frontend components and application workflows using React, TypeScript, and modern web application architecture.",
-
-        "Lead 0-to-1 engineering initiatives, taking solutions from technical discovery and proof of concept through architecture, implementation, deployment, monitoring, and production support.",
-
-        "Conduct architecture reviews, code reviews, technical design sessions, mentoring, engineering standards, and technical decision-making across distributed engineering teams.",
-
-        "Collaborate with product managers, domain experts, UX teams, backend engineers, data teams, QA, security, and business stakeholders to deliver scalable enterprise AI solutions."
+        "Architected and deployed enterprise-grade Generative AI context retrieval and agentic orchestration platforms using Python, FastAPI, LangGraph, and Model Context Protocol (MCP), automating clinical workflows and decreasing manual clinician research time by 40%.",
+        "Engineered high-performance distributed backend microservices and REST/gRPC APIs using Python and Go, handling 15M+ daily requests with a 40% reduction in endpoint latency.",
+        "Implemented secure Model Context Protocol (MCP) clients and servers to standardize tool execution and data retrieval across fragmented clinical records, enforcing strict healthcare compliance and RBAC guardrails.",
+        "Spearheaded an enterprise micro-frontend architecture utilizing Webpack Module Federation and React 18, enabling independent continuous deployment across 6+ distributed engineering teams.",
+        "Built comprehensive end-to-end AI observability pipelines incorporating OpenTelemetry, DataDog, and Prometheus to monitor LLM token consumption, latency budgets, retrieval relevance, and system uptime.",
+        "Optimized client-side application bundle sizes by 35% and improved Core Web Vitals (Lighthouse score 62 → 94), delivering a 40% uplift in web application load performance.",
+        "Led technical architecture reviews, code quality governance, and mentorship for 12+ engineers across Agile sprints, establishing reusable backend libraries and CI/CD pipelines."
       ],
-
       metrics: [
         {
           metric: "Micro-frontend adoption",
@@ -758,18 +813,12 @@ export const SAMPLE_RESUME_DATA: ResumeData = {
         }
       ]
     },
-
     {
       id: "exp-2",
-
       role: "Senior Software Engineer",
-
-      company: "LTIMindtree Ltd / DBS Bank",
-
-      location: "Singapore",
-
-      period: "Jun 2022 - Mar 2023",
-
+      company: "LTIMindtree Ltd. — DBS Bank",
+      location: "Singapore (Remote/Onsite Support)",
+      period: "Jul 2022 – Oct 2023",
       focus: [
         "Backend",
         "Full Stack",
@@ -777,35 +826,21 @@ export const SAMPLE_RESUME_DATA: ResumeData = {
         "Distributed Systems",
         "Cloud"
       ],
-
       bullets: [
-        "Developed production banking applications using Node.js, Python, TypeScript, JavaScript, React, PostgreSQL, REST APIs, and microservices.",
-
-        "Designed scalable backend services and APIs supporting customer workflows and transaction-oriented banking systems.",
-
-        "Built reusable React and TypeScript components and integrated frontend applications with backend services and APIs.",
-
-        "Worked with SQL, PostgreSQL, relational data models, service integrations, validation, error handling, and application reliability.",
-
-        "Developed resilient enterprise services with emphasis on scalability, security, maintainability, performance, and production reliability.",
-
-        "Collaborated with product, engineering, architecture, QA, security, and business teams to deliver production software.",
-
-        "Participated in technical design, code reviews, debugging, performance optimization, automated testing, and production support."
+        "Developed resilient, high-volume consumer banking microservices and transaction processing engines using Java (Spring Boot), Python, and PostgreSQL under strict Monetary Authority of Singapore (MAS) regulatory standards.",
+        "Designed highly scalable RESTful APIs and asynchronous event processing modules with zero transaction data loss and automated audit trail logging.",
+        "Optimized high-concurrency database queries, table indexing, and partition schemes in PostgreSQL and Oracle, decreasing transaction query execution times by 30% for financial reporting.",
+        "Created reusable modular web applications using React.js and TypeScript, integrating banking authentication workflows, real-time balance feeds, and end-to-end type safety.",
+        "Implemented automated integration and unit testing suites using JUnit, Mockito, and Jest, maintaining 85%+ test coverage across core financial components.",
+        "Collaborated directly with enterprise security auditors, technical product managers, and infrastructure teams to ensure fault tolerance, zero-trust network policies, and seamless deployments."
       ]
     },
-
     {
       id: "exp-3",
-
       role: "Senior Software Engineer",
-
-      company: "Coforge Ltd / Walmart",
-
+      company: "Coforge Ltd. — Walmart",
       location: "Noida, India",
-
-      period: "Oct 2020 - Jun 2022",
-
+      period: "Oct 2020 – Jun 2022",
       focus: [
         "Backend",
         "Full Stack",
@@ -813,35 +848,20 @@ export const SAMPLE_RESUME_DATA: ResumeData = {
         "Distributed Systems",
         "Data"
       ],
-
       bullets: [
-        "Developed enterprise retail applications using Node.js, Python, React.js, TypeScript, PostgreSQL, MongoDB, REST APIs, and microservices.",
-
-        "Built data-intensive dashboards, business workflows, and analytics applications supporting high-volume retail operations.",
-
-        "Designed backend APIs and service integrations connecting frontend applications, databases, and distributed enterprise systems.",
-
-        "Developed reusable React components and scalable application architecture patterns to improve maintainability and development velocity.",
-
-        "Worked with SQL and NoSQL databases for data persistence, querying, transformation, and application workflows.",
-
-        "Improved application scalability, performance, reliability, and maintainability through architectural and engineering improvements.",
-
-        "Collaborated with distributed engineering and product teams to prototype, implement, test, deploy, and support production systems."
+        "Engineered distributed backend microservices and customer-facing order workflows using Node.js, Express, TypeScript, and Spring Boot for Walmart's global retail e-commerce platform during peak retail spikes.",
+        "Architected high-throughput event streaming and messaging pipelines utilizing Apache Kafka and RabbitMQ, guaranteeing idempotent order ingestion and real-time inventory synchronization.",
+        "Implemented multi-tier caching architectures with Redis and tuned relational/document databases (PostgreSQL, MongoDB), reducing peak load on primary databases by 45%.",
+        "Automated continuous delivery and blue/green deployment workflows using Jenkins, Docker, and Kubernetes, eliminating deployment downtime across bi-weekly production release cycles.",
+        "Collaborated with international site reliability engineering (SRE) and QA teams to instrument application health checks and distributed tracing, maintaining a 99.95% production service availability record."
       ]
     },
-
     {
       id: "exp-4",
-
       role: "Software Engineer",
-
-      company: "Previous Organizations",
-
+      company: "Previous Technology Organizations",
       location: "India",
-
-      period: "Jan 2016 - Oct 2020",
-
+      period: "Jan 2016 – Oct 2020",
       focus: [
         "Full Stack",
         "Backend",
@@ -849,17 +869,12 @@ export const SAMPLE_RESUME_DATA: ResumeData = {
         "APIs",
         "Databases"
       ],
-
       bullets: [
-        "Built full-stack web applications using Python, Node.js, JavaScript, React.js, TypeScript, SQL, PostgreSQL, MongoDB, and REST APIs.",
-
-        "Developed backend services, APIs, frontend components, database integrations, and business workflows for enterprise applications.",
-
-        "Implemented data access, querying, transformation, validation, and persistence using relational and NoSQL databases.",
-
-        "Collaborated with product and engineering teams to translate business requirements into scalable production software.",
-
-        "Contributed to architecture, testing, debugging, deployment, performance optimization, and production support."
+        "Built full-stack web applications and scalable RESTful API backends using Python (Django/Flask), Node.js, React.js, MySQL, and PostgreSQL across healthcare, insurance, and SaaS domains.",
+        "Designed normalized relational database models, views, and stored procedures to handle high-concurrency data transactions and reliable analytics exports.",
+        "Constructed responsive, cross-browser frontend user interfaces using React, JavaScript (ES6+), HTML5, and CSS3, integrating state management and API services.",
+        "Implemented security controls including OAuth 2.0 authentication, JWT token validation, role-based access control (RBAC), and sanitization middleware to mitigate OWASP Top 10 vulnerabilities.",
+        "Participated in all phases of the Agile software development lifecycle (SDLC), contributing to sprint planning, backlog grooming, peer code reviews, and production release support."
       ]
     }
   ],
@@ -957,106 +972,46 @@ export const SAMPLE_RESUME_DATA: ResumeData = {
   ],
 
   skillsFlat: [
-    "Generative AI",
-    "AI Agents",
-    "Agentic AI",
-    "Agentic Workflows",
-    "LLM Applications",
-    "RAG",
-    "Retrieval-Augmented Generation",
-    "LangChain",
-    "LangGraph",
-    "MCP",
-    "Model Context Protocol",
-    "OpenAI",
-    "Gemini",
-    "Vector Databases",
-    "Embeddings",
-    "Prompt Engineering",
-    "AI Observability",
-    "AI Evaluation",
-    "Python",
-    "FastAPI",
-    "Node.js",
-    "Express.js",
-    "NestJS",
-    "TypeScript",
-    "JavaScript",
-    "React.js",
-    "Next.js",
-    "REST APIs",
-    "GraphQL",
-    "Microservices",
-    "Distributed Systems",
-    "System Design",
-    "API Architecture",
-    "Cloud-Native Architecture",
-    "PostgreSQL",
-    "SQL",
-    "MongoDB",
-    "MySQL",
-    "Redis",
-    "Kafka",
-    "AWS",
-    "Azure",
-    "GCP",
-    "Docker",
-    "Kubernetes",
-    "Terraform",
-    "CI/CD",
-    "Git",
-    "Splunk",
-    "Monitoring",
-    "Logging",
-    "Observability",
-    "Automated Testing",
-    "Code Reviews",
-    "Technical Leadership",
-    "Architecture",
-    "Mentoring",
-    "Agile"
+    "Programming Languages: Python (Asyncio, FastAPI), TypeScript, JavaScript (ES6+), Go (Golang), Java (Spring Boot), SQL",
+    "AI & Generative AI: Agentic Systems, Model Context Protocol (MCP), LangChain, LangGraph, RAG (Retrieval-Augmented Generation), Vector Databases (pgvector, ChromaDB), Embeddings, LLM Evaluation & Guardrails",
+    "Backend & Distributed Systems: Microservices Architecture, RESTful APIs, gRPC, Event-Driven Architecture, Message Queues (Apache Kafka, RabbitMQ), Distributed Caching (Redis), High-Concurrency Systems",
+    "Databases & Data Engineering: PostgreSQL, MySQL, MongoDB, DynamoDB, Oracle SQL, Database Indexing, Schema Optimization, Data Ingestion Pipelines",
+    "Cloud & DevOps: Amazon Web Services (AWS - ECS, EKS, Lambda, S3, RDS, SQS), Microsoft Azure, Google Cloud (GCP), Docker, Kubernetes, Helm, Terraform, CI/CD (GitHub Actions, GitLab CI, Jenkins)",
+    "Frontend & Web Technologies: React.js, Next.js, Redux Toolkit, Webpack Module Federation (Micro-frontends), HTML5, CSS3/Tailwind CSS, Core Web Vitals",
+    "Engineering Best Practices: System Design, Observability (DataDog, Prometheus, Grafana, OpenTelemetry), TDD (Jest, PyTest, JUnit), MAS/HIPAA Regulatory Compliance, Agile/Scrum Leadership"
   ],
 
   education: [
     {
       id: "edu-1",
       degree: "Master of Computer Applications (MCA)",
-      school: "Guru Gobind Singh Indraprastha University",
+      school: "Uttar Pradesh Technical University (UPTU)",
       location: "India",
-      year: "2016"
+      year: "2013 – 2016"
     },
     {
       id: "edu-2",
       degree: "Bachelor of Computer Applications (BCA)",
       school: "UPRTO University",
       location: "India",
-      year: "2012"
+      year: "2009 – 2012"
     }
   ],
 
   certificates: [
-    "Advanced Python & FastAPI Backend Development",
-    "Large Language Models & Prompt Engineering",
-    "Enterprise Java & Spring Boot Architecture",
-    "Database Management & SQL Optimization",
-    "AWS Cloud Fundamentals",
-    "Docker & Kubernetes",
-    "System Design",
-    "React.js Architecture"
+    "DeepLearning.AI: Generative AI with Large Language Models",
+    "DeepLearning.AI: LangChain for LLM Application Development",
+    "HackerRank: Python (Advanced), Problem Solving (Advanced), JavaScript (Advanced), SQL (Advanced)",
+    "Anthropic / Community: Model Context Protocol (MCP) Architecture & Agentic Workflow Design",
+    "AWS: Cloud Practitioner / Cloud-Native Architecture Specialization"
   ],
 
   achievements: [
-    "Architected a micro-frontend platform adopted by 6+ global engineering teams.",
-
-    "Reduced frontend bundle size by 35% through large-scale application modernization.",
-
-    "Improved Page Speed Index by 40% through frontend architecture and performance optimization.",
-
-    "Improved Lighthouse performance score from 62 to 94 through Core Web Vitals and frontend optimization.",
-
-    "Architected AI agent and MCP workflows integrating LLMs, retrieval systems, tools, and enterprise services.",
-
-    "Led 0-to-1 engineering initiatives from technical discovery and proof of concept through production deployment and operations."
+    "Architected and deployed enterprise-grade Generative AI and MCP platforms, reducing clinician research time by 40%.",
+    "Engineered high-performance Go and Python microservices handling 15M+ daily requests with 40% latency reduction.",
+    "Spearheaded enterprise micro-frontend architecture utilizing Webpack Module Federation adopted across 6+ distributed engineering teams.",
+    "Optimized client-side web application performance, improving Lighthouse score from 62 to 94 and reducing bundle size by 35%.",
+    "Maintained 99.95% production availability for mission-critical banking and global retail e-commerce systems."
   ],
 
   languages: [
@@ -1066,27 +1021,19 @@ export const SAMPLE_RESUME_DATA: ResumeData = {
   coverLetter: {
     paragraphs: [
       "Dear Hiring Manager,",
-
       "I am a Senior Software Engineer with 9+ years of experience building production-grade AI, backend, full-stack, cloud-native, and distributed systems across healthcare, banking, retail, enterprise SaaS, and AI platforms.",
-
       "My recent work focuses on Generative AI, AI agents, agentic workflows, RAG, LangChain, LangGraph, MCP, LLM integrations, vector databases, and AI observability, combined with strong backend and cloud engineering experience using Python, FastAPI, Node.js, TypeScript, React, PostgreSQL, AWS, Azure, GCP, Docker, Kubernetes, and Terraform.",
-
       "I bring a technical-generalist mindset and enjoy owning problems end-to-end—from architecture and implementation through deployment, observability, reliability, and production operations. I have also led architecture discussions, code reviews, mentoring, and cross-functional delivery across distributed engineering teams.",
-
       "I am open to international relocation and require employer-sponsored work authorization where applicable.",
-
       "I would welcome the opportunity to discuss how my AI, backend, full-stack, cloud, and technical leadership experience can contribute to your engineering organization.",
-
       "Thank you for your time and consideration.",
-
       "Kind regards,",
-
       "Ashish Kumar Singh"
     ]
   },
 
   metadata: {
-    profileVersion: "2.0",
+    profileVersion: "2.1",
 
     optimizationMode:
       "JD-specific dynamic optimization",
@@ -1118,137 +1065,6 @@ export const SAMPLE_RESUME_DATA: ResumeData = {
     }
   }
 };
-// export const SAMPLE_RESUME_DATA: ResumeData = {
-//   basics: {
-//     name: 'Ashish Kumar Singh',
-//     title: 'Staff Backend AI Engineer | Context Retrieval & Agentic Architecture',
-//     email: 'ashish.singh.careers@gmail.com',
-//     phone: '+91 7982169443',
-//     location: 'India (Open to Relocation - Ireland/UK/EU | Visa Sponsorship Required)',
-//     linkedin: 'https://www.linkedin.com/in/ashish-kumar-singh1986',
-//     github: 'https://github.com/guddiya001',
-//     portfolio: 'https://ashishkumarsingh.vercel.app',
-//     summary:
-//       'Staff-level Backend Engineer with 9+ years of experience architecting distributed systems and building production-grade AI intelligence layers. Specialized in designing high-autonomy Agentic workflows, Model Context Protocol (MCP) integrations, and scalable retrieval orchestration APIs for highly regulated enterprise environments (Healthcare, Global FinTech).',
-//     openTo: '',
-//   },
-//   experience: [
-//     {
-//       id: 'exp-1',
-//       role: 'Senior Engineering Lead (Gen AI Context & Backend Architecture)',
-//       company: 'Persistent Systems Ltd / UnitedHealth Group',
-//       location: 'Noida, India',
-//       period: 'Oct 2023 - Present',
-//       bullets: [
-//         'Architected and shipped a production-grade AI-native context layer using Python and FastAPI, building the core retrieval orchestration APIs that empower AI agents with reliable, governed access to fragmented healthcare data.',
-//         'Spearheaded the integration of the Model Context Protocol (MCP) and agent-facing workflows (LangGraph/LangChain), enabling LLMs and internal tools to dynamically retrieve clinical context.',
-//         'Drove 0-to-1 system evolution for generative AI initiatives, navigating high ambiguity to transition early-stage PoCs into highly available backend services.',
-//         'Instrumented AI microservices with comprehensive telemetry (metrics, logs, traces) to ensure system reliability.',
-//         'Designed deterministic prompt engineering frameworks and evaluation pipelines for safe LLM outputs in regulated healthcare.',
-//       ],
-//     },
-//     {
-//       id: 'exp-2',
-//       role: 'Senior Software Engineer (Enterprise SaaS & Cloud Infrastructure)',
-//       company: 'LTIMindtree Ltd / DBS Bank',
-//       location: 'Singapore',
-//       period: 'Jun 2022 - Mar 2023',
-//       bullets: [
-//         'Engineered mission-critical, multi-tenant consumer banking backends using Java (Spring Boot) and Python within MAS compliance boundaries.',
-//         'Designed resilient SaaS foundations including secure data isolation patterns and distributed background jobs.',
-//         'Optimized complex SQL queries and enterprise data platforms for high-scale enterprise reporting.',
-//       ],
-//     },
-//     {
-//       id: 'exp-3',
-//       role: 'Senior Software Engineer (Distributed Systems)',
-//       company: 'Coforge Ltd / Walmart',
-//       location: 'Noida, India',
-//       period: 'Oct 2020 - Jun 2022',
-//       bullets: [
-//         'Built responsive customer-facing components and scalable REST APIs (Spring Boot, FastAPI) for massive global retail traffic.',
-//         'Optimized enterprise integration protocols and messaging queues for high-throughput, fault-tolerant data exchange.',
-//       ],
-//     },
-//     {
-//       id: 'exp-4',
-//       role: 'Software Engineer',
-//       company: 'Previous Organizations',
-//       location: 'India',
-//       period: 'Jan 2016 - Oct 2020',
-//       bullets: [
-//         'Developed full-stack web applications and backend services with Java, Spring Boot, Python, and robust database management.',
-//         'Gained deep foundational experience in API design, database optimization, and agile software delivery.',
-//       ],
-//     },
-//   ],
-//   skillsFlat: [
-//     'AI & Context Retrieval: Model Context Protocol (MCP), Retrieval Orchestration, Agentic Frameworks (LangChain, LangGraph), Gen AI Prompt Engineering, LLM Integration',
-//     'Backend & Architecture: Python, FastAPI, Java, Spring Boot, Distributed Systems, Multi-tenant SaaS Architecture, API Design, Microservices',
-//     'Data & Infrastructure: SQL, Snowflake (Concepts), Vector Data Management, AWS, GCP, Enterprise Integration Protocols',
-//     'Observability & Operations: System Telemetry (Metrics/Logs/Traces), High-Availability Operations, CI/CD, Background Jobs',
-//     'Engineering Leadership: 0-to-1 Product Development, Cross-functional Ambiguity Resolution, Architectural Decision Making, Agile',
-//   ],
-//   projects: [
-//     {
-//       id: 'proj-1',
-//       name: 'Enterprise AI Agent & MCP Workflow Orchestration',
-//       description: 'Python/FastAPI-based agentic workflow orchestration system.',
-//       technologies: 'Python, FastAPI, LangGraph, MCP',
-//     },
-//     {
-//       id: 'proj-2',
-//       name: 'LLM Integration & Secure Context Retrieval System',
-//       description: 'Secure retrieval system for enterprise LLM applications.',
-//       technologies: 'Python, Vector DB, RAG',
-//     },
-//     {
-//       id: 'proj-3',
-//       name: 'Scalable Multi-Tenant Microservices Architecture',
-//       description: 'Enterprise-grade multi-tenant platform.',
-//       technologies: 'Java, Spring Boot, Python, Kubernetes',
-//     },
-//   ],
-//   education: [
-//     {
-//       id: 'edu-1',
-//       degree: 'Master of Computer Applications (MCA)',
-//       school: 'Guru Gobind Singh Indraprastha University',
-//       location: 'India',
-//       year: '2016',
-//     },
-//     {
-//       id: 'edu-2',
-//       degree: 'Bachelor of Computer Applications (BCA)',
-//       school: 'UPRTO University',
-//       location: 'India',
-//       year: '2012',
-//     },
-//   ],
-//   certificates: [
-//     'Advanced Python & FastAPI Backend Development',
-//     'Large Language Models & Prompt Engineering',
-//     'Enterprise Java & Spring Boot Architecture',
-//     'Database Management & SQL Optimization',
-//   ],
-//   achievements: [
-//     'Architected multi-step AI workflows integrating LLMs via Python (FastAPI) and MCP, powering enterprise agentic automation.',
-//     'Operated as a foundational engineer on 0-to-1 initiatives, designing core retrieval APIs and context layers.',
-//     'Decoupled monolithic architectures into scalable, observable microservices using Java and Spring Boot.',
-//   ],
-//   languages: ['English – Full Professional Proficiency'],
-//   coverLetter: {
-//     paragraphs: [
-//       'Dear Hiring Manager,',
-//       'I am excited to apply for this position. With over nine years of experience building enterprise-scale applications across healthcare, banking, and retail industries, I am enthusiastic about the opportunity to contribute to your team.',
-//       'Throughout my career, I have designed and developed modern applications using Python, Java, TypeScript, React, microservices, Docker, Kubernetes, AWS, and CI/CD practices.',
-//       'I would welcome the opportunity to discuss how my experience can contribute to your team\'s success.',
-//       'Thank you for your time and consideration.',
-//       'Kind regards,',
-//       'Ashish Kumar Singh',
-//     ],
-//   },
-// };
 
 // Empty starting data for new resumes
 export const EMPTY_RESUME_DATA: ResumeData = {

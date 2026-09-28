@@ -301,6 +301,17 @@ export class ATSOptimizerAgent implements IAgent {
         }
       }
 
+      // Also check missing preferred skills the candidate can add
+      const addablePreferred: string[] = [];
+      for (const pref of (jdAnalysis.preferredSkills || [])) {
+        if (skillInText(pref, extractResumeText(currentResume))) continue; // already present
+        const prefLower = pref.toLowerCase();
+        const hasPref = candidateSkillsLower.some(
+          (cs) => cs.includes(prefLower) || prefLower.includes(cs),
+        ) || this.candidateHasSkillViaAlias(pref, candidateSkills);
+        if (hasPref) addablePreferred.push(pref);
+      }
+
       // Also check missing keywords that candidate can add
       const addableKeywordTerms: string[] = [];
       for (const missing of atsScore.missingKeywords) {
@@ -314,10 +325,10 @@ export class ATSOptimizerAgent implements IAgent {
       }
 
       // Build dimension-level gaps for LLM
-      const dimensionGaps = this.buildDimensionGaps(atsScore, jdAnalysis);
+      const dimensionGaps = this.buildDimensionGaps(atsScore, jdAnalysis, extractResumeText(currentResume));
 
       // If nothing can be added and no keywords to reword, stop
-      if (addableKeywords.length === 0 && addableKeywordTerms.length === 0 && dimensionGaps.length === 0) {
+      if (addableKeywords.length === 0 && addablePreferred.length === 0 && addableKeywordTerms.length === 0 && dimensionGaps.length === 0) {
         iterations.push({
           iteration: i,
           score: currentScore,
@@ -333,7 +344,7 @@ export class ATSOptimizerAgent implements IAgent {
       const optimized = await this.optimizeResumeIteration(
         currentResume,
         jdAnalysis,
-        addableKeywords,
+        [...addableKeywords, ...addablePreferred],
         [...new Set([...addableKeywordTerms])],
         atsScore,
         dimensionGaps,
@@ -417,23 +428,24 @@ export class ATSOptimizerAgent implements IAgent {
 
   // ─── PRIVATE: Build dimension-level gap descriptions for LLM ───
 
-  private buildDimensionGaps(atsScore: ATSMatchScore, jdAnalysis: JDAnalysis): string[] {
+  private buildDimensionGaps(atsScore: ATSMatchScore, jdAnalysis: JDAnalysis, resumeText: string): string[] {
     const gaps: string[] = [];
 
     if (atsScore.requiredSkills.score < atsScore.requiredSkills.max) {
       gaps.push(`REQUIRED SKILLS GAP (${atsScore.requiredSkills.score}/${atsScore.requiredSkills.max}): Missing: ${atsScore.missingSkills.join(', ')}`);
     }
     if (atsScore.preferredSkills.score < atsScore.preferredSkills.max) {
-      const preferredMissing = (jdAnalysis.preferredSkills || []).filter(s => !skillInText(s, ''));
+      // Fixed: was skillInText(s, '') — always false. Now checks against actual resume text.
+      const preferredMissing = (jdAnalysis.preferredSkills || []).filter(s => !skillInText(s, resumeText));
       if (preferredMissing.length > 0) {
-        gaps.push(`PREFERRED SKILLS GAP (${atsScore.preferredSkills.score}/${atsScore.preferredSkills.max})`);
+        gaps.push(`PREFERRED SKILLS GAP (${atsScore.preferredSkills.score}/${atsScore.preferredSkills.max}): Missing preferred: ${preferredMissing.join(', ')}`);
       }
     }
     if (atsScore.keywords.score < atsScore.keywords.max) {
-      gaps.push(`KEYWORDS GAP (${atsScore.keywords.score}/${atsScore.keywords.max}): Missing keywords: ${atsScore.missingKeywords.join(', ')}`);
+      gaps.push(`KEYWORDS GAP (${atsScore.keywords.score}/${atsScore.keywords.max}): Missing keywords: ${atsScore.missingKeywords.slice(0, 15).join(', ')}`);
     }
     if (atsScore.responsibilities.score < atsScore.responsibilities.max) {
-      gaps.push(`RESPONSIBILITIES GAP (${atsScore.responsibilities.score}/${atsScore.responsibilities.max}): Resume bullets don't reflect enough JD responsibilities`);
+      gaps.push(`RESPONSIBILITIES GAP (${atsScore.responsibilities.score}/${atsScore.responsibilities.max}): Resume bullets don't reflect enough JD responsibilities: ${jdAnalysis.keyResponsibilities.slice(0, 3).join(' | ')}`);
     }
     if (atsScore.formatting.score < atsScore.formatting.max) {
       gaps.push(`FORMATTING GAP (${atsScore.formatting.score}/${atsScore.formatting.max}): Improve action verbs and add quantified metrics to bullets`);
@@ -592,41 +604,45 @@ export class ATSOptimizerAgent implements IAgent {
 
   /**
    * Expanded JD keyword extraction.
-   * Covers 150+ tech terms, frameworks, methodologies, and tools.
+   * Covers 200+ tech terms, frameworks, methodologies, domain terms, and soft skills.
    */
   private extractJDKeywords(jobDescription: string): string[] {
     const techPatterns = [
       // Languages & Runtimes
-      /\b(React(?:\.js)?|Next\.js|TypeScript|JavaScript|Node\.js|Python|Java|Go|Rust|Ruby|Scala|Kotlin|Swift|C\+\+|C#|PHP|Perl|Elixir|Haskell|Clojure|Dart|R)\b/gi,
+      /\b(React(?:\.js)?|Next\.js|TypeScript|JavaScript|Node\.js|Python|Java(?!Script)|Go|Golang|Rust|Ruby|Scala|Kotlin|Swift|C\+\+|C#|PHP|Perl|Elixir|Haskell|Clojure|Dart|R)\b/gi,
       // Frameworks
-      /\b(FastAPI|NestJS|Express\.js|Spring Boot|Django|Flask|Rails|Vue\.js|Angular|Svelte|Nuxt\.js|Gatsby|Remix|Astro|Fiber|Gin|Echo|Laravel|Symfony|ASP\.NET)\b/gi,
+      /\b(FastAPI|NestJS|Express\.js|Spring\s*Boot|Django|Flask|Rails|Vue\.js|Angular|Svelte|Nuxt\.js|Gatsby|Remix|Astro|Fiber|Gin|Echo|Ktor|Actix|Laravel|Symfony|ASP\.NET|Phoenix)\b/gi,
       // Databases
-      /\b(PostgreSQL|MySQL|MongoDB|Redis|Elasticsearch|DynamoDB|Cassandra|Neo4j|CockroachDB|SQLite|MariaDB|Supabase|PlanetScale|Firestore|BigQuery|Snowflake|ClickHouse)\b/gi,
+      /\b(PostgreSQL|MySQL|MongoDB|Redis|Elasticsearch|DynamoDB|Cassandra|Neo4j|CockroachDB|SQLite|MariaDB|Supabase|PlanetScale|Firestore|BigQuery|Snowflake|ClickHouse|RDS|Aurora)\b/gi,
       // Cloud & DevOps
-      /\b(AWS|GCP|Azure|Docker|Kubernetes|Terraform|Ansible|Pulumi|CloudFormation|Helm|ArgoCD|Istio|Consul|Vault|Packer)\b/gi,
+      /\b(AWS|GCP|Azure|Docker|Kubernetes|Terraform|Ansible|Pulumi|CloudFormation|Helm|ArgoCD|Istio|Consul|Vault|Packer|EKS|GKE|AKS|Lambda|ECS|Fargate|S3|EC2|Cloud\s*Run)\b/gi,
       // CI/CD & Tools
-      /\b(CI\/CD|GitHub Actions|GitLab CI|Jenkins|CircleCI|Travis CI|ArgoCD|Spinnaker|Flux|Tekton)\b/gi,
+      /\b(CI\/CD|GitHub\s*Actions|GitLab\s*CI|Jenkins|CircleCI|Travis\s*CI|Spinnaker|Flux|Tekton|Buildkite)\b/gi,
       // Messaging & Streaming
-      /\b(Kafka|RabbitMQ|NATS|Pulsar|SQS|SNS|EventBridge|Kinesis)\b/gi,
+      /\b(Kafka|RabbitMQ|NATS|Pulsar|SQS|SNS|EventBridge|Kinesis|Pub\/Sub|ActiveMQ|ZeroMQ)\b/gi,
       // Observability
-      /\b(Datadog|Splunk|Grafana|Prometheus|New Relic|Jaeger|OpenTelemetry|ELK|Logstash|Kibana|PagerDuty)\b/gi,
+      /\b(Datadog|DataDog|Splunk|Grafana|Prometheus|New\s*Relic|Jaeger|OpenTelemetry|ELK|Logstash|Kibana|PagerDuty|Dynatrace|AppDynamics)\b/gi,
       // AI/ML/GenAI
-      /\b(LangChain|LangGraph|RAG|MCP|AI|ML|LLM|OpenAI|GPT|Gemini|Claude|Anthropic|Hugging Face|TensorFlow|PyTorch|scikit-learn|Transformers|BERT|Vector\s*(?:DB|database|databases|search)|Embeddings?|Prompt\s*Engineering|Tool\s*Calling|AI\s*Agents?|Agentic\s*AI|GenAI|Generative\s*AI|NLP|Computer\s*Vision|MLOps|LlamaIndex|CrewAI|AutoGen|Semantic\s*Kernel)\b/gi,
+      /\b(LangChain|LangGraph|RAG|MCP|Model\s*Context\s*Protocol|LLM|OpenAI|GPT|Gemini|Claude|Anthropic|Hugging\s*Face|TensorFlow|PyTorch|scikit-learn|Vector\s*(?:DB|database|databases|search)|Embeddings?|Prompt\s*Engineering|Tool\s*Calling|AI\s*Agents?|Agentic\s*AI|GenAI|Generative\s*AI|NLP|MLOps|LlamaIndex|CrewAI|AutoGen)\b/gi,
       // Architecture & Patterns
-      /\b(Microservices|Monorepo|Event[\s-]Driven|CQRS|Domain[\s-]Driven|GraphQL|REST(?:ful)?|gRPC|WebSocket|Server[\s-]Sent|API[\s-]Gateway|Service\s*Mesh|Micro[\s-]?frontends?|Module\s*Federation)\b/gi,
+      /\b(Microservices|Monorepo|Event[\s-]Driven|CQRS|Domain[\s-]Driven|DDD|GraphQL|REST(?:ful)?|gRPC|WebSocket|API[\s-]Gateway|Service\s*Mesh|Micro[\s-]?frontends?|Module\s*Federation|Serverless|Cloud[\s-]Native|Distributed\s*Systems|High\s*Availability|Fault\s*Tolerance|Load\s*Balanc)\b/gi,
       // Testing
-      /\b(Jest|Cypress|Selenium|Playwright|Mocha|Chai|Vitest|Testing\s*Library|Puppeteer|k6|Locust|Artillery|TDD|BDD)\b/gi,
+      /\b(Jest|Cypress|Selenium|Playwright|Mocha|Chai|Vitest|Testing\s*Library|Puppeteer|k6|Locust|Artillery|TDD|BDD|Unit\s*Test|Integration\s*Test|E2E\s*Test)\b/gi,
       // Methodologies
-      /\b(Agile|Scrum|Kanban|XP|Lean|DevOps|SRE|Site\s*Reliability|Platform\s*Engineering|DevSecOps)\b/gi,
+      /\b(Agile|Scrum|Kanban|XP|Lean|DevOps|SRE|Site\s*Reliability|Platform\s*Engineering|DevSecOps|Shift[\s-]Left)\b/gi,
       // Security
-      /\b(OAuth|JWT|SAML|SSO|RBAC|ABAC|mTLS|OWASP|SOC\s*2|GDPR|HIPAA|PCI[\s-]DSS)\b/gi,
+      /\b(OAuth|JWT|SAML|SSO|RBAC|ABAC|mTLS|OWASP|SOC\s*2|GDPR|HIPAA|PCI[\s-]DSS|Zero\s*Trust)\b/gi,
+      // Domain / Role terms
+      /\b(0[\s-]to[\s-]1|zero[\s-]to[\s-]one|greenfield|from\s*scratch|build\s*from\s*scratch|rebrand|rebuild|scalable|high[\s-]performance|high[\s-]traffic|real[\s-]time|low[\s-]latency|high[\s-]throughput|fault[\s-]tolerant|production[\s-]grade|enterprise[\s-]scale|platform|transformation|migration)\b/gi,
+      // iGaming / FinTech / domain-specific
+      /\b(iGaming|FinTech|payment|betting|wagering|sportsbook|casino|trading|ledger|transaction|e[\s-]?commerce|marketplace|healthcare|HIPAA|PCI)\b/gi,
     ];
 
     const keywords = new Set<string>();
     for (const pattern of techPatterns) {
       const matches = jobDescription.matchAll(pattern);
       for (const match of matches) {
-        keywords.add(match[0]);
+        keywords.add(match[0].trim());
       }
     }
     return [...keywords];
@@ -646,54 +662,70 @@ export class ATSOptimizerAgent implements IAgent {
     const experience = resumeData.experience as Array<Record<string, unknown>> | undefined;
     const skillsFlat = resumeData.skillsFlat as string[] | undefined;
 
-    const prompt = `You are an ATS resume optimizer. Your ONLY goal is to maximize the ATS score to 100%.
+    // Build per-skill placement instructions
+    const requiredSkillsTracking = jdAnalysis.requiredSkills
+      .map((s, i) => `  [${i + 1}] "${s}" → must be in improvedSkillsFlat AND ≥1 bullet in improvedBullets`)
+      .join('\n');
 
-CURRENT ATS SCORE BREAKDOWN:
-- Required Skills: ${currentATSScore.requiredSkills.score}/${currentATSScore.requiredSkills.max}
+    const prompt = `You are an elite ATS resume optimizer. Your SOLE objective is to achieve a 100% ATS score.
+
+CURRENT ATS SCORE (target: 100%):
+- Required Skills:  ${currentATSScore.requiredSkills.score}/${currentATSScore.requiredSkills.max}  ← MOST CRITICAL
 - Preferred Skills: ${currentATSScore.preferredSkills.score}/${currentATSScore.preferredSkills.max}
 - Experience Match: ${currentATSScore.experienceMatch.score}/${currentATSScore.experienceMatch.max}
-- Keywords: ${currentATSScore.keywords.score}/${currentATSScore.keywords.max}
+- Keywords:         ${currentATSScore.keywords.score}/${currentATSScore.keywords.max}
 - Responsibilities: ${currentATSScore.responsibilities.score}/${currentATSScore.responsibilities.max}
-- Education: ${currentATSScore.education.score}/${currentATSScore.education.max}
-- Formatting: ${currentATSScore.formatting.score}/${currentATSScore.formatting.max}
-- TOTAL: ${currentATSScore.normalizedScore}% (target: 100%)
+- Education:        ${currentATSScore.education.score}/${currentATSScore.education.max}
+- Formatting:       ${currentATSScore.formatting.score}/${currentATSScore.formatting.max}
+- TOTAL:            ${currentATSScore.normalizedScore}% → must reach 100%
 
-DIMENSION GAPS TO FIX:
-${dimensionGaps.length > 0 ? dimensionGaps.join('\n') : 'Minor gaps remaining — refine wording'}
+GAPS TO FIX (all dimensions below max):
+${dimensionGaps.length > 0 ? dimensionGaps.join('\n') : 'Near-perfect — refine keyword density and action verb strength'}
 
-CURRENT RESUME SUMMARY: ${basics?.summary || ''}
-CURRENT SKILLS: ${(skillsFlat || []).join('; ')}
-CURRENT EXPERIENCE BULLETS: ${(experience || []).flatMap((e) => (e.bullets as string[]) || []).slice(0, 15).join('\n')}
+CURRENT RESUME:
+Summary: ${basics?.summary || '(empty)'}
+Skills: ${(skillsFlat || []).join(' | ')}
+Experience Bullets:
+${(experience || []).map(e => `[${e.id}]: ${((e.bullets as string[]) || []).map((b, i) => `  ${i+1}. ${b}`).join('\n')}`).join('\n')}
 
 TARGET JOB: ${jdAnalysis.jobTitle} at ${jdAnalysis.companyName}
 REQUIRED SKILLS: ${jdAnalysis.requiredSkills.join(', ')}
 PREFERRED SKILLS: ${(jdAnalysis.preferredSkills || []).join(', ')}
 KEY RESPONSIBILITIES: ${jdAnalysis.keyResponsibilities.join('; ')}
 
-SKILLS TO NATURALLY INTEGRATE (candidate HAS these but they're underrepresented): ${addableSkills.join(', ')}
-KEYWORDS TO ADD WHERE APPROPRIATE: ${addableKeywords.join(', ')}
+SKILLS TO INTEGRATE (candidate has these — integrate naturally, they are currently underrepresented):
+${addableSkills.length > 0 ? addableSkills.join(', ') : '(all required skills already present)'}
 
-CRITICAL RULES:
-1. Do NOT fabricate any new experience, project, or achievement.
-2. Only reword, reorganize, or emphasize existing content to include the missing skills/keywords.
-3. Do NOT stuff keywords unnaturally.
-4. Each skill/keyword must appear in a contextually appropriate place.
-5. DUAL PLACEMENT: Every required skill must appear in BOTH the skills section AND at least one experience bullet.
-6. Every bullet MUST start with a strong action verb (Architected, Built, Designed, Engineered, Led, etc.).
-7. At least 50% of bullets must include quantified metrics (%, x improvement, numbers).
-8. Keep the same number of experience entries and similar bullet count.
-9. The professional summary must contain the exact job title, company name, and at least 4 required skills.
+KEYWORDS TO WEAVE IN: ${addableKeywords.length > 0 ? addableKeywords.join(', ') : '(none missing)'}
 
-Return ONLY a valid JSON object:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PER-SKILL PLACEMENT MANDATE — verify EACH before returning:
+${requiredSkillsTracking}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RULES (ALL mandatory):
+1. DUAL PLACEMENT: Every required skill → in improvedSkillsFlat category AND ≥1 experience bullet. This alone drives 30% of ATS score.
+2. NATURAL INTEGRATION: Integrate skills contextually ("Built ${jdAnalysis.requiredSkills[0] || 'Go'} microservices...", "Designed ${jdAnalysis.requiredSkills[1] || 'REST API'} for..."). Do NOT keyword-stuff.
+3. REWRITE BULLETS POWERFULLY: Every bullet = action verb + technology/skill + quantified result. Minimum 5 bullets per experience.
+4. ACTION VERBS ONLY: Architected / Built / Designed / Engineered / Optimized / Scaled / Led / Spearheaded / Implemented. Never "Worked on" or "Responsible for".
+5. METRICS (≥50%): Add %, x, absolute numbers, or team sizes to at least half of all bullets.
+6. SUMMARY: Must include exact job title "${jdAnalysis.jobTitle}", company "${jdAnalysis.companyName}", and 4-5 required skills.
+7. FIRST SKILLS CATEGORY: Must be "Core Languages: [primary language first], ..." leading with the JD’s primary tech.
+8. PREFERRED SKILLS: Include as many preferred skills as possible in the last skillsFlat category.
+9. RESPONSIBILITIES MATCH: Bullets must reflect the JD’s key responsibilities — use the same action verbs as the JD.
+10. SELF-VERIFY before returning: Confirm every required skill from the mandate list above appears in both skills and bullets.
+
+Return ONLY valid JSON (no markdown, no extra text):
 {
-  "improvedSummary": "optimized professional summary",
-  "improvedSkillsFlat": ["Category: skill1, skill2, skill3"],
+  "improvedSummary": "powerful 3-4 sentence summary with job title, company, primary tech, and 4-5 required skills",
+  "improvedSkillsFlat": ["Category: skill1, skill2, skill3 — 5-7 lines, ALL required skills covered"],
   "improvedBullets": {
-    "exp-1": ["bullet1", "bullet2"],
-    "exp-2": ["bullet1", "bullet2"]
+    "exp-1": ["5-6 bullets: action verb + tech/skill from checklist + quantified metric"],
+    "exp-2": ["5-6 bullets"],
+    "exp-3": ["4-5 bullets"]
   },
-  "changes": ["description of each change made"],
-  "addedKeywords": ["keywords that were successfully integrated"]
+  "changes": ["precise description of each change and which required skill it addresses"],
+  "addedKeywords": ["exact keywords successfully integrated"]
 }`;
 
     try {

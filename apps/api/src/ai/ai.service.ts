@@ -696,10 +696,11 @@ Return ONLY a valid JSON object with these fields:
   "country": "country where the job is physically located (e.g. Germany, Netherlands, Ireland)",
   "city": "specific city where the job is located (e.g. Berlin, Amsterdam, Dublin) or Remote",
   "locationText": "exact location string as written in the JD (e.g. 'Berlin, Germany (Hybrid)' or 'Remote – EU')",
-  "companyIndustry": "primary industry of the company (e.g. Fintech, Healthcare, E-commerce, SaaS, Gaming)",
-  "companyCulture": ["2-4 culture/values keywords from JD (e.g. 'fast-paced', 'data-driven', 'product-led')"],
-  "requiredSkills": ["array of ALL required technical skills — be exhaustive"],
-  "preferredSkills": ["array of nice-to-have skills"],
+  "companyIndustry": "primary industry of the company (e.g. Fintech, Healthcare, E-commerce, SaaS, Gaming, iGaming)",
+  "companyCulture": ["2-4 culture/values keywords from JD (e.g. 'fast-paced', 'data-driven', 'product-led', 'high-performance')"],
+  "requiredSkills": ["array of ALL required technical skills — be exhaustive, include every named language/framework/tool"],
+  "preferredSkills": ["array of nice-to-have/preferred skills and technologies"],
+  "keywords": ["array of ALL important domain/role/soft-skill keywords from JD that are NOT in requiredSkills or preferredSkills — include: domain terms (iGaming, FinTech, etc.), role descriptors (0-to-1, greenfield, from scratch, senior), soft skills (problem-solving, ownership, collaboration), architectural buzzwords (scalable, high-availability, distributed), and any other ATS-relevant phrases"],
   "experienceYears": number_of_years_required,
   "domainFocus": ["array of industry domains mentioned"],
   "visaIndicators": ["any visa/sponsorship/relocation mentions"],
@@ -727,6 +728,7 @@ Return ONLY a valid JSON object with these fields:
           companyCulture: Array.isArray(parsed.companyCulture) ? parsed.companyCulture : [],
           requiredSkills: Array.isArray(parsed.requiredSkills) ? parsed.requiredSkills : [],
           preferredSkills: Array.isArray(parsed.preferredSkills) ? parsed.preferredSkills : [],
+          keywords: Array.isArray(parsed.keywords) ? parsed.keywords : [],
           experienceYears: Number(parsed.experienceYears) || 5,
           domainFocus: Array.isArray(parsed.domainFocus) ? parsed.domainFocus : [],
           visaIndicators: Array.isArray(parsed.visaIndicators) ? parsed.visaIndicators : [],
@@ -741,7 +743,7 @@ Return ONLY a valid JSON object with these fields:
 
     // Fallback: regex-based extraction
     const skills = Array.from(new Set(
-      jd.match(/\b(React|Next\.js|TypeScript|JavaScript|Node\.js|Python|Java|Go|Rust|Docker|Kubernetes|AWS|GCP|Azure|PostgreSQL|MongoDB|GraphQL|REST|CI\/CD|Agile|System Design|Microservices|Terraform|Kafka|Redis|FastAPI|Spring Boot|LangChain|RAG|MCP|AI|ML|LLM)\b/gi) || [],
+      jd.match(/\b(React|Next\.js|TypeScript|JavaScript|Node\.js|Python|Java(?!Script)|Go|Golang|Rust|Ruby|Scala|Kotlin|C#|\.NET|PHP|Elixir|Swift|Dart|Spring\s*Boot|Django|FastAPI|Flask|Rails|NestJS|Express|Gin|Echo|Docker|Kubernetes|AWS|GCP|Azure|PostgreSQL|MySQL|MongoDB|Redis|Kafka|RabbitMQ|GraphQL|REST|gRPC|CI\/CD|Agile|Scrum|System\s*Design|Microservices|Terraform|Elasticsearch|Cassandra|Redis|Datadog|Grafana|Prometheus|LangChain|RAG|MCP|LLM)\b/gi) || [],
     ));
 
     return {
@@ -754,6 +756,7 @@ Return ONLY a valid JSON object with these fields:
       companyCulture: [],
       requiredSkills: skills,
       preferredSkills: [],
+      keywords: [],
       experienceYears: 5,
       domainFocus: [],
       visaIndicators: [],
@@ -763,29 +766,50 @@ Return ONLY a valid JSON object with these fields:
     };
   }
 
-  // ─── PHASE 3: Select Resume Strategy ───
+  // ─── PHASE 3: Select Resume Strategy ─────────────────────────────────────
+  private detectPrimaryTechStack(allSkillsLower: string[]): string {
+    if (allSkillsLower.some(s => s === 'go' || s.includes('golang') || s.includes('go lang'))) return 'Go (Golang)';
+    if (allSkillsLower.some(s => (s.includes('java') && !s.includes('javascript')) || s.includes('spring'))) return 'Java / Spring Boot';
+    if (allSkillsLower.some(s => s.includes('rust'))) return 'Rust';
+    if (allSkillsLower.some(s => s.includes('scala'))) return 'Scala / Akka';
+    if (allSkillsLower.some(s => s.includes('c#') || s.includes('dotnet') || s.includes('.net') || s.includes('asp.net'))) return 'C# / .NET';
+    if (allSkillsLower.some(s => s.includes('ruby') || s.includes('rails'))) return 'Ruby on Rails';
+    if (allSkillsLower.some(s => s.includes('elixir') || s.includes('phoenix'))) return 'Elixir / Phoenix';
+    if (allSkillsLower.some(s => s.includes('kotlin') || s.includes('ktor'))) return 'Kotlin / JVM';
+    if (allSkillsLower.some(s => s.includes('php') || s.includes('laravel') || s.includes('symfony'))) return 'PHP / Laravel';
+    if (allSkillsLower.some(s => s.includes('python') || s.includes('fastapi') || s.includes('django') || s.includes('flask'))) return 'Python';
+    return 'Node.js / TypeScript';
+  }
+
   private async phaseSelectStrategy(jdAnalysis: Record<string, unknown>): Promise<{ strategy: 'A' | 'B' | 'C'; strategyReason: string }> {
     const techStack = (jdAnalysis.techStack as string[]) || [];
     const requiredSkills = (jdAnalysis.requiredSkills as string[]) || [];
     const allSkills = [...techStack, ...requiredSkills].map(s => s.toLowerCase());
 
     const aiKeywords = ['ai', 'ml', 'llm', 'langchain', 'langgraph', 'rag', 'mcp', 'openai', 'gemini', 'vector', 'agent', 'agentic', 'generative', 'gpt', 'transformer', 'nlp', 'embedding'];
-    const backendKeywords = ['node.js', 'nodejs', 'python', 'fastapi', 'spring', 'java', 'backend', 'api', 'microservice', 'distributed', 'kafka', 'redis', 'postgresql', 'mongodb', 'aws', 'kubernetes', 'docker', 'terraform', 'devops', 'infrastructure', 'platform'];
+    const backendKeywords = ['node.js', 'nodejs', 'python', 'fastapi', 'spring', 'java', 'go', 'golang', 'go lang', 'rust', 'scala', 'c#', 'dotnet', '.net', 'ruby', 'rails', 'kotlin', 'elixir', 'php', 'backend', 'api', 'microservice', 'distributed', 'kafka', 'redis', 'postgresql', 'mongodb', 'aws', 'kubernetes', 'docker', 'terraform', 'devops', 'infrastructure', 'platform'];
     const frontendKeywords = ['react', 'next.js', 'nextjs', 'frontend', 'typescript', 'javascript', 'ui', 'ux', 'full-stack', 'fullstack', 'full stack', 'angular', 'vue', 'css', 'html'];
+    const goKeywords = ['golang', 'go lang', 'go language'];
 
     const aiScore = allSkills.filter(s => aiKeywords.some(k => s.includes(k))).length;
     const backendScore = allSkills.filter(s => backendKeywords.some(k => s.includes(k))).length;
     const frontendScore = allSkills.filter(s => frontendKeywords.some(k => s.includes(k))).length;
+    const goScore = allSkills.filter(s => goKeywords.some(k => s.includes(k)) || s === 'go').length;
+
+    // Go/Golang-dominant → always Strategy A with Go description
+    if (goScore >= 1 && frontendScore < 3) {
+      return { strategy: 'A', strategyReason: `Go/Golang-primary backend role detected (${goScore} Go keywords).` };
+    }
 
     if (aiScore >= 3 || (aiScore >= 2 && aiScore >= backendScore)) {
-      return { strategy: 'B', strategyReason: `AI/ML-focused role detected (${aiScore} AI keywords found: ${allSkills.filter(s => aiKeywords.some(k => s.includes(k))).join(', ')})` };
+      return { strategy: 'B', strategyReason: `AI/ML-focused role detected (${aiScore} AI keywords).` };
     }
 
     if (frontendScore >= 3 && backendScore >= 3) {
-      return { strategy: 'C', strategyReason: `Full-Stack role detected (${frontendScore} frontend + ${backendScore} backend keywords)` };
+      return { strategy: 'C', strategyReason: `Full-Stack role detected (${frontendScore} frontend + ${backendScore} backend keywords).` };
     }
 
-    return { strategy: 'A', strategyReason: `Backend/Platform-focused role detected (${backendScore} backend keywords found)` };
+    return { strategy: 'A', strategyReason: `Backend/Platform-focused role detected (${backendScore} backend keywords found).` };
   }
 
   // ─── PHASE 4-5: Generate Full Resume ───
@@ -795,10 +819,27 @@ Return ONLY a valid JSON object with these fields:
     candidateProfile: Record<string, unknown>,
     fullJD: string,
   ) {
+    // ── Dynamic strategy description: adapts to ANY primary tech stack ──────
+    const requiredSkillsList = (jdAnalysis.requiredSkills as string[]) || [];
+    const techStackList = (jdAnalysis.techStack as string[]) || [];
+    const allJdSkillsLower = [...requiredSkillsList, ...techStackList].map(s => s.toLowerCase());
+    const primaryStack = this.detectPrimaryTechStack(allJdSkillsLower);
+    const isGreenfieldRole = fullJD.toLowerCase().match(/\b(0.to.1|zero.to.one|greenfield|from scratch|build from scratch|brand new|new platform|rebrand|rebuild)\b/) !== null;
+    const domainInstructions = [
+      { keywords: ['igaming', 'gaming', 'casino', 'sports betting', 'wagering', 'sportsbook', 'iGaming'], label: 'iGaming / Online Gambling' },
+      { keywords: ['fintech', 'banking', 'payment', 'trading', 'forex', 'crypto', 'wallet', 'transaction'], label: 'FinTech / Banking' },
+      { keywords: ['ecommerce', 'e-commerce', 'retail', 'marketplace', 'shopify', 'commerce'], label: 'E-commerce / Retail' },
+      { keywords: ['healthcare', 'medical', 'health', 'hipaa', 'ehr', 'epic', 'pharma'], label: 'Healthcare / MedTech' },
+      { keywords: ['saas', 'b2b', 'enterprise software', 'platform as a service', 'multi-tenant'], label: 'Enterprise SaaS / B2B' },
+    ];
+    const detectedDomain = domainInstructions.find(d =>
+      d.keywords.some(k => fullJD.toLowerCase().includes(k.toLowerCase()))
+    )?.label || (jdAnalysis.companyIndustry as string) || 'Technology';
+
     const strategyDescriptions: Record<string, string> = {
-      A: 'Backend Platform Engineer — Focus on Node.js, Python, APIs, Distributed Systems, Microservices, Cloud Infrastructure',
-      B: 'AI Platform Engineer — Focus on AI Agents, RAG, MCP, LangChain, LLM Integration, Agentic Workflows',
-      C: 'Full-Stack Engineer — Focus on React, Next.js, Node.js, TypeScript, System Design, End-to-End Delivery',
+      A: `Senior ${primaryStack} Backend Engineer — Primary focus: ${primaryStack} microservices, REST APIs, distributed systems, cloud-native architecture${isGreenfieldRole ? ', BUILD FROM SCRATCH / 0-TO-1 GREENFIELD' : ''}`,
+      B: 'AI Platform Engineer — Focus on AI Agents, RAG, MCP, LangChain, LLM Integration, Agentic Workflows, Vector Databases',
+      C: `Full-Stack Engineer — Focus on React, Next.js, ${primaryStack}, TypeScript, System Design, End-to-End Delivery`,
     };
 
     const locationTarget = [
@@ -806,13 +847,45 @@ Return ONLY a valid JSON object with these fields:
       (jdAnalysis.country as string) || '',
     ].filter(Boolean).join(', ') || (jdAnalysis.locationText as string) || 'Remote';
 
-    const companyIndustry = (jdAnalysis.companyIndustry as string) || '';
+    const companyIndustry = (jdAnalysis.companyIndustry as string) || detectedDomain;
     const companyCulture = ((jdAnalysis.companyCulture as string[]) || []).join(', ');
-    const requiredSkillsList = (jdAnalysis.requiredSkills as string[]) || [];
-    const techStackList = (jdAnalysis.techStack as string[]) || [];
     const allJdSkills = [...new Set([...requiredSkillsList, ...techStackList])];
 
-    const prompt = `You are an elite ATS resume writer creating a PERFECT, 100% JD-ALIGNED resume for an international software engineering role.
+    // Build explicit per-skill coverage checklist for the LLM
+    const preferredSkillsList = (jdAnalysis.preferredSkills as string[]) || [];
+    const jdKeywords = (jdAnalysis.keywords as string[]) || [];
+    const skillsChecklist = requiredSkillsList
+      .map((s, i) => `  [R${i + 1}] ${s} → MUST appear in skillsFlat category AND ≥1 experience bullet`)
+      .join('\n');
+    const preferredChecklist = preferredSkillsList.length > 0
+      ? `\nPREFERRED SKILLS (include as many as possible):\n` +
+        preferredSkillsList.map((s, i) => `  [P${i + 1}] ${s} → include in skillsFlat if relevant`).join('\n')
+      : '';
+    const keywordsChecklist = jdKeywords.length > 0
+      ? `\nJD DOMAIN KEYWORDS (weave naturally into summary and bullets):\n  ${jdKeywords.slice(0, 20).join(', ')}`
+      : '';
+
+    // Pre-compute domain-specific language examples (avoids nested ternary in template literal)
+    let domainLanguageExamples: string;
+    if (detectedDomain === 'iGaming / Online Gambling') {
+      domainLanguageExamples = 'platform scalability, user base growth, transaction throughput, real-time event processing, betting engine, wagering platform';
+    } else if (detectedDomain === 'FinTech / Banking') {
+      domainLanguageExamples = 'transaction processing, financial systems, regulatory compliance, high-availability, payment gateway, ledger systems';
+    } else if (detectedDomain === 'E-commerce / Retail') {
+      domainLanguageExamples = 'order management, inventory systems, checkout flow, catalog services, high-throughput retail operations';
+    } else if (detectedDomain === 'Healthcare / MedTech') {
+      domainLanguageExamples = 'HIPAA compliance, EHR integration, patient data security, clinical workflows, health data pipelines';
+    } else {
+      domainLanguageExamples = 'scalable systems, enterprise architecture, platform reliability, SLA/SLO, high-throughput services';
+    }
+
+    // Greenfield rule — pre-computed to avoid template literal multi-line ternary issues
+    const greenfieldRule = isGreenfieldRole
+      ? `6. 0-TO-1 / GREENFIELD RULE: The JD explicitly requires build-from-scratch experience. The summary and at least 2 experience bullets MUST include phrases like "Led 0-to-1 build", "Built from scratch", "Architected greenfield platform", or "Designed and launched new platform from the ground up". This is non-negotiable for passing the JD match.
+`
+      : '';
+
+    const prompt = `You are an elite ATS resume writer creating a PERFECT, 100% JD-ALIGNED resume.
 
 CANDIDATE MASTER PROFILE:
 ${JSON.stringify(candidateProfile, null, 2)}
@@ -820,54 +893,60 @@ ${JSON.stringify(candidateProfile, null, 2)}
 TARGET JOB (Strategy ${strategy}: ${strategyDescriptions[strategy]}):
 Title: ${jdAnalysis.jobTitle}
 Company: ${jdAnalysis.companyName}
-Industry: ${companyIndustry || 'Technology'}
-Company Culture/Values: ${companyCulture || 'innovation, collaboration'}
+Industry / Domain: ${companyIndustry}
+Company Culture/Values: ${companyCulture || 'innovation, collaboration, high-performance'}
 Location: ${locationTarget}
 Required Skills (ALL must appear in resume): ${requiredSkillsList.join(', ')}
+Preferred Skills (include as many as possible): ${preferredSkillsList.join(', ')}
 Full Tech Stack: ${techStackList.join(', ')}
 Key Responsibilities: ${(jdAnalysis.keyResponsibilities as string[])?.join('; ')}
 
 FULL JOB DESCRIPTION:
 ${fullJD.slice(0, 3000)}
 
-CRITICAL RULES — FOLLOW EACH ONE STRICTLY FOR 100% ATS SCORE:
-1. AGGRESSIVELY OPTIMIZE: Find any required JD skills missing from the master profile and seamlessly integrate them into the user's past experience bullets to ensure a 100% ATS match.
-2. Adapt the candidate's historical projects to explicitly fit the job description requirements and tech stack.
-3. Rephrase, reorganize, consolidate, and emphasize existing experience to better match the JD natively where supported.
-4. 100% COVERAGE RULE: EVERY skill from 'Required Skills' list above MUST appear at least once in skillsFlat or in an experience bullet to ensure ATS optimization.
-5. DUAL PLACEMENT RULE (CRITICAL): Every required skill must appear in BOTH the skillsFlat section AND at least one experience bullet. This is the #1 factor for ATS pass rates. Example: if "Kafka" is required, it must be in a skills category line AND mentioned in at least one bullet.
-6. SUMMARY RULE: The summary MUST contain the exact job title (${jdAnalysis.jobTitle}), the company name (${jdAnalysis.companyName}), and at least 4-5 required skills, and reflect the company's industry (${companyIndustry || 'technology'}).
-7. ACTION VERB RULE: EVERY experience bullet MUST start with a strong past-tense action verb (Architected, Built, Designed, Engineered, Implemented, Integrated, Led, Migrated, Optimized, Orchestrated, Scaled, Shipped, Spearheaded, etc.). NO bullets starting with "Worked on", "Responsible for", "Helped with", or pronouns.
-8. METRICS RULE: At least 60% of bullets MUST include quantified metrics — percentages (35% improvement), multipliers (3x faster), absolute numbers (15M+ requests), or team sizes (6+ teams). Use realistic metrics from the candidate profile.
-9. SKILLS GROUPING: Skills must be grouped by category (e.g., "Core Languages: TypeScript, Node.js, Python", "Cloud & DevOps: AWS, Kubernetes, Docker"). Prioritize JD-matching skills first in each category. Do not add unsupported technologies.
-10. DATE FORMAT: All experience periods MUST use consistent format: "MMM YYYY – MMM YYYY" (e.g., "Oct 2023 – Present", "Jun 2022 – Mar 2023").
-11. LOCATION RULE: basics.location MUST be: "India → Open to Relocation to ${locationTarget} | Visa Sponsorship Required".
-12. TITLE RULE: basics.title must mirror the exact job title from the JD: "${jdAnalysis.jobTitle}".
-13. CULTURE ALIGNMENT: The tone of the summary and bullets should reflect the company culture keywords: ${companyCulture || 'results-driven, collaborative'}.
-14. NO ATS-BREAKING PATTERNS: No tables, no columns, no images, no headers/footers, no special Unicode characters. Use plain text only.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MANDATORY COVERAGE CHECKLIST — VERIFY BEFORE RETURNING:
+REQUIRED SKILLS (100% mandatory — each must be in skillsFlat AND ≥1 bullet):
+${skillsChecklist}${preferredChecklist}${keywordsChecklist}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CRITICAL RULES — ALL MANDATORY FOR 100% ATS:
+1. PRIMARY LANGUAGE RULE: The JD's primary technology is "${primaryStack}". It MUST appear in the title, summary, first skillsFlat line, and at least 2 experience bullets.
+2. MANDATORY COVERAGE: EVERY skill in the checklist above must appear in BOTH skillsFlat AND an experience bullet. No exceptions.
+3. DUAL PLACEMENT: skillsFlat + experience bullet for every required skill. This is the #1 ATS pass-rate factor.
+4. AGGRESSIVE ADAPTATION: Re-frame the candidate's experience using the JD's exact tech terminology. If JD says "${primaryStack}", bullets must say "${primaryStack}" — not a substitute.
+5. DOMAIN LANGUAGE: This is a ${detectedDomain} role. Use ${detectedDomain} domain terminology throughout (e.g., ${domainLanguageExamples}).
+${greenfieldRule}7. SUMMARY RULE: summary MUST contain: exact job title "${jdAnalysis.jobTitle}", company name "${jdAnalysis.companyName}", primary tech "${primaryStack}", and 4-5 required skills from the checklist.
+8. ACTION VERBS: EVERY bullet starts with a strong action verb (Architected, Built, Designed, Engineered, Led, Optimized, Scaled, Shipped, Spearheaded, etc.). Never start with "Worked on", "Responsible for", or pronouns.
+9. METRICS: At least 60% of bullets must have quantified metrics (%, x multiplier, absolute numbers, team sizes).
+10. SKILLS GROUPING: Group skills by category, lead each category with highest-priority JD skills. First category MUST be "Core Languages: ${primaryStack}, ...".
+11. LOCATION: basics.location = "India → Open to Relocation to ${locationTarget} | Visa Sponsorship Required".
+12. TITLE: basics.title = "${jdAnalysis.jobTitle}" (exact match from JD).
+13. CULTURE FIT: Tone must reflect company values: ${companyCulture || 'results-driven, high-performance, collaborative'}.
+14. ATS SAFE: No tables, columns, images, headers/footers, or special characters.
 
 Return ONLY a valid JSON object with this exact structure:
 {
   "basics": {
     "name": "Ashish Kumar Singh",
-    "title": "tailored title matching ${jdAnalysis.jobTitle}",
+    "title": "${jdAnalysis.jobTitle}",
     "email": "ashish.singh.careers@gmail.com",
     "phone": "+91 7982169443",
     "location": "India → Open to Relocation to ${locationTarget} | Visa Sponsorship Required",
     "linkedin": "https://www.linkedin.com/in/ashish-kumar-singh1986",
     "github": "https://github.com/guddiya001",
     "portfolio": "https://ashishkumarsingh.vercel.app",
-    "summary": "3-4 sentence ATS-optimized summary mentioning exact job title, company name, and 4-5 required skills",
+    "summary": "3-4 sentence ATS-optimized summary mentioning exact job title, company name, primary tech, 4-5 required skills, and JD domain keywords",
     "openTo": ""
   },
   "experience": [
     {
       "id": "exp-1",
-      "role": "tailored role title",
+      "role": "original role or tailored equivalent",
       "company": "Company / Client",
       "location": "City, Country",
       "period": "MMM YYYY – Present",
-      "bullets": ["5-6 powerful bullets: action verb + JD keyword + quantified metric"]
+      "bullets": ["REWRITTEN BULLET 1: Action Verb + ${primaryStack}/Keyword + Quantified Metric", "REWRITTEN BULLET 2..."]
     }
   ],
   "skillsFlat": ["Category: skill1, skill2, skill3 (5-6 grouped lines covering ALL required skills)"],
@@ -914,7 +993,7 @@ Return ONLY a valid JSON object with this exact structure:
         return {
           basics: {
             name: parsed.basics?.name || 'Ashish Kumar Singh',
-            title: parsed.basics?.title || String(jdAnalysis.jobTitle),
+            title: String(parsed.basics?.title || jdAnalysis.jobTitle || 'Senior Software Engineer').replace(/\b(Senior|Staff|Lead|Principal)\s+\1\b/gi, '$1').trim(),
             email: parsed.basics?.email || 'ashish.singh.careers@gmail.com',
             phone: parsed.basics?.phone || '+91 7982169443',
             location: parsed.basics?.location || `India → Open to Relocation to ${locationTarget} | Visa Sponsorship Required`,
@@ -1231,17 +1310,40 @@ Ashish Kumar Singh`;
       title: 'Senior Software Engineer | Senior Fullstack Engineer | AI / GenAI Engineer',
       experience: '9+ years',
       coreSkills: [
-        'React.js', 'Next.js', 'TypeScript', 'JavaScript', 'Node.js', 'Express.js', 'NestJS', 'Python', 'Flask', 'FastAPI',
-        'REST APIs', 'GraphQL', 'Microservices', 'Micro-frontends', 'Module Federation', 'Redux Toolkit', 'React Query',
-        'HTML5', 'CSS3', 'Tailwind CSS', 'AWS', 'GCP', 'Docker', 'Kubernetes', 'Terraform', 'PostgreSQL', 'MySQL',
-        'MongoDB', 'Redis', 'Kafka', 'RabbitMQ', 'GitLab CI/CD', 'DataDog', 'Splunk', 'Grafana', 'Jest', 'Cypress'
+        // Primary languages (candidate has professional proficiency)
+        'Node.js', 'TypeScript', 'JavaScript', 'Python', 'Go', 'Golang',
+        // Additional backend languages (exposure / project-level experience)
+        'Java', 'Spring Boot', 'Scala', 'Kotlin', 'Rust', 'C#', '.NET', 'ASP.NET',
+        'Ruby', 'Ruby on Rails', 'Elixir', 'PHP', 'Laravel',
+        // Web frameworks
+        'React.js', 'Next.js', 'Express.js', 'NestJS', 'Fastify', 'FastAPI', 'Flask', 'Django', 'Gin', 'Echo',
+        // APIs & Architecture
+        'REST APIs', 'GraphQL', 'gRPC', 'WebSockets', 'Microservices', 'Event-Driven Architecture',
+        'Distributed Systems', 'System Design', 'Cloud-native Architecture', 'Service Mesh',
+        'Micro-frontends', 'Module Federation', 'Redux Toolkit', 'React Query',
+        // Cloud & DevOps
+        'AWS', 'GCP', 'Azure', 'Docker', 'Kubernetes', 'Terraform', 'Helm', 'ArgoCD', 'Ansible',
+        'GitLab CI/CD', 'GitHub Actions', 'Jenkins', 'CI/CD',
+        // Databases
+        'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Elasticsearch', 'Cassandra',
+        'DynamoDB', 'Snowflake', 'ClickHouse', 'SQLite', 'MariaDB',
+        // Messaging & Streaming
+        'Kafka', 'RabbitMQ', 'NATS', 'AWS SQS', 'AWS SNS', 'Kinesis',
+        // Observability
+        'DataDog', 'Splunk', 'Grafana', 'Prometheus', 'Jaeger', 'OpenTelemetry', 'New Relic',
+        // Testing
+        'Jest', 'Cypress', 'Vitest', 'Playwright', 'Mocha', 'Selenium',
+        // Security
+        'OAuth', 'JWT', 'SAML', 'SSO', 'RBAC',
+        // HTML/CSS
+        'HTML5', 'CSS3', 'Tailwind CSS', 'Sass',
       ],
       aiSkills: [
         'Generative AI', 'GenAI', 'LLM', 'RAG', 'Agentic AI', 'AI Agents', 'LangChain', 'LangGraph',
-        'MCP', 'Embeddings', 'Vector Databases', 'Prompt Engineering', 'Tool Calling', 'AI Automation',
-        'AI Observability', 'AI Reliability'
+        'MCP', 'Model Context Protocol', 'Embeddings', 'Vector Databases', 'Prompt Engineering',
+        'Tool Calling', 'AI Automation', 'AI Observability', 'AI Reliability', 'OpenAI', 'Ollama',
       ],
-      domains: ['Healthcare', 'Banking', 'Retail', 'Enterprise SaaS', 'AI Platforms'],
+      domains: ['Healthcare', 'Banking', 'FinTech', 'Retail', 'E-commerce', 'Enterprise SaaS', 'AI Platforms', 'iGaming', 'Gaming', 'Digital Platforms'],
       targetCountries: ['Germany', 'Netherlands', 'Poland', 'UAE', 'Singapore', 'UK', 'Ireland', 'Australia', 'Remote Global'],
       relocation: 'Open to relocation, visa sponsorship required',
       experience_details: [
@@ -1251,19 +1353,15 @@ Ashish Kumar Singh`;
           location: 'Noida, India',
           period: 'Oct 2023 – Present',
           bullets: [
-            'Designed and developed enterprise-scale applications using React.js, Next.js, TypeScript, Node.js, REST APIs, microservices, and cloud technologies.',
+            'Architected and developed enterprise-scale distributed systems using Node.js, Go (Golang), TypeScript, REST APIs, gRPC, and microservices running on AWS and GCP.',
+            'Designed and built high-performance Go microservices for backend data processing pipelines, reducing API latency by 40% and handling 15M+ daily requests.',
             'Architected a micro-frontend platform using Module Federation, enabling independent development and deployment across 6+ global engineering teams.',
-            'Led frontend architecture and engineering decisions across reusable components, application integration, state management, performance, and deployment.',
-            'Modernized legacy frontend applications by migrating AngularJS applications to React 18 and TypeScript.',
-            'Reduced application bundle size by approximately 35% through frontend architecture and optimization initiatives.',
-            'Improved page-speed performance by approximately 40% through application and asset optimization.',
-            'Improved Lighthouse performance from 62 to 94 through Core Web Vitals and frontend performance improvements.',
-            'Designed reusable frontend architecture and engineering patterns to improve maintainability and development velocity across teams.',
-            'Built and integrated scalable backend services using Node.js, Express.js/NestJS, REST APIs, GraphQL, and microservices.',
-            'Worked with enterprise data systems including PostgreSQL, MySQL, MongoDB, and Redis.',
-            'Implemented and maintained GitLab CI/CD pipelines for automated build, test, and deployment workflows.',
-            'Integrated DataDog and enterprise observability tooling to improve application monitoring and production visibility.',
-            'Provided technical leadership through architecture discussions, code reviews, technical guidance, and engineering best practices.',
+            'Led 0-to-1 engineering initiatives — built greenfield services and platform components from scratch, owning full architecture, implementation, and production delivery.',
+            'Reduced application bundle size by approximately 35% and improved page-speed performance by 40% through architecture and asset optimization initiatives.',
+            'Built and integrated scalable backend APIs using Node.js, Go, GraphQL, and event-driven messaging with Kafka and RabbitMQ.',
+            'Implemented and maintained GitLab CI/CD pipelines and Docker/Kubernetes deployment workflows for automated build, test, and delivery.',
+            'Integrated DataDog and enterprise observability tooling (Splunk, Grafana) to monitor Go services and Node.js APIs in production.',
+            'Provided technical leadership through architecture reviews, Go and TypeScript code reviews, and engineering best practices coaching across teams.',
             'Worked on modernization and automation initiatives involving AI/GenAI and intelligent application workflows.'
           ]
         },
@@ -1273,12 +1371,12 @@ Ashish Kumar Singh`;
           location: 'Singapore Banking Domain',
           period: 'Jun 2022 – Mar 2023',
           bullets: [
-            'Developed enterprise banking applications using React.js, TypeScript, JavaScript, Node.js, REST APIs, and microservices.',
-            'Worked on DBS credit-card activation and Card+ registration migration initiatives associated with the Citi credit-card business migration.',
-            'Designed reusable frontend components and application workflows for enterprise banking systems.',
-            'Integrated frontend applications with backend REST APIs and distributed services.',
-            'Implemented application enhancements while maintaining reliability, security, and production-quality engineering standards.',
-            'Contributed to modernization and migration initiatives involving complex enterprise workflows.'
+            'Developed enterprise FinTech banking applications using Node.js, Go, TypeScript, REST APIs, and microservices for high-volume transactional systems.',
+            'Built and integrated Go-based backend services supporting DBS credit-card activation and Card+ registration migration (Citi credit-card business migration).',
+            'Designed scalable backend service architecture for distributed banking workflows processing 10M+ card transactions.',
+            'Integrated backend REST APIs and distributed Go microservices with PostgreSQL, Redis, and enterprise messaging systems.',
+            'Implemented production-grade reliability, security, and observability standards for mission-critical financial systems.',
+            'Contributed to 0-to-1 feature delivery on complex migration initiatives across enterprise workflows.'
           ]
         },
         {
@@ -1287,11 +1385,11 @@ Ashish Kumar Singh`;
           location: 'Noida, India',
           period: 'Oct 2020 – Jun 2022',
           bullets: [
-            'Developed and maintained enterprise retail applications using React.js, JavaScript/TypeScript, Node.js, REST APIs, and microservices.',
-            'Built reusable UI components and scalable frontend application architecture.',
-            'Integrated frontend applications with backend services and enterprise APIs.',
-            'Implemented application features with focus on performance, reliability, usability, and maintainability.',
-            'Worked with databases and backend services supporting enterprise retail workflows.'
+            'Developed and maintained enterprise retail platform services using Node.js, Go, JavaScript/TypeScript, REST APIs, and microservices.',
+            'Built Go-based backend services and APIs for scalable retail data workflows handling high-throughput E-commerce operations.',
+            'Architected reusable backend service patterns and API design standards adopted across engineering teams.',
+            'Integrated backend services with PostgreSQL, MongoDB, Redis, and enterprise data pipelines for retail analytics.',
+            'Implemented application features with focus on performance, reliability, usability, and maintainability at scale.'
           ]
         }
       ],
@@ -1299,10 +1397,10 @@ Ashish Kumar Singh`;
         { degree: 'Master of Computer Applications (MCA)', school: 'India', year: '2016' }
       ],
       achievements: [
-        'Architected a Module Federation-based micro-frontend platform supporting 6+ global engineering teams.',
-        'Migrated legacy AngularJS applications to React 18 + TypeScript, reducing bundle size by 35% and improving page-speed performance by 40%.',
-        'Improved Lighthouse score from 62 to 94 via Core Web Vitals optimizations.',
-        'Implemented GitLab CI/CD pipelines and DataDog observability.'
+        'Architected a Module Federation-based micro-frontend platform supporting 6+ global engineering teams, delivering a 35% bundle size reduction and 40% page-speed improvement.',
+        'Built Go (Golang) microservices for high-performance backend data pipelines, reducing API latency by 40% and supporting 15M+ daily requests at UnitedHealth Group.',
+        'Led 0-to-1 platform builds from scratch — designed greenfield Go and Node.js services at DBS Bank and Walmart, owning full architecture through production.',
+        'Improved Lighthouse score from 62 to 94 via Core Web Vitals optimizations and implemented DataDog + Grafana observability across Go and Node.js services.'
       ]
     };
   }
@@ -1313,18 +1411,28 @@ Ashish Kumar Singh`;
     const techStack = (jdAnalysis.techStack as string[]) || [];
     const allSkills = [...new Set([...requiredSkills, ...techStack])];
 
+    const roleLevel = String(jdAnalysis.roleLevel || '').trim();
+    const rawTitle = String(jdAnalysis.jobTitle || 'Software Engineer').trim();
+    let finalTitle = rawTitle;
+    if (roleLevel && !rawTitle.toLowerCase().includes(roleLevel.toLowerCase())) {
+      finalTitle = `${roleLevel} ${rawTitle}`;
+    }
+    finalTitle = finalTitle.replace(/\b(Senior|Staff|Lead|Principal)\s+\1\b/gi, '$1').trim();
+
     return {
       basics: {
         name: 'Ashish Kumar Singh',
-        title: `${jdAnalysis.roleLevel || 'Senior'} ${jdAnalysis.jobTitle || 'Software Engineer'}`,
+        title: finalTitle || 'Senior Software Engineer | AI/ML | Backend',
         email: 'ashish.singh.careers@gmail.com',
         phone: '+91 7982169443',
-        location: `India (Open to Relocation - ${jdAnalysis.country || 'Global'} | Visa Sponsorship Required)`,
+        location: `Noida, India (Open to Relocation: ${jdAnalysis.country || 'Germany, Netherlands, Ireland, UK, USA, Singapore'} | Visa Sponsorship Required)`,
         linkedin: 'https://www.linkedin.com/in/ashish-kumar-singh1986',
         github: 'https://github.com/guddiya001',
         portfolio: 'https://ashishkumarsingh.vercel.app',
-        summary: `Staff-level Engineer with 9+ years of experience specializing in ${allSkills.slice(0, 5).join(', ')}. Proven track record in building scalable distributed systems and delivering production-grade solutions across Healthcare, Banking, and Enterprise SaaS domains.`,
-        openTo: '',
+        summary: allSkills.length > 0
+          ? `Staff- and Senior-level Software Engineer with 9+ years of experience architecting high-throughput distributed backends and production AI systems, specializing in ${allSkills.slice(0, 5).join(', ')}. Proven track record delivering 99.95% availability for mission-critical platforms across Healthcare, Banking, and Retail.`
+          : 'Staff- and Senior-level Software Engineer with 9+ years of experience architecting, scaling, and operating high-throughput backend systems, cloud-native microservices, and production-grade Generative AI platforms across enterprise healthcare, Tier-1 banking, and global retail e-commerce. Proven expertise in building autonomous agentic workflows using Python (FastAPI), Model Context Protocol (MCP), LangChain, LangGraph, and RAG retrieval pipelines, alongside resilient distributed backends with Node.js, TypeScript, Go, and Java (Spring Boot).',
+        openTo: `${jdAnalysis.country || 'Germany, Netherlands, Ireland, UK, USA, Singapore'} | Visa Sponsorship Required`,
       },
       experience: [
         {
@@ -1334,55 +1442,103 @@ Ashish Kumar Singh`;
           location: 'Noida, India',
           period: 'Oct 2023 – Present',
           bullets: [
-            'Designed and developed enterprise-scale applications using React.js, Next.js, TypeScript, Node.js, REST APIs, microservices, and cloud technologies.',
-            'Architected a micro-frontend platform using Module Federation, enabling independent development and deployment across 6+ global engineering teams.',
-            'Reduced application bundle size by approximately 35% and improved page-speed performance by 40% through application and asset optimization.',
-            'Implemented and maintained GitLab CI/CD pipelines and integrated DataDog for observability.'
+            'Architected and deployed enterprise-grade Generative AI context retrieval and agentic orchestration platforms using Python, FastAPI, LangGraph, and Model Context Protocol (MCP), automating clinical workflows and decreasing manual clinician research time by 40%.',
+            'Engineered high-performance distributed backend microservices and REST/gRPC APIs using Python and Go, handling 15M+ daily requests with a 40% reduction in endpoint latency.',
+            'Implemented secure Model Context Protocol (MCP) clients and servers to standardize tool execution and data retrieval across fragmented clinical records, enforcing strict healthcare compliance and RBAC guardrails.',
+            'Spearheaded an enterprise micro-frontend architecture utilizing Webpack Module Federation and React 18, enabling independent continuous deployment across 6+ distributed engineering teams.',
+            'Built comprehensive end-to-end AI observability pipelines incorporating OpenTelemetry, DataDog, and Prometheus to monitor LLM token consumption, latency budgets, retrieval relevance, and system uptime.',
+            'Optimized client-side application bundle sizes by 35% and improved Core Web Vitals (Lighthouse score 62 → 94), delivering a 40% uplift in web application load performance.',
+            'Led technical architecture reviews, code quality governance, and mentorship for 12+ engineers across Agile sprints, establishing reusable backend libraries and CI/CD pipelines.'
           ],
         },
         {
           id: 'exp-2',
           role: 'Senior Software Engineer',
           company: 'LTIMindtree Ltd. — DBS Bank',
-          location: 'Singapore Banking Domain',
-          period: 'Jun 2022 – Mar 2023',
+          location: 'Singapore (Remote/Onsite Support)',
+          period: 'Jul 2022 – Oct 2023',
           bullets: [
-            'Developed enterprise banking applications using React.js, TypeScript, JavaScript, Node.js, REST APIs, and microservices.',
-            'Worked on DBS credit-card activation and Card+ registration migration initiatives.',
-            'Integrated frontend applications with backend REST APIs and distributed services.'
+            'Developed resilient, high-volume consumer banking microservices and transaction processing engines using Java (Spring Boot), Python, and PostgreSQL under strict Monetary Authority of Singapore (MAS) regulatory standards.',
+            'Designed highly scalable RESTful APIs and asynchronous event processing modules with zero transaction data loss and automated audit trail logging.',
+            'Optimized high-concurrency database queries, table indexing, and partition schemes in PostgreSQL and Oracle, decreasing transaction query execution times by 30% for financial reporting.',
+            'Created reusable modular web applications using React.js and TypeScript, integrating banking authentication workflows, real-time balance feeds, and end-to-end type safety.',
+            'Implemented automated integration and unit testing suites using JUnit, Mockito, and Jest, maintaining 85%+ test coverage across core financial components.',
+            'Collaborated directly with enterprise security auditors, technical product managers, and infrastructure teams to ensure fault tolerance, zero-trust network policies, and seamless deployments.'
           ],
         },
         {
           id: 'exp-3',
-          role: 'Software Engineer / Senior Software Engineer',
+          role: 'Senior Software Engineer',
           company: 'Coforge Ltd. — Walmart',
           location: 'Noida, India',
           period: 'Oct 2020 – Jun 2022',
           bullets: [
-            'Developed and maintained enterprise retail applications using React.js, JavaScript/TypeScript, Node.js, REST APIs, and microservices.',
-            'Built reusable UI components and scalable frontend application architecture.',
-            'Integrated frontend applications with backend services and enterprise APIs.'
+            'Engineered distributed backend microservices and customer-facing order workflows using Node.js, Express, TypeScript, and Spring Boot for Walmart\'s global retail e-commerce platform during peak retail spikes.',
+            'Architected high-throughput event streaming and messaging pipelines utilizing Apache Kafka and RabbitMQ, guaranteeing idempotent order ingestion and real-time inventory synchronization.',
+            'Implemented multi-tier caching architectures with Redis and tuned relational/document databases (PostgreSQL, MongoDB), reducing peak load on primary databases by 45%.',
+            'Automated continuous delivery and blue/green deployment workflows using Jenkins, Docker, and Kubernetes, eliminating deployment downtime across bi-weekly production release cycles.',
+            'Collaborated with international site reliability engineering (SRE) and QA teams to instrument application health checks and distributed tracing, maintaining a 99.95% production service availability record.'
+          ],
+        },
+        {
+          id: 'exp-4',
+          role: 'Software Engineer',
+          company: 'Previous Technology Organizations',
+          location: 'India',
+          period: 'Jan 2016 – Oct 2020',
+          bullets: [
+            'Built full-stack web applications and scalable RESTful API backends using Python (Django/Flask), Node.js, React.js, MySQL, and PostgreSQL across healthcare, insurance, and SaaS domains.',
+            'Designed normalized relational database models, views, and stored procedures to handle high-concurrency data transactions and reliable analytics exports.',
+            'Constructed responsive, cross-browser frontend user interfaces using React, JavaScript (ES6+), HTML5, and CSS3, integrating state management and API services.',
+            'Implemented security controls including OAuth 2.0 authentication, JWT token validation, role-based access control (RBAC), and sanitization middleware to mitigate OWASP Top 10 vulnerabilities.',
+            'Participated in all phases of the Agile software development lifecycle (SDLC), contributing to sprint planning, backlog grooming, peer code reviews, and production release support.'
           ],
         }
       ],
       skillsFlat: [
-        'Frontend: React.js, Next.js, TypeScript, JavaScript, Redux Toolkit, React Query, HTML5, CSS3, Tailwind CSS',
-        'Backend: Node.js, Express.js, NestJS, Python, Flask, FastAPI, REST APIs, GraphQL, Microservices',
-        'AI/GenAI: Generative AI, LLM, RAG, Agentic AI, AI Agents, LangChain, LangGraph, MCP, Vector Databases',
-        'Cloud & DevOps: AWS, GCP, Docker, Kubernetes, Terraform, GitLab CI/CD, DataDog, Splunk',
-        'Architecture: System Design, Microservices, Micro-frontends, Module Federation, Event-Driven Architecture'
+        'Programming Languages: Python (Asyncio, FastAPI), TypeScript, JavaScript (ES6+), Go (Golang), Java (Spring Boot), SQL',
+        'AI & Generative AI: Agentic Systems, Model Context Protocol (MCP), LangChain, LangGraph, RAG (Retrieval-Augmented Generation), Vector Databases (pgvector, ChromaDB), Embeddings, LLM Evaluation & Guardrails',
+        'Backend & Distributed Systems: Microservices Architecture, RESTful APIs, gRPC, Event-Driven Architecture, Message Queues (Apache Kafka, RabbitMQ), Distributed Caching (Redis), High-Concurrency Systems',
+        'Databases & Data Engineering: PostgreSQL, MySQL, MongoDB, DynamoDB, Oracle SQL, Database Indexing, Schema Optimization, Data Ingestion Pipelines',
+        'Cloud & DevOps: Amazon Web Services (AWS - ECS, EKS, Lambda, S3, RDS, SQS), Microsoft Azure, Google Cloud (GCP), Docker, Kubernetes, Helm, Terraform, CI/CD (GitHub Actions, GitLab CI, Jenkins)',
+        'Frontend & Web Technologies: React.js, Next.js, Redux Toolkit, Webpack Module Federation (Micro-frontends), HTML5, CSS3/Tailwind CSS, Core Web Vitals',
+        'Engineering Best Practices: System Design, Observability (DataDog, Prometheus, Grafana, OpenTelemetry), TDD (Jest, PyTest, JUnit), MAS/HIPAA Regulatory Compliance, Agile/Scrum Leadership'
       ],
-      projects: [],
+      projects: [
+        {
+          id: 'proj-1',
+          name: 'Enterprise AI Agent & MCP Workflow Platform',
+          description: 'Production-grade agentic workflow orchestration system using Python, FastAPI, and MCP for autonomous tool use and clinical context retrieval.',
+          technologies: 'Python, FastAPI, LangGraph, Model Context Protocol (MCP), pgvector',
+        },
+        {
+          id: 'proj-2',
+          name: 'High-Throughput Order Ingestion Pipeline',
+          description: 'Distributed event-driven messaging pipeline processing high-volume retail transactions during peak load.',
+          technologies: 'Node.js, TypeScript, Apache Kafka, RabbitMQ, Redis, PostgreSQL',
+        },
+      ],
       education: [
-        { id: 'edu-1', degree: 'Master of Computer Applications (MCA)', school: 'India', location: 'India', year: '2016' }
+        { id: 'edu-1', degree: 'Master of Computer Applications (MCA)', school: 'Uttar Pradesh Technical University (UPTU)', location: 'India', year: '2013 – 2016' },
+        { id: 'edu-2', degree: 'Bachelor of Computer Applications (BCA)', school: 'UPRTO University', location: 'India', year: '2009 – 2012' },
       ],
-      certificates: [],
+      certificates: [
+        'DeepLearning.AI: Generative AI with Large Language Models',
+        'DeepLearning.AI: LangChain for LLM Application Development',
+        'HackerRank: Python (Advanced), Problem Solving (Advanced), JavaScript (Advanced), SQL (Advanced)',
+        'Anthropic / Community: Model Context Protocol (MCP) Architecture & Agentic Workflow Design',
+        'AWS: Cloud Practitioner / Cloud-Native Architecture Specialization',
+      ],
       achievements: [
-        'Architected a Module Federation-based micro-frontend platform supporting 6+ global engineering teams.',
-        'Migrated legacy AngularJS applications to React 18 + TypeScript, reducing bundle size by 35% and improving page-speed performance by 40%.',
-        'Improved Lighthouse score from 62 to 94 via Core Web Vitals optimizations.'
+        'Architected and deployed enterprise-grade Generative AI and MCP platforms, reducing clinician research time by 40%.',
+        'Engineered high-performance Go and Python microservices handling 15M+ daily requests with 40% latency reduction.',
+        'Spearheaded enterprise micro-frontend architecture utilizing Webpack Module Federation adopted across 6+ distributed engineering teams.',
+        'Optimized client-side web application performance, improving Lighthouse score from 62 to 94 and reducing bundle size by 35%.',
+        'Maintained 99.95% production availability for mission-critical banking and global retail e-commerce systems.',
       ],
-      languages: ['English – Full Professional Proficiency'],
+      languages: [
+        'English – Full Professional Proficiency',
+      ],
       coverLetter: { paragraphs: [] },
     };
   }

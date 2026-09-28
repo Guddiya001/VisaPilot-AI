@@ -154,6 +154,17 @@ function ResumeBuilderInner() {
         finalDecisionReason: String(result.finalDecisionReason || ''),
       },
     });
+
+    if (result.jdAnalysis?.jobTitle || result.jdAnalysis?.companyName) {
+      setJobInfo(prev => ({
+        id: prev?.id || 'generated',
+        title: result.jdAnalysis?.jobTitle || prev?.title || data.basics.title.split('|')[0].trim() || 'Role',
+        company: result.jdAnalysis?.companyName || prev?.company || '',
+        description: prev?.description || '',
+        requirements: prev?.requirements || '',
+      }));
+    }
+
     setGenerateModalOpen(false);
     const coverNote = options.withCoverLetter ? ' + Cover Letter' : '';
     setTailoredStatus(`✨ Resume generated with ${result.atsScore}% ATS score (Strategy ${result.strategy})${coverNote}`);

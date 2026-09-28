@@ -15,7 +15,7 @@ import {
   Loader2,
   FileText,
 } from 'lucide-react';
-import { API_BASE, jobsApi } from '@/lib/api';
+import { API_BASE, jobsApi, applicationsApi } from '@/lib/api';
 
 interface Job {
   id?: string;
@@ -149,10 +149,32 @@ function JobsContent() {
             result.data.forEach((job: Job) => {
               const url = job.url || job.sourceUrl;
               if (url && (job.description || job.requirements)) {
-                localStorage.setItem(`jd_${url}`, JSON.stringify({
-                  description: job.description || '',
-                  requirements: job.requirements || ''
-                }));
+                try {
+                  localStorage.setItem(`jd_${url}`, JSON.stringify({
+                    description: job.description || '',
+                    requirements: job.requirements || ''
+                  }));
+                } catch (e) {
+                  console.warn('LocalStorage quota exceeded. Clearing old jd_ cache.', e);
+                  const keysToRemove: string[] = [];
+                  for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key?.startsWith('jd_')) {
+                      keysToRemove.push(key);
+                    }
+                  }
+                  keysToRemove.forEach(k => localStorage.removeItem(k));
+
+                  // Retry saving this specific job
+                  try {
+                    localStorage.setItem(`jd_${url}`, JSON.stringify({
+                      description: job.description || '',
+                      requirements: job.requirements || ''
+                    }));
+                  } catch (retryError) {
+                    console.error('Failed to save to localStorage after clearing cache', retryError);
+                  }
+                }
               }
             });
           }
@@ -170,6 +192,19 @@ function JobsContent() {
     },
     [],
   );
+
+  const handleSaveApplication = async (jobId: string) => {
+    try {
+      const res = await applicationsApi.create(jobId);
+      if (res.success) {
+        alert('Job saved to your tracker successfully!');
+      } else {
+        alert(`Failed to save job: ${res.error}`);
+      }
+    } catch (err) {
+      alert('Error saving job. Are you logged in?');
+    }
+  };
 
   // Fetch jobs on mount using URL params
   useEffect(() => {
@@ -461,6 +496,16 @@ function JobsContent() {
                       <FileText className="w-3.5 h-3.5" />
                       ATS Resume
                     </Link>
+                    {job.id && (
+                      <button
+                        type="button"
+                        onClick={() => handleSaveApplication(job.id as string)}
+                        className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 transition-all"
+                        title="Save to Applications Tracker"
+                      >
+                        <Bookmark className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                     <a
                       href={job.url || job.sourceUrl || '#'}
                       target="_blank"

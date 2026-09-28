@@ -163,7 +163,7 @@ export function generatePrintHTML(data: ResumeData): string {
 
   // Header
   parts.push('<header class="rp-header">');
-  parts.push('<h1 itemprop="name">' + esc(data.basics.name) + '</h1>');
+  parts.push('<h1 class="rp-name" itemprop="name">' + esc(data.basics.name) + '</h1>');
   parts.push('<p class="rp-subtitle" itemprop="jobTitle">' + esc(data.basics.title) + '</p>');
   parts.push('<div class="rp-contacts">');
   if (data.basics.location) parts.push('<span>' + esc(data.basics.location) + '</span>');
@@ -187,7 +187,7 @@ export function generatePrintHTML(data: ResumeData): string {
   // Summary
   if (data.basics.summary) {
     parts.push('<section class="rp-section">');
-    parts.push('<h2>Professional Summary</h2>');
+    parts.push('<h2 class="rp-section-title">Professional Summary</h2>');
     parts.push('<p>' + esc(data.basics.summary) + '</p>');
     parts.push('</section>');
   }
@@ -195,7 +195,7 @@ export function generatePrintHTML(data: ResumeData): string {
   // Experience
   if (data.experience.length > 0) {
     parts.push('<section class="rp-section">');
-    parts.push('<h2>Work Experience</h2>');
+    parts.push('<h2 class="rp-section-title">Work Experience</h2>');
     for (const exp of data.experience) {
       parts.push('<article class="rp-role">');
       parts.push('<header class="rp-role-head">');
@@ -225,7 +225,7 @@ export function generatePrintHTML(data: ResumeData): string {
   // Skills
   if (data.skillsFlat.length > 0) {
     parts.push('<section class="rp-section">');
-    parts.push('<h2>CORE SKILLS</h2>');
+    parts.push('<h2 class="rp-section-title">CORE SKILLS</h2>');
     for (const skill of data.skillsFlat) {
       parts.push('<p class="rp-skills-flat-line">' + esc(skill) + '</p>');
     }
@@ -235,7 +235,7 @@ export function generatePrintHTML(data: ResumeData): string {
   // Projects
   if (data.projects.length > 0) {
     parts.push('<section class="rp-section rp-projects-section">');
-    parts.push('<h2>Selected Projects</h2>');
+    parts.push('<h2 class="rp-section-title">Selected Projects</h2>');
     for (const proj of data.projects) {
       parts.push('<article class="rp-role">');
       parts.push('<header class="rp-role-head"><h3 class="rp-role-heading"><span class="rp-role-title">' + esc(proj.name) + '</span></h3></header>');
@@ -249,7 +249,7 @@ export function generatePrintHTML(data: ResumeData): string {
   // Education
   if (data.education.length > 0) {
     parts.push('<section class="rp-section rp-education-section">');
-    parts.push('<h2>EDUCATION</h2>');
+    parts.push('<h2 class="rp-section-title">EDUCATION</h2>');
     for (const edu of data.education) {
       parts.push('<article class="rp-role"><header class="rp-role-head">');
       parts.push('<h3 class="rp-role-heading"><span class="rp-role-title">' + esc(edu.degree) + '</span> <span class="rp-dash">|</span> <span class="rp-company">' + esc(edu.school) + '</span></h3>');
@@ -265,7 +265,7 @@ export function generatePrintHTML(data: ResumeData): string {
   // Certificates
   if (data.certificates.length > 0) {
     parts.push('<section class="rp-section rp-certificates-section">');
-    parts.push('<h2>CERTIFICATIONS</h2>');
+    parts.push('<h2 class="rp-section-title">CERTIFICATIONS</h2>');
     parts.push('<ul class="rp-bullets">');
     for (const cert of data.certificates) {
       parts.push('<li>' + esc(cert) + '</li>');
@@ -276,7 +276,7 @@ export function generatePrintHTML(data: ResumeData): string {
   // Achievements
   if (data.achievements.length > 0) {
     parts.push('<section class="rp-section">');
-    parts.push('<h2>ACHIEVEMENTS</h2>');
+    parts.push('<h2 class="rp-section-title">ACHIEVEMENTS</h2>');
     parts.push('<ul class="rp-bullets">');
     for (const ach of data.achievements) {
       parts.push('<li>' + esc(ach) + '</li>');
@@ -287,7 +287,7 @@ export function generatePrintHTML(data: ResumeData): string {
   // Languages
   if (data.languages.length > 0) {
     parts.push('<section class="rp-section">');
-    parts.push('<h2>Languages</h2>');
+    parts.push('<h2 class="rp-section-title">Languages</h2>');
     parts.push('<ul class="rp-bullets">');
     for (const lang of data.languages) {
       parts.push('<li>' + esc(lang) + '</li>');

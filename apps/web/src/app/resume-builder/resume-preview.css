@@ -44,36 +44,57 @@
 
 /* ---------- Header ---------- */
 .resume-preview .rp-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
+  text-align: center;
   border-bottom: 1px solid var(--rp-line);
-  padding-bottom: 12px;
+  padding-bottom: 8px;
   margin-bottom: 6px;
 }
 
 /* ---------- Typography ---------- */
+.resume-preview .rp-name,
 .resume-preview h1 {
-  margin: 0;
-  font-size: 1.75rem;
+  margin: 0 0 3px;
+  font-size: 1.6rem;
   line-height: 1.2;
   color: var(--rp-accent);
   font-weight: 700;
-  letter-spacing: 0.1px;
+  letter-spacing: -0.2px;
+  text-align: center;
 }
 
 .resume-preview .rp-subtitle {
   margin: 0 0 4px;
+  font-size: 0.92rem;
+  font-weight: 600;
   color: var(--rp-muted);
+  text-align: center;
 }
 
 .resume-preview .rp-contacts,
-.resume-preview .rp-links,
-.resume-preview .rp-open-to {
+.resume-preview .rp-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
   margin: 2px 0;
   color: var(--rp-muted);
-  font-size: 0.96rem;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.resume-preview .rp-sep {
+  color: #cbd5e1;
+  margin: 0 1px;
+  user-select: none;
+}
+
+.resume-preview .rp-open-to {
+  margin: 2px 0 0;
+  color: var(--rp-muted);
+  font-size: 0.8rem;
+  font-style: italic;
+  text-align: center;
 }
 
 .resume-preview a {
@@ -252,34 +273,56 @@
 }
 
 .resume-print-window .rp-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
+  text-align: center;
   border-bottom: 1px solid #e7ebef;
-  padding-bottom: 12px;
+  padding-bottom: 8px;
   margin-bottom: 6px;
 }
 
+.resume-print-window .rp-name,
 .resume-print-window h1 {
-  margin: 0;
-  font-size: 1.75rem;
+  margin: 0 0 3px;
+  font-size: 1.6rem;
   line-height: 1.2;
   color: #0f172a;
   font-weight: 700;
+  letter-spacing: -0.2px;
+  text-align: center;
 }
 
 .resume-print-window .rp-subtitle {
   margin: 0 0 4px;
+  font-size: 0.92rem;
+  font-weight: 600;
   color: #5b6770;
+  text-align: center;
 }
 
 .resume-print-window .rp-contacts,
-.resume-print-window .rp-links,
-.resume-print-window .rp-open-to {
+.resume-print-window .rp-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
   margin: 2px 0;
   color: #5b6770;
-  font-size: 0.96rem;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.resume-print-window .rp-sep {
+  color: #cbd5e1;
+  margin: 0 1px;
+  user-select: none;
+}
+
+.resume-print-window .rp-open-to {
+  margin: 2px 0 0;
+  color: #5b6770;
+  font-size: 0.8rem;
+  font-style: italic;
+  text-align: center;
 }
 
 .resume-print-window a {

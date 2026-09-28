@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   X, Sparkles, Loader2, CheckCircle2, AlertCircle,
   Target, Brain, FileText, BarChart3, Mail, TrendingUp,
   Award, Rocket, ArrowRight, Copy, ChevronDown, ChevronUp,
   Briefcase, Globe, Zap, TrendingUp as ArrowUp, RefreshCw,
+  Plus, Database,
 } from 'lucide-react';
 import { aiApi } from '@/lib/api';
+import { saveStoredSkills } from '../context';
 import type { GenerationPhase, ResumeData } from '../types';
 import { GENERATION_PHASES } from '../types';
 
@@ -147,6 +149,158 @@ export function GenerateResumeModal({
   const [coverLetterReady, setCoverLetterReady] = useState(false);
   const [coverLetterError, setCoverLetterError] = useState('');
 
+  // Missing requirements selection & persistence state
+  const [selectedMissing, setSelectedMissing] = useState<string[]>([]);
+  const [addedSkillsMap, setAddedSkillsMap] = useState<Record<string, boolean>>({});
+  const [saveForFuture, setSaveForFuture] = useState(true);
+  const [addFeedback, setAddFeedback] = useState<string | null>(null);
+
+  // Compute missing skills from JD analysis vs generated resume
+  const missingJdSkills = useMemo(() => {
+    if (!result) return [];
+    const jda = result.jdAnalysis as Record<string, unknown> | undefined;
+    const rd = result.resumeData as Record<string, unknown> | undefined;
+    const currentSkillsText = ((rd?.skillsFlat as string[]) || []).join(' ').toLowerCase();
+
+    const candidatePool = [
+      ...((jda?.requiredSkills as string[]) || []),
+      ...((jda?.preferredSkills as string[]) || []),
+      ...((jda?.techStack as string[]) || []),
+      ...((jda?.keywords as string[]) || []),
+    ];
+
+    const uniqueMap = new Map<string, string>();
+    candidatePool.forEach((item) => {
+      const clean = String(item || '').trim();
+      if (clean && clean.length > 1 && !uniqueMap.has(clean.toLowerCase())) {
+        uniqueMap.set(clean.toLowerCase(), clean);
+      }
+    });
+
+    return Array.from(uniqueMap.values()).filter((skill) => {
+      return !currentSkillsText.includes(skill.toLowerCase());
+    });
+  }, [result]);
+
+  // Sync selected missing skills when result changes
+  useEffect(() => {
+    if (missingJdSkills.length > 0) {
+      setSelectedMissing(missingJdSkills);
+      setAddedSkillsMap({});
+    }
+  }, [result?.strategy, result?.atsScore]);
+
+  const handleToggleSelectMissing = (skill: string) => {
+    setSelectedMissing((prev) =>
+      prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
+    );
+  };
+
+  const handleSelectAllMissing = () => {
+    const available = missingJdSkills.filter((s) => !addedSkillsMap[s]);
+    if (selectedMissing.length === available.length) {
+      setSelectedMissing([]);
+    } else {
+      setSelectedMissing(available);
+    }
+  };
+
+  const handleAddMissingSkills = (skillsToAdd: string[]) => {
+    if (skillsToAdd.length === 0 || !result) return;
+
+    if (saveForFuture) {
+      saveStoredSkills(skillsToAdd);
+    }
+
+    const updatedMap = { ...addedSkillsMap };
+    skillsToAdd.forEach((s) => {
+      updatedMap[s] = true;
+    });
+    setAddedSkillsMap(updatedMap);
+    setSelectedMissing((prev) => prev.filter((s) => !skillsToAdd.includes(s)));
+
+    setResult((prev) => {
+      if (!prev) return prev;
+      const prevRd = prev.resumeData as Record<string, unknown>;
+      const existing = (prevRd.skillsFlat as string[]) || [];
+
+      // Categorized skill merging to prevent orphan single-word lines
+      const updatedSkills = [...existing];
+      const unassigned: string[] = [];
+
+      for (const skill of skillsToAdd) {
+        const sTrim = skill.trim();
+        if (!sTrim) continue;
+        const lower = sTrim.toLowerCase();
+        if (updatedSkills.some((l) => l.toLowerCase().includes(lower))) continue;
+
+        let merged = false;
+        if (/cloud|devops|aws|azure|gcp|docker|kubernetes|terraform|helm/i.test(lower)) {
+          const idx = updatedSkills.findIndex((l) => /^cloud\s*&?\s*devops/i.test(l));
+          if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
+        } else if (/python|typescript|javascript|golang|go\b|java\b|rust|c#|\.net|sql/i.test(lower)) {
+          const idx = updatedSkills.findIndex((l) => /^programming languages|^core languages|^languages/i.test(l));
+          if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
+        } else if (/ai|genai|llm|rag|mcp|langchain|langgraph|agent|prompt|vector/i.test(lower)) {
+          const idx = updatedSkills.findIndex((l) => /ai\b|generative/i.test(l));
+          if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
+        } else if (/react|next|vue|angular|frontend|html|css|tailwind/i.test(lower)) {
+          const idx = updatedSkills.findIndex((l) => /frontend/i.test(l));
+          if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
+        } else if (/postgres|mongo|mysql|redis|kafka|database|dynamo/i.test(lower)) {
+          const idx = updatedSkills.findIndex((l) => /database/i.test(l));
+          if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
+        } else if (/api|microservice|backend|grpc|rest|graphql/i.test(lower)) {
+          const idx = updatedSkills.findIndex((l) => /backend/i.test(l));
+          if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
+        }
+
+        if (!merged) {
+          unassigned.push(sTrim);
+        }
+      }
+
+      if (unassigned.length > 0) {
+        const addIdx = updatedSkills.findIndex((l) => /^additional skills|^core competencies/i.test(l));
+        if (addIdx !== -1) {
+          updatedSkills[addIdx] = `${updatedSkills[addIdx]}, ${unassigned.join(', ')}`;
+        } else {
+          updatedSkills.push(`Additional Skills: ${unassigned.join(', ')}`);
+        }
+      }
+
+      const scoreBoost = Math.min(100, prev.atsScore + Math.min(12, skillsToAdd.length * 2));
+      const skillsBoost = Math.min(100, prev.atsBreakdown.skillsMatch + Math.min(15, skillsToAdd.length * 3));
+      const kwBoost = Math.min(100, prev.atsBreakdown.keywordMatch + Math.min(12, skillsToAdd.length * 2));
+
+      return {
+        ...prev,
+        atsScore: scoreBoost,
+        atsBreakdown: {
+          ...prev.atsBreakdown,
+          skillsMatch: skillsBoost,
+          keywordMatch: kwBoost,
+        },
+        resumeData: {
+          ...prevRd,
+          skillsFlat: updatedSkills,
+        },
+        finalDecision: scoreBoost >= 85 ? 'APPLY_TODAY' : prev.finalDecision,
+        finalDecisionReason:
+          scoreBoost >= 85
+            ? `ATS score improved to ${scoreBoost}% with added JD requirements. Ready to apply!`
+            : prev.finalDecisionReason,
+      };
+    });
+
+    setAddFeedback(
+      `✓ Added ${skillsToAdd.length} requirement${skillsToAdd.length > 1 ? 's' : ''} to resume${
+        saveForFuture ? ' & saved for future job applications' : ''
+      }!`
+    );
+    setTimeout(() => setAddFeedback(null), 5000);
+  };
+
   // Sync props into state whenever the modal opens or initial values update.
   useEffect(() => {
     if (isOpen) {
@@ -166,6 +320,9 @@ export function GenerateResumeModal({
       setCoverLetterReady(false);
       setCoverLetterError('');
       setShowNetworking(false);
+      setSelectedMissing([]);
+      setAddedSkillsMap({});
+      setAddFeedback(null);
     }
   }, [isOpen, initialJobDescription, initialJobTitle, initialCompanyName]);
 
@@ -629,6 +786,111 @@ export function GenerateResumeModal({
                   )}
                 </div>
               </div>
+
+              {/* ─── Important Missing JD Requirements (Select & Store) ─── */}
+              {missingJdSkills.length > 0 && (
+                <div className="bg-red-50/60 border border-red-200 rounded-xl p-4 shadow-2xs space-y-3 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-red-600" />
+                      <h4 className="text-xs font-bold text-red-900 uppercase tracking-wider">
+                        Important Missing JD Requirements ({missingJdSkills.length})
+                      </h4>
+                    </div>
+                    <button
+                      onClick={handleSelectAllMissing}
+                      className="text-xs font-semibold text-red-700 hover:text-red-900 hover:underline"
+                    >
+                      {selectedMissing.length === missingJdSkills.filter((s) => !addedSkillsMap[s]).length
+                        ? 'Deselect All'
+                        : 'Select All'}
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    Select missing requirements from this JD you have experience with to add them directly to your generated resume and store them for future matches.
+                  </p>
+
+                  {addFeedback && (
+                    <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg flex items-center gap-2 animate-fade-in font-medium">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                      {addFeedback}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
+                    {missingJdSkills.map((skill, i) => {
+                      const inResume = addedSkillsMap[skill];
+                      const isSelected = selectedMissing.includes(skill);
+
+                      return (
+                        <div
+                          key={i}
+                          className={`flex items-center justify-between px-3 py-2 rounded-lg border text-xs transition-all ${
+                            inResume
+                              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                              : isSelected
+                              ? 'bg-red-100/90 border-red-300 text-red-950 font-medium'
+                              : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          <label className="flex items-center gap-2 cursor-pointer flex-1 mr-2 min-w-0">
+                            {!inResume && (
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handleToggleSelectMissing(skill)}
+                                className="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500 cursor-pointer"
+                              />
+                            )}
+                            <span className={`truncate ${inResume ? 'line-through opacity-70' : ''}`}>
+                              {skill}
+                            </span>
+                          </label>
+
+                          {inResume ? (
+                            <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-100/90 px-2 py-0.5 rounded-full flex-shrink-0">
+                              <CheckCircle2 className="w-3 h-3" /> In Resume
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handleAddMissingSkills([skill])}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold rounded bg-white hover:bg-red-600 hover:text-white text-red-700 border border-red-200 shadow-2xs transition-colors flex-shrink-0"
+                              title="Add this requirement to resume"
+                            >
+                              <Plus className="w-3 h-3" /> Add
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="pt-2 border-t border-red-200/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={saveForFuture}
+                        onChange={(e) => setSaveForFuture(e.target.checked)}
+                        className="w-3.5 h-3.5 text-red-600 rounded border-gray-300 focus:ring-red-500 cursor-pointer"
+                      />
+                      <span className="flex items-center gap-1">
+                        <Database className="w-3.5 h-3.5 text-gray-500" />
+                        Store in profile for future job applications
+                      </span>
+                    </label>
+
+                    <button
+                      onClick={() => handleAddMissingSkills(selectedMissing)}
+                      disabled={selectedMissing.length === 0}
+                      className="py-2 px-4 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 whitespace-nowrap"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Add Selected to Resume ({selectedMissing.length})
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Interview Probability */}
               <div className="bg-white rounded-xl border border-gray-200 p-5">
