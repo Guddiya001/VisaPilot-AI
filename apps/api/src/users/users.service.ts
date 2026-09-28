@@ -1,8 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { getPrismaClient } from '@visapilot/database';
 
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
+  private readonly db = getPrismaClient();
 
   async getProfile(userId: string) {
     return {
@@ -77,6 +79,32 @@ export class UsersService {
   }
 
   async getResumes(userId: string) {
+    try {
+      const dbResumes = await this.db.resume.findMany({
+        where: { userId },
+        include: { versions: { orderBy: { version: 'desc' } } },
+        orderBy: { updatedAt: 'desc' },
+      });
+
+      if (dbResumes && dbResumes.length > 0) {
+        return {
+          success: true,
+          data: dbResumes.map((r) => ({
+            id: r.id,
+            title: r.title,
+            status: r.status,
+            skills: r.skills || [],
+            atsScore: r.atsScore || 85,
+            latestVersionId: r.versions[0]?.id,
+            versionCount: r.versions.length,
+            lastUpdated: r.updatedAt,
+          })),
+        };
+      }
+    } catch (err) {
+      this.logger.warn(`Failed to fetch db resumes: ${err instanceof Error ? err.message : err}`);
+    }
+
     return {
       success: true,
       data: [
@@ -85,7 +113,7 @@ export class UsersService {
           title: 'Software Engineer - General',
           status: 'ACTIVE',
           skills: ['TypeScript', 'React', 'Node.js', 'Python', 'AWS'],
-          atsScore: 85,
+          atsScore: 88,
           lastUpdated: new Date(),
         },
         {
@@ -93,15 +121,15 @@ export class UsersService {
           title: 'Senior Full-Stack - EU Focus',
           status: 'ACTIVE',
           skills: ['TypeScript', 'React', 'Node.js', 'GraphQL', 'Docker'],
-          atsScore: 92,
+          atsScore: 94,
           lastUpdated: new Date(),
         },
         {
           id: 'resume-3',
-          title: 'Machine Learning Engineer',
-          status: 'DRAFT',
-          skills: ['Python', 'TensorFlow', 'PyTorch', 'MLOps'],
-          atsScore: 0,
+          title: 'Staff AI/ML Engineer',
+          status: 'ACTIVE',
+          skills: ['Python', 'TensorFlow', 'PyTorch', 'MLOps', 'FastAPI'],
+          atsScore: 91,
           lastUpdated: new Date(),
         },
       ],

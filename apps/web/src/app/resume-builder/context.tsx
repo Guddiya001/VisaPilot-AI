@@ -1,8 +1,24 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback, type ReactNode } from 'react';
-import type { ResumeData, ResumeExperience, ResumeProject, ResumeEducation, CoverLetterData, GeneratedResumeResult } from './types';
-import { SAMPLE_RESUME_DATA, EMPTY_RESUME_DATA, generateId } from './types';
+import type {
+  ResumeData,
+  ResumeExperience,
+  ResumeProject,
+  ResumeEducation,
+  CoverLetterData,
+  GeneratedResumeResult,
+  ResumePresetId,
+} from './types';
+import {
+  SAMPLE_RESUME_DATA,
+  FRONTEND_HEAVY_RESUME_DATA,
+  BACKEND_HEAVY_RESUME_DATA,
+  AI_VERSION_RESUME_DATA,
+  FDE_VERSION_RESUME_DATA,
+  EMPTY_RESUME_DATA,
+  generateId,
+} from './types';
 
 // ─── Storage Key ───────────────────────────────────────────
 const STORAGE_KEY = 'visapilot_resume_data_v2_1';
@@ -98,8 +114,9 @@ type ResumeAction =
     }
   // Full Resume Generation
   | { type: 'GENERATE_FULL_RESUME'; payload: GeneratedResumeResult }
-  // Bulk
+  // Bulk & Presets
   | { type: 'LOAD_SAMPLE' }
+  | { type: 'LOAD_PRESET'; payload: ResumePresetId }
   | { type: 'CLEAR_ALL' };
 
 // ─── Reducer ───────────────────────────────────────────────
@@ -393,9 +410,25 @@ function resumeReducer(state: ResumeData, action: ResumeAction): ResumeData {
       };
     }
 
-    // ─── Bulk ───
+    // ─── Bulk & Presets ───
     case 'LOAD_SAMPLE':
       return JSON.parse(JSON.stringify(SAMPLE_RESUME_DATA));
+
+    case 'LOAD_PRESET': {
+      switch (action.payload) {
+        case 'frontend':
+          return JSON.parse(JSON.stringify(FRONTEND_HEAVY_RESUME_DATA));
+        case 'backend':
+          return JSON.parse(JSON.stringify(BACKEND_HEAVY_RESUME_DATA));
+        case 'ai':
+          return JSON.parse(JSON.stringify(AI_VERSION_RESUME_DATA));
+        case 'fde':
+          return JSON.parse(JSON.stringify(FDE_VERSION_RESUME_DATA));
+        case 'master':
+        default:
+          return JSON.parse(JSON.stringify(SAMPLE_RESUME_DATA));
+      }
+    }
 
     case 'CLEAR_ALL':
       return { ...EMPTY_RESUME_DATA };
@@ -411,6 +444,8 @@ interface ResumeContextValue {
   dispatch: React.Dispatch<ResumeAction>;
   exportJSON: () => string;
   importJSON: (json: string) => boolean;
+  activePreset: ResumePresetId;
+  loadPreset: (presetId: ResumePresetId) => void;
 }
 
 const ResumeContext = createContext<ResumeContextValue | null>(null);
@@ -468,8 +503,24 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     [dispatch]
   );
 
+  const [activePreset, setActivePreset] = React.useState<ResumePresetId>(() => {
+    const versionType = data.metadata?.versionType as ResumePresetId | undefined;
+    if (versionType && ['frontend', 'backend', 'ai', 'fde', 'master'].includes(versionType)) {
+      return versionType;
+    }
+    return 'master';
+  });
+
+  const loadPreset = useCallback(
+    (presetId: ResumePresetId) => {
+      setActivePreset(presetId);
+      dispatch({ type: 'LOAD_PRESET', payload: presetId });
+    },
+    [dispatch]
+  );
+
   return (
-    <ResumeContext.Provider value={{ data, dispatch, exportJSON, importJSON }}>
+    <ResumeContext.Provider value={{ data, dispatch, exportJSON, importJSON, activePreset, loadPreset }}>
       {children}
     </ResumeContext.Provider>
   );

@@ -156,7 +156,7 @@ export abstract class BaseCrawlerAdapter implements ICrawlerAdapter {
    * Common tech aliases. When a user searches for one variant,
    * we also try the canonical alternatives.
    */
-  private static readonly TECH_ALIASES: Record<string, string[]> = {
+  public static readonly TECH_ALIASES: Record<string, string[]> = {
     'react': ['reactjs', 'react.js'],
     'reactjs': ['react', 'react.js'],
     'react.js': ['react', 'reactjs'],
@@ -180,22 +180,38 @@ export abstract class BaseCrawlerAdapter implements ICrawlerAdapter {
     'postgres': ['postgresql'],
     'mongodb': ['mongo'],
     'mongo': ['mongodb'],
-    'gen ai': ['genai', 'generative ai', 'llm'],
-    'genai': ['gen ai', 'generative ai', 'llm'],
-    'generative ai': ['gen ai', 'genai', 'llm'],
-    'llm': ['gen ai', 'genai', 'generative ai'],
+    'gen ai': ['gen ai', 'genai', 'generative ai', 'llm', 'llms', 'large language model', 'large language models', 'foundation model'],
+    'genai': ['gen ai', 'genai', 'generative ai', 'llm', 'llms', 'large language model', 'large language models'],
+    'generative ai': ['gen ai', 'genai', 'generative ai', 'llm', 'llms', 'large language model', 'large language models'],
+    'agentic ai': ['agentic ai', 'agentic', 'ai agent', 'ai agents', 'autonomous agent', 'autonomous agents', 'multi-agent'],
+    'agentic': ['agentic ai', 'agentic', 'ai agent', 'ai agents', 'autonomous agent', 'autonomous agents'],
+    'ai agent': ['agentic ai', 'agentic', 'ai agent', 'ai agents', 'autonomous agent', 'autonomous agents'],
+    'ai agents': ['agentic ai', 'agentic', 'ai agent', 'ai agents', 'autonomous agent', 'autonomous agents'],
+    'machine learning': ['machine learning', 'ml', 'deep learning', 'neural network'],
+    'ml': ['machine learning', 'deep learning'],
+    'deep learning': ['machine learning', 'ml', 'deep learning', 'neural network'],
+    'llm': ['gen ai', 'genai', 'generative ai', 'large language model', 'llms'],
+    'llms': ['gen ai', 'genai', 'generative ai', 'large language model', 'llm'],
     'ci/cd': ['cicd'],
     'cicd': ['ci/cd'],
-    'machine learning': ['ml'],
-    'ml': ['machine learning'],
-    'artificial intelligence': ['ai'],
+    'artificial intelligence': ['ai', 'artificial intelligence'],
+    'ai': ['artificial intelligence'],
   };
+
+  public static readonly NON_TECHNICAL_TITLES = [
+    'alliance director', 'partner manager', 'partner development', 'strategic events',
+    'program manager', 'product marketing', 'account executive', 'sales manager', 'sales development',
+    'recruiter', 'talent acquisition', 'legal counsel', 'general counsel', 'accountant',
+    'finance manager', 'events manager', 'event coordinator', 'office manager', 'customer success manager',
+  ];
 
   /**
    * Smart query matching: parses user queries with OR/comma logic,
    * strips stop words, and matches ANY keyword group against the job.
+   * Uses strict word-boundary matching and alias expansion so short words
+   * like 'ai' or 'gen' do not match substrings in 'email', 'gender', etc.
    *
-   * Query "Gen AI or ReactJS, Python" becomes groups: [["gen","ai"], ["reactjs"], ["python"]]
+   * Query "Gen AI or ReactJS, Python" becomes groups: ["gen ai", "reactjs", "python"]
    * A job matches if ALL tokens within ANY single group appear in the haystack.
    *
    * Returns true if the job matches the query (or if there's no query).
@@ -206,43 +222,73 @@ export abstract class BaseCrawlerAdapter implements ICrawlerAdapter {
     // Split query by "or" (case insensitive) and commas to create OR groups
     const orGroups = query
       .split(/\s+or\s+|,/i)
-      .map(g => g.trim())
+      .map(g => g.trim().toLowerCase())
       .filter(g => g.length > 0);
 
     if (orGroups.length === 0) return true;
 
-    const haystack = `${job.title} ${job.description || ''} ${(job.skills || []).join(' ')}`.toLowerCase();
+    const titleLower = (job.title || '').toLowerCase();
+    const haystack = `${titleLower} ${job.description || ''} ${(job.skills || []).join(' ')}`.toLowerCase();
 
-    // A job matches if ANY group fully matches (all tokens in that group found)
+    const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
     return orGroups.some(group => {
-      // Tokenize the group, strip stop words and punctuation
+      // 1. Direct phrase or alias check with word boundaries
+      const aliases = BaseCrawlerAdapter.TECH_ALIASES[group] || [group];
+      for (const alias of aliases) {
+        const reg = new RegExp(`\\b${escapeRegex(alias)}\\b`, 'i');
+        if (reg.test(haystack)) {
+          // If non-technical title, verify that the technical term is actually in the title
+          const isNonTech = BaseCrawlerAdapter.NON_TECHNICAL_TITLES.some(nt => titleLower.includes(nt));
+          if (isNonTech && !reg.test(titleLower)) {
+            return false;
+          }
+          return true;
+        }
+      }
+
+      // 2. Multi-word phrase matching directly
+      if (group.includes(' ')) {
+        const phraseRegex = new RegExp(`\\b${escapeRegex(group).replace(/\s+/g, '\\s+')}\\b`, 'i');
+        if (phraseRegex.test(haystack)) {
+          const isNonTech = BaseCrawlerAdapter.NON_TECHNICAL_TITLES.some(nt => titleLower.includes(nt));
+          if (isNonTech && !phraseRegex.test(titleLower)) {
+            return false;
+          }
+          return true;
+        }
+      }
+
+      // 3. Tokenize group with stop words removed
       const tokens = group
-        .toLowerCase()
         .replace(/[^a-z0-9+#./\s-]/g, ' ')
         .split(/\s+/)
         .filter(w => w.length > 0 && !BaseCrawlerAdapter.QUERY_STOP_WORDS.has(w));
 
-      if (tokens.length === 0) return true;
+      if (tokens.length === 0) return false;
 
-      // Check if all tokens in this group match (with alias expansion)
-      return tokens.every(token => {
-        // Direct match
-        if (haystack.includes(token)) return true;
-
-        // Alias-based match
-        const aliases = BaseCrawlerAdapter.TECH_ALIASES[token];
-        if (aliases) {
-          return aliases.some(alias => haystack.includes(alias));
-        }
-
-        // Word-boundary match for very short tokens (2-3 chars)
-        if (token.length <= 3) {
-          const regex = new RegExp(`\\b${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
-          return regex.test(haystack);
-        }
-
-        return false;
+      // Every token must match with word boundaries and alias expansion
+      const allTokensMatch = tokens.every(token => {
+        const tokenAliases = BaseCrawlerAdapter.TECH_ALIASES[token] || [token];
+        return tokenAliases.some(ta => {
+          const reg = new RegExp(`\\b${escapeRegex(ta)}\\b`, 'i');
+          return reg.test(haystack);
+        });
       });
+
+      if (!allTokensMatch) return false;
+
+      const isNonTech = BaseCrawlerAdapter.NON_TECHNICAL_TITLES.some(nt => titleLower.includes(nt));
+      if (isNonTech) {
+        // Must match in title as well if non-technical title
+        const tokenInTitle = tokens.some(token => {
+          const tokenAliases = BaseCrawlerAdapter.TECH_ALIASES[token] || [token];
+          return tokenAliases.some(ta => new RegExp(`\\b${escapeRegex(ta)}\\b`, 'i').test(titleLower));
+        });
+        if (!tokenInTitle) return false;
+      }
+
+      return true;
     });
   }
 

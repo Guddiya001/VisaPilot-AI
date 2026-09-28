@@ -1,0 +1,25 @@
+Senior Backend Platform Engineer
+Stripe
+Dublin, Ireland (Hybrid)
+
+About Stripe:
+Stripe is a financial infrastructure platform for the internet. Millions of companies—from the world's largest enterprises to the most ambitious startups—use Stripe to accept payments, grow their revenue, and accelerate new business opportunities.
+
+Responsibilities:
+- Architect and scale high-concurrency payment ingestion engines processing tens of thousands of requests per second.
+- Design low-latency distributed microservices and event streaming pipelines utilizing Go, gRPC, and Apache Kafka.
+- Build resilient distributed storage and real-time analytical indexing utilizing ClickHouse, PostgreSQL, and Redis.
+- Maintain transactional consistency, zero transaction loss, and strict MAS/PCI-DSS compliance standards.
+- Troubleshoot low-level Linux networking, socket buffer bottlenecks, and concurrency deadlocks.
+- Optimize CI/CD pipelines, container orchestration on Kubernetes, and Terraform infrastructure as code.
+- Champion engineering excellence, mentor junior/mid-level engineers, and communicate with executive stakeholders.
+
+Requirements:
+- 6+ years of backend software engineering experience building mission-critical distributed systems.
+- Strong proficiency in Go (Golang), Python, C++, and Rust.
+- Deep hands-on experience with gRPC streaming APIs, Protocol Buffers, and RESTful microservices.
+- Experience with event-driven architectures utilizing Kafka and RabbitMQ.
+- Strong administration experience with relational and analytical databases (PostgreSQL, ClickHouse, Redis).
+- Proven experience with Docker, Kubernetes, Terraform, AWS, and Linux troubleshooting.
+- Experience with telemetry, distributed tracing (OpenTelemetry), and Prometheus monitoring.
+- Excellent stakeholder communication, international collaboration, and project ownership.

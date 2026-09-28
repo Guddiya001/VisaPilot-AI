@@ -103,11 +103,7 @@ export class CrawlerService {
     this.adapters.set(JobSource.ASHBY, ashby);
     this.adapters.set(JobSource.RSS, rss);
     this.adapters.set(JobSource.LINKEDIN, linkedin);
-    this.adapters.set(JobSource.WORKDAY, workday);
-    this.adapters.set(JobSource.YCOMBINATOR, ycombinator);
     this.adapters.set(JobSource.INDEED, indeed);
-    this.adapters.set(JobSource.WELLFOUND, wellfound);
-    this.adapters.set(JobSource.GOOGLE_JOBS, google);
   }
 
   async searchJobs(

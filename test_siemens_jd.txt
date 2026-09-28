@@ -1,0 +1,27 @@
+Senior AI Engineer
+Siemens AG
+Munich / Erlangen, Germany (Hybrid / Remote)
+
+About the Role:
+At Siemens, we are transforming the everyday through digital innovation and industrial AI. We are looking for an exceptional Senior AI Engineer to join our global technology team to build mission-critical, enterprise-scale AI platforms and intelligent applications. You will spearhead our generative AI initiatives, transforming state-of-the-art research into robust, high-availability production AI systems.
+
+Responsibilities:
+- Lead end-to-end AI solution from exploration to production, architecting resilient systems that power enterprise digital transformation.
+- Architect and optimize advanced RAG (Retrieval-Augmented Generation) pipelines, vector search engines, and semantic dense embeddings across multi-modal industrial datasets.
+- Design defensive prompt design frameworks, prompt engineering standards, and guaranteed structured output schemas for deterministic downstream integrations.
+- Establish comprehensive LLM evaluation suites to benchmark model hallucination, faithfulness, context recall, and output quality across regression cycles.
+- Build autonomous agentic systems and multi-agent workflows using LangGraph, LangChain, and Model Context Protocol (MCP).
+- Deploy and maintain production AI systems on Microsoft Azure (Azure OpenAI Service, Azure AI Search, AKS) alongside AWS and GCP cloud infrastructure.
+- Implement classical ML and deep learning models utilizing PyTorch, TensorFlow, and scikit-learn, complementing generative models with tabular classifiers and NLP baselines.
+- Establish MLOps and LLMOps practices for continuous model monitoring, distributed tracing, latency profiling, and token cost governance.
+- Champion engineering best practices, take full project ownership, mentor junior and mid-level engineers, and communicate technical architectures effectively to business stakeholders and international cross-functional teams.
+
+Requirements & Tech Stack:
+- 5+ years of software engineering experience building and scaling distributed backend systems and AI platforms.
+- Tech stack: Python, TypeScript, Node.js, Go, Java, PyTorch, TensorFlow, scikit-learn.
+- Generative AI & LLM: In-depth hands-on experience with LLMs, RAG, vector search, embeddings, prompt design, structured output, and LLM evaluation.
+- Agentic Frameworks: Proven production experience with agentic systems, AI agents, LangChain, and LangGraph.
+- Cloud & Infrastructure: Deep familiarity with Microsoft Azure (Azure OpenAI, AKS), AWS, GCP, Docker, Kubernetes, and CI/CD pipelines.
+- Classical ML & NLP: Experience with classical ML algorithms, NLP preprocessing, named entity recognition, and tabular data analysis.
+- Operational Rigor: Experience with MLOps, LLMOps, OpenTelemetry tracing, and system monitoring.
+- Professional Competencies: Strong project ownership, mentoring experience, cross-cultural international collaboration, and fluent English communication.

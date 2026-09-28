@@ -29,11 +29,15 @@ export class ApplicationsController {
   async getAll(
     @CurrentUser('userId') userId: string,
     @Query('status') status?: string,
+    @Query('resumeId') resumeId?: string,
+    @Query('search') search?: string,
     @Query('page') page = 1,
-    @Query('limit') limit = 20,
-  ) {
+    @Query('limit') limit = 50,
+  ): Promise<any> {
     return this.applicationsService.getAll(userId, {
       status,
+      resumeId,
+      search,
       page: Number(page),
       limit: Number(limit),
     });
@@ -44,14 +48,25 @@ export class ApplicationsController {
   @ApiOperation({ summary: 'Save / create application' })
   async create(
     @CurrentUser('userId') userId: string,
-    @Body() body: { jobId: string; notes?: string },
-  ) {
-    return this.applicationsService.create(userId, body.jobId, body.notes);
+    @Body()
+    body: {
+      jobId?: string;
+      notes?: string;
+      resumeVersionId?: string;
+      coverLetterId?: string;
+      status?: ApplicationStatus;
+      companyName?: string;
+      jobTitle?: string;
+      location?: string;
+      sourceUrl?: string;
+    },
+  ): Promise<any> {
+    return this.applicationsService.create(userId, body);
   }
 
   @Get('stats')
   @ApiOperation({ summary: 'Get application statistics' })
-  async getStats(@CurrentUser('userId') userId: string) {
+  async getStats(@CurrentUser('userId') userId: string): Promise<any> {
     return this.applicationsService.getStats(userId);
   }
 
@@ -60,8 +75,30 @@ export class ApplicationsController {
   async getById(
     @Param('id') id: string,
     @CurrentUser('userId') userId: string,
-  ) {
+  ): Promise<any> {
     return this.applicationsService.getById(id, userId);
+  }
+
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update application details (resume, notes, dates, status)' })
+  async update(
+    @Param('id') id: string,
+    @Body()
+    body: {
+      status?: ApplicationStatus;
+      resumeVersionId?: string | null;
+      coverLetterId?: string | null;
+      notes?: string;
+      appliedAt?: string | Date | null;
+      interviewDate?: string | Date | null;
+      offerDate?: string | Date | null;
+      rejectionDate?: string | Date | null;
+      rejectionReason?: string | null;
+    },
+    @CurrentUser('userId') userId: string,
+  ): Promise<any> {
+    return this.applicationsService.update(id, body, userId);
   }
 
   @Patch(':id/status')
@@ -71,7 +108,7 @@ export class ApplicationsController {
     @Param('id') id: string,
     @Body() body: { status: ApplicationStatus },
     @CurrentUser('userId') userId: string,
-  ) {
+  ): Promise<any> {
     return this.applicationsService.updateStatus(id, body.status, userId);
   }
 
@@ -81,7 +118,7 @@ export class ApplicationsController {
   async delete(
     @Param('id') id: string,
     @CurrentUser('userId') userId: string,
-  ) {
+  ): Promise<any> {
     return this.applicationsService.delete(id, userId);
   }
 }

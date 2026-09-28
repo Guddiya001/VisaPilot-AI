@@ -2,10 +2,12 @@ import type { IResumeService, ATSAnalysis } from '@visapilot/shared';
 
 const COMMON_SKILLS = [
   'javascript', 'typescript', 'python', 'java', 'go', 'rust',
-  'react', 'angular', 'vue', 'node.js', 'aws', 'docker',
-  'kubernetes', 'sql', 'nosql', 'postgresql', 'mongodb', 'redis',
-  'graphql', 'rest', 'api', 'git', 'ci/cd', 'devops', 'agile',
-  'machine learning', 'data science', 'deep learning', 'nlp',
+  'react', 'angular', 'vue', 'node.js', 'aws', 'gcp', 'azure', 'docker',
+  'kubernetes', 'helm', 'terraform', 'ansible', 'bash', 'linux',
+  'prometheus', 'grafana', 'loki', 'sentry', 'datadog', 'opentelemetry',
+  'sql', 'nosql', 'postgresql', 'mongodb', 'redis', 'rabbitmq', 'kafka',
+  'graphql', 'rest', 'api', 'git', 'ci/cd', 'devops', 'sre', 'jenkins', 'github actions',
+  'incident response', 'alert management', 'agile', 'machine learning', 'data science', 'deep learning', 'nlp',
 ];
 
 export class ResumeService implements IResumeService {

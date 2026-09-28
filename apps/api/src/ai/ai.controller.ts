@@ -111,7 +111,9 @@ export class AiController {
       jobDescription: string;
       jobTitle?: string;
       companyName?: string;
-      strategy?: 'A' | 'B' | 'C' | 'auto';
+      strategy?: 'A' | 'B' | 'C' | 'D' | 'E' | 'auto';
+      resumeContent?: string;
+      candidateProfile?: Record<string, unknown>;
     },
     @CurrentUser('userId') userId?: string,
   ) {
@@ -148,7 +150,8 @@ export class AiController {
       jobDescription: string;
       jobTitle?: string;
       companyName?: string;
-      strategy?: 'A' | 'B' | 'C' | 'auto';
+      strategy?: 'A' | 'B' | 'C' | 'D' | 'auto';
+      resumeContent?: string;
       maxIterations?: number;
       targetScore?: number;
     },

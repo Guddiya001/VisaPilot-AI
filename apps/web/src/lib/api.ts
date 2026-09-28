@@ -128,7 +128,8 @@ export const aiApi = {
     jobDescription: string;
     jobTitle?: string;
     companyName?: string;
-    strategy?: 'A' | 'B' | 'C' | 'auto';
+    strategy?: 'A' | 'B' | 'C' | 'D' | 'E' | 'auto';
+    resumeContent?: string;
   }) {
     return request<{
       jdAnalysis: {
@@ -148,7 +149,7 @@ export const aiApi = {
         keyResponsibilities: string[];
         techStack: string[];
       };
-      strategy: 'A' | 'B' | 'C';
+      strategy: 'A' | 'B' | 'C' | 'D' | 'E';
       strategyReason: string;
       resumeData: Record<string, unknown>;
       atsScore: number;
@@ -290,19 +291,56 @@ export const jobsApi = {
   },
 };
 
+export interface ApplicationUpdatePayload {
+  status?: string;
+  resumeVersionId?: string | null;
+  coverLetterId?: string | null;
+  notes?: string;
+  appliedAt?: string | Date | null;
+  interviewDate?: string | Date | null;
+  offerDate?: string | Date | null;
+  rejectionDate?: string | Date | null;
+  rejectionReason?: string | null;
+}
+
+export interface ApplicationCreatePayload {
+  jobId?: string;
+  companyName?: string;
+  jobTitle?: string;
+  location?: string;
+  sourceUrl?: string;
+  notes?: string;
+  resumeVersionId?: string;
+  status?: string;
+}
+
 export const applicationsApi = {
-  getAll(status?: string, page = 1, limit = 50) {
+  getAll(filters?: { status?: string; resumeId?: string; search?: string; page?: number; limit?: number }) {
     const params = new URLSearchParams();
-    if (status) params.set('status', status);
-    params.set('page', String(page));
-    params.set('limit', String(limit));
+    if (filters?.status) params.set('status', filters.status);
+    if (filters?.resumeId) params.set('resumeId', filters.resumeId);
+    if (filters?.search) params.set('search', filters.search);
+    params.set('page', String(filters?.page || 1));
+    params.set('limit', String(filters?.limit || 50));
     return request<{ data: any[]; meta: any }>(`/applications?${params.toString()}`);
   },
 
-  create(jobId: string, notes?: string) {
+  getById(id: string) {
+    return request<any>(`/applications/${id}`);
+  },
+
+  create(payload: ApplicationCreatePayload | string, notes?: string) {
+    const body = typeof payload === 'string' ? { jobId: payload, notes } : payload;
     return request('/applications', {
       method: 'POST',
-      body: JSON.stringify({ jobId, notes }),
+      body: JSON.stringify(body),
+    });
+  },
+
+  update(id: string, data: ApplicationUpdatePayload) {
+    return request(`/applications/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
     });
   },
 
@@ -321,6 +359,12 @@ export const applicationsApi = {
 
   getStats() {
     return request<{ data: any }>('/applications/stats');
+  },
+};
+
+export const resumesApi = {
+  getAll() {
+    return request<{ data: any[] }>('/users/resumes');
   },
 };
 

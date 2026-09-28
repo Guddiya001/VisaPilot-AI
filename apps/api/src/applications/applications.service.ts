@@ -8,28 +8,57 @@ export class ApplicationsService {
   private readonly db = getPrismaClient();
 
   // ─── Include shape reused across queries ───────────────────────────────────
-  private readonly jobInclude = {
+  private readonly appInclude = {
     job: {
       include: {
         company: true,
       },
     },
+    resumeVersion: {
+      include: {
+        resume: true,
+      },
+    },
+    coverLetter: true,
   } as const;
 
   // ─── GET ALL ───────────────────────────────────────────────────────────────
   async getAll(
     userId: string,
-    params: { status?: string; page: number; limit: number },
-  ) {
-    const where = {
+    params: {
+      status?: string;
+      resumeId?: string;
+      search?: string;
+      page: number;
+      limit: number;
+    },
+  ): Promise<any> {
+    const where: Record<string, any> = {
       userId,
-      ...(params.status ? { status: params.status } : {}),
     };
+
+    if (params.status) {
+      where.status = params.status;
+    }
+
+    if (params.resumeId) {
+      where.resumeVersion = {
+        resumeId: params.resumeId,
+      };
+    }
+
+    if (params.search) {
+      where.OR = [
+        { job: { title: { contains: params.search, mode: 'insensitive' } } },
+        { job: { company: { name: { contains: params.search, mode: 'insensitive' } } } },
+        { notes: { contains: params.search, mode: 'insensitive' } },
+      ];
+    }
 
     const [data, total] = await Promise.all([
       this.db.application.findMany({
         where,
-        include: this.jobInclude,
+        include: this.appInclude,
         orderBy: { createdAt: 'desc' },
         skip: (params.page - 1) * params.limit,
         take: params.limit,
@@ -49,88 +78,176 @@ export class ApplicationsService {
     };
   }
 
-  // ─── CREATE ────────────────────────────────────────────────────────────────
-  async create(userId: string, jobId: string, notes?: string) {
+  // ─── CREATE / MANUAL ADD ────────────────────────────────────────────────────
+  async create(
+    userId: string,
+    payload: {
+      jobId?: string;
+      notes?: string;
+      resumeVersionId?: string;
+      coverLetterId?: string;
+      status?: ApplicationStatus;
+      companyName?: string;
+      jobTitle?: string;
+      location?: string;
+      sourceUrl?: string;
+    } | string,
+    optionalNotes?: string,
+  ): Promise<any> {
+    // Backwards compatibility with create(userId, jobId, notes)
+    const data = typeof payload === 'string'
+      ? { jobId: payload, notes: optionalNotes }
+      : payload;
+
+    let targetJobId = data.jobId;
+
+    // If no jobId provided, create or find company and create a manual job
+    if (!targetJobId) {
+      if (!data.companyName || !data.jobTitle) {
+        throw new NotFoundException('Either jobId or both companyName and jobTitle must be provided');
+      }
+
+      // Upsert company
+      const company = await this.db.company.upsert({
+        where: { name: data.companyName.trim() },
+        create: {
+          name: data.companyName.trim(),
+          industry: 'Technology',
+          locations: data.location ? [data.location] : ['Remote'],
+        },
+        update: {},
+      });
+
+      // Create manual job
+      const manualJob = await this.db.job.create({
+        data: {
+          title: data.jobTitle.trim(),
+          companyId: company.id,
+          location: data.location || 'Remote',
+          country: 'Global',
+          description: `Custom tracked application for ${data.jobTitle} at ${data.companyName}.`,
+          requirements: 'Standard role requirements',
+          source: 'MANUAL',
+          sourceUrl: data.sourceUrl || '',
+          workMode: 'REMOTE',
+          type: 'FULL_TIME',
+          postedAt: new Date(),
+        },
+      });
+
+      targetJobId = manualJob.id;
+    }
+
     // Return existing application if already saved (upsert-like behaviour)
     const existing = await this.db.application.findUnique({
-      where: { userId_jobId: { userId, jobId } },
-      include: this.jobInclude,
+      where: { userId_jobId: { userId, jobId: targetJobId } },
+      include: this.appInclude,
     });
 
     if (existing) {
-      this.logger.log(`Application already exists for user=${userId} job=${jobId}, returning existing`);
+      this.logger.log(`Application already exists for user=${userId} job=${targetJobId}`);
+      if (data.resumeVersionId || data.notes || data.status) {
+        return this.update(existing.id, {
+          resumeVersionId: data.resumeVersionId,
+          notes: data.notes,
+          status: data.status,
+        }, userId);
+      }
       return { success: true, data: existing };
     }
 
     const application = await this.db.application.create({
       data: {
         userId,
-        jobId,
-        status: ApplicationStatus.SAVED,
-        notes,
+        jobId: targetJobId,
+        status: data.status || ApplicationStatus.SAVED,
+        notes: data.notes,
+        resumeVersionId: data.resumeVersionId,
+        coverLetterId: data.coverLetterId,
         source: 'MANUAL',
-        sourceUrl: '',
+        sourceUrl: data.sourceUrl || '',
       },
-      include: this.jobInclude,
+      include: this.appInclude,
     });
 
     this.logger.log(`Application created: ${application.id}`);
     return { success: true, data: application };
   }
 
-  // ─── UPDATE STATUS ─────────────────────────────────────────────────────────
-  async updateStatus(id: string, status: ApplicationStatus, userId: string) {
+  // ─── UPDATE (FULL) ─────────────────────────────────────────────────────────
+  async update(
+    id: string,
+    data: {
+      status?: ApplicationStatus;
+      resumeVersionId?: string | null;
+      coverLetterId?: string | null;
+      notes?: string;
+      appliedAt?: string | Date | null;
+      interviewDate?: string | Date | null;
+      offerDate?: string | Date | null;
+      rejectionDate?: string | Date | null;
+      rejectionReason?: string | null;
+    },
+    userId: string,
+  ): Promise<any> {
     const app = await this.db.application.findFirst({ where: { id, userId } });
     if (!app) throw new NotFoundException(`Application ${id} not found`);
 
-    // Automatically set relevant date fields on status transitions
-    const dateFields: Partial<{
-      appliedAt: Date;
-      interviewDate: Date;
-      offerDate: Date;
-      rejectionDate: Date;
-    }> = {};
+    const updateData: Record<string, any> = {};
 
-    if (
-      status === ApplicationStatus.APPLIED &&
-      !app.appliedAt
-    ) {
-      dateFields.appliedAt = new Date();
+    if (data.status !== undefined) updateData.status = data.status;
+    if (data.resumeVersionId !== undefined) updateData.resumeVersionId = data.resumeVersionId;
+    if (data.coverLetterId !== undefined) updateData.coverLetterId = data.coverLetterId;
+    if (data.notes !== undefined) updateData.notes = data.notes;
+    if (data.rejectionReason !== undefined) updateData.rejectionReason = data.rejectionReason;
+
+    if (data.appliedAt !== undefined) {
+      updateData.appliedAt = data.appliedAt ? new Date(data.appliedAt) : null;
+    } else if (data.status === ApplicationStatus.APPLIED && !app.appliedAt) {
+      updateData.appliedAt = new Date();
     }
-    if (
-      status === ApplicationStatus.INTERVIEWING &&
-      !app.interviewDate
-    ) {
-      dateFields.interviewDate = new Date();
+
+    if (data.interviewDate !== undefined) {
+      updateData.interviewDate = data.interviewDate ? new Date(data.interviewDate) : null;
+    } else if (data.status === ApplicationStatus.INTERVIEWING && !app.interviewDate) {
+      updateData.interviewDate = new Date();
     }
-    if (
-      status === ApplicationStatus.OFFERED &&
-      !app.offerDate
-    ) {
-      dateFields.offerDate = new Date();
+
+    if (data.offerDate !== undefined) {
+      updateData.offerDate = data.offerDate ? new Date(data.offerDate) : null;
+    } else if (data.status === ApplicationStatus.OFFERED && !app.offerDate) {
+      updateData.offerDate = new Date();
     }
-    if (
-      (status === ApplicationStatus.REJECTED || status === ApplicationStatus.WITHDRAWN) &&
+
+    if (data.rejectionDate !== undefined) {
+      updateData.rejectionDate = data.rejectionDate ? new Date(data.rejectionDate) : null;
+    } else if (
+      (data.status === ApplicationStatus.REJECTED || data.status === ApplicationStatus.WITHDRAWN) &&
       !app.rejectionDate
     ) {
-      dateFields.rejectionDate = new Date();
+      updateData.rejectionDate = new Date();
     }
 
     const updated = await this.db.application.update({
       where: { id },
-      data: { status, ...dateFields },
-      include: this.jobInclude,
+      data: updateData,
+      include: this.appInclude,
     });
 
-    this.logger.log(`Application ${id} status updated to ${status}`);
+    this.logger.log(`Application ${id} updated for user ${userId}`);
     return { success: true, data: updated };
   }
 
+  // ─── UPDATE STATUS ─────────────────────────────────────────────────────────
+  async updateStatus(id: string, status: ApplicationStatus, userId: string): Promise<any> {
+    return this.update(id, { status }, userId);
+  }
+
   // ─── GET BY ID ─────────────────────────────────────────────────────────────
-  async getById(id: string, userId: string) {
+  async getById(id: string, userId: string): Promise<any> {
     const app = await this.db.application.findFirst({
       where: { id, userId },
-      include: this.jobInclude,
+      include: this.appInclude,
     });
     if (!app) throw new NotFoundException(`Application ${id} not found`);
 
@@ -138,7 +255,7 @@ export class ApplicationsService {
   }
 
   // ─── STATS ─────────────────────────────────────────────────────────────────
-  async getStats(userId: string) {
+  async getStats(userId: string): Promise<any> {
     const grouped = await this.db.application.groupBy({
       by: ['status'],
       where: { userId },
@@ -172,7 +289,7 @@ export class ApplicationsService {
   }
 
   // ─── DELETE / WITHDRAW ─────────────────────────────────────────────────────
-  async delete(id: string, userId: string) {
+  async delete(id: string, userId: string): Promise<any> {
     const app = await this.db.application.findFirst({ where: { id, userId } });
     if (!app) throw new NotFoundException(`Application ${id} not found`);
 
@@ -183,6 +300,7 @@ export class ApplicationsService {
         status: ApplicationStatus.WITHDRAWN,
         rejectionDate: new Date(),
       },
+      include: this.appInclude,
     });
 
     this.logger.log(`Application ${id} withdrawn by user ${userId}`);

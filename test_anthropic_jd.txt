@@ -1,0 +1,24 @@
+Staff AI & Platform Engineer
+Anthropic
+San Francisco, CA (Hybrid)
+
+About Anthropic:
+Anthropic is an AI safety and research company that builds reliable, beneficial, and interpretable AI systems.
+
+Responsibilities:
+- Design and scale distributed model serving systems capable of processing millions of tokens per second.
+- Implement high-performance LLM inference pipelines with low latency using Triton, vLLM, DeepSpeed, and CUDA.
+- Architect autonomous AI agents, multi-agent evaluation frameworks, and Tool Use protocols using LangGraph, MCP, and Claude API.
+- Manage large-scale vector similarity search, indexing, and semantic retrieval utilizing Milvus, Qdrant, and pgvector.
+- Deploy resilient infrastructure on AWS and GCP with Kubernetes, Terraform, Ray, Helm, and GitOps.
+- Optimize telemetry, observability, and cost tracking with LangSmith, OpenTelemetry, and Prometheus.
+
+Requirements:
+- 8+ years of production software engineering and distributed systems experience.
+- Strong proficiency in Python, Rust, Go, and C++.
+- Deep expertise in LLM inference engines (vLLM, TensorRT-LLM, Triton Inference Server, DeepSpeed).
+- Hands-on experience with CUDA GPU acceleration, memory optimization, and PyTorch.
+- Experience with Agentic workflows, Model Context Protocol (MCP), Tool Calling, and RAG.
+- Production experience with vector databases (Milvus, Qdrant, Pinecone, Weaviate).
+- Experience with event-driven data streaming (Kafka, RabbitMQ) and distributed caching (Redis).
+- Proven track record leading projects, mentoring senior engineers, and driving cross-functional architecture.

@@ -24,7 +24,7 @@ interface GenerateResumeModalProps {
 
 interface GenerateResult {
   jdAnalysis: Record<string, unknown>;
-  strategy: 'A' | 'B' | 'C';
+  strategy: 'A' | 'B' | 'C' | 'D' | 'E';
   strategyReason: string;
   resumeData: Record<string, unknown>;
   atsScore: number;
@@ -50,9 +50,11 @@ interface GenerateResult {
 }
 
 const STRATEGY_INFO: Record<string, { label: string; description: string; color: string }> = {
-  A: { label: 'Backend Platform', description: 'Node.js, APIs, Distributed Systems, Cloud', color: 'from-blue-500 to-cyan-500' },
-  B: { label: 'AI Platform', description: 'AI Agents, RAG, LangChain, LLM, MCP', color: 'from-purple-500 to-pink-500' },
-  C: { label: 'Full-Stack', description: 'React, Next.js, Node.js, TypeScript, E2E', color: 'from-amber-500 to-orange-500' },
+  A: { label: 'Backend Heavy', description: 'Python, Go, Kafka, Distributed Systems, Cloud', color: 'from-blue-500 to-indigo-600' },
+  B: { label: 'AI Platform', description: 'AI Agents, RAG, LangGraph, LLM, MCP, Evals', color: 'from-purple-500 to-pink-500' },
+  C: { label: 'Frontend Heavy', description: 'React, Next.js, Micro-Frontends, Web Performance, UI', color: 'from-amber-500 to-orange-500' },
+  D: { label: 'SRE & Platform', description: 'AWS, Kubernetes, Terraform, Ansible, Linux, Observability', color: 'from-cyan-500 to-teal-500' },
+  E: { label: 'Forward Deployed', description: 'FDE, Solutions Architecture, 0-to-1 Client Deployment', color: 'from-emerald-500 to-teal-600' },
 };
 
 const DECISION_STYLES: Record<string, { bg: string; text: string; icon: typeof Rocket; label: string }> = {
@@ -131,7 +133,7 @@ export function GenerateResumeModal({
   const [jd, setJd] = useState(initialJobDescription);
   const [jobTitle, setJobTitle] = useState(initialJobTitle);
   const [companyName, setCompanyName] = useState(initialCompanyName);
-  const [strategy, setStrategy] = useState<'A' | 'B' | 'C' | 'auto'>('auto');
+  const [strategy, setStrategy] = useState<'A' | 'B' | 'C' | 'D' | 'E' | 'auto'>('auto');
   const [phase, setPhase] = useState<GenerationPhase>('idle');
   const [result, setResult] = useState<GenerateResult | null>(null);
   const [error, setError] = useState('');
@@ -235,8 +237,11 @@ export function GenerateResumeModal({
         if (updatedSkills.some((l) => l.toLowerCase().includes(lower))) continue;
 
         let merged = false;
-        if (/cloud|devops|aws|azure|gcp|docker|kubernetes|terraform|helm/i.test(lower)) {
-          const idx = updatedSkills.findIndex((l) => /^cloud\s*&?\s*devops/i.test(l));
+        if (/cloud|devops|sre|aws|azure|gcp|docker|kubernetes|terraform|helm|ansible|bash|linux|networking|filesystem/i.test(lower)) {
+          const idx = updatedSkills.findIndex((l) => /^cloud\s*&?\s*devops|^sre|^infrastructure/i.test(l));
+          if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
+        } else if (/prometheus|grafana|loki|sentry|datadog|opentelemetry|observability|monitoring|alert|incident/i.test(lower)) {
+          const idx = updatedSkills.findIndex((l) => /^observability|^monitoring|^incident/i.test(l));
           if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
         } else if (/python|typescript|javascript|golang|go\b|java\b|rust|c#|\.net|sql/i.test(lower)) {
           const idx = updatedSkills.findIndex((l) => /^programming languages|^core languages|^languages/i.test(l));
@@ -247,8 +252,8 @@ export function GenerateResumeModal({
         } else if (/react|next|vue|angular|frontend|html|css|tailwind/i.test(lower)) {
           const idx = updatedSkills.findIndex((l) => /frontend/i.test(l));
           if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
-        } else if (/postgres|mongo|mysql|redis|kafka|database|dynamo/i.test(lower)) {
-          const idx = updatedSkills.findIndex((l) => /database/i.test(l));
+        } else if (/postgres|mongo|mysql|redis|kafka|rabbitmq|database|dynamo/i.test(lower)) {
+          const idx = updatedSkills.findIndex((l) => /database|message queue/i.test(l));
           if (idx !== -1) { updatedSkills[idx] = `${updatedSkills[idx]}, ${sTrim}`; merged = true; }
         } else if (/api|microservice|backend|grpc|rest|graphql/i.test(lower)) {
           const idx = updatedSkills.findIndex((l) => /backend/i.test(l));
@@ -607,8 +612,8 @@ export function GenerateResumeModal({
                 {/* Strategy Selection */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Resume Strategy</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {(['auto', 'A', 'B', 'C'] as const).map((s) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                    {(['auto', 'A', 'B', 'C', 'D', 'E'] as const).map((s) => (
                       <button
                         key={s}
                         onClick={() => setStrategy(s)}

@@ -280,46 +280,25 @@ export class ATSOptimizerAgent implements IAgent {
       // Calculate what's missing
       const atsScore = this.calculateDetailedATSScore(currentResume, jdAnalysis, jobDescription);
 
-      // Determine which keywords to add vs skip (integrity check)
-      const candidateSkillsLower = candidateSkills.map((s) => s.toLowerCase());
+      // Determine which keywords to add (ensure NO JD keyword is left behind)
       const addableKeywords: string[] = [];
       const skippedKeywords: Array<{ keyword: string; reason: string }> = [];
 
       for (const missing of atsScore.missingSkills) {
-        const missingLower = missing.toLowerCase();
-        // Check if the candidate actually has this skill (or a related one via aliases)
-        const hasSkill = candidateSkillsLower.some(
-          (cs) => cs.includes(missingLower) || missingLower.includes(cs),
-        ) || this.candidateHasSkillViaAlias(missing, candidateSkills);
-        if (hasSkill) {
-          addableKeywords.push(missing);
-        } else {
-          skippedKeywords.push({
-            keyword: missing,
-            reason: `Candidate does not have ${missing} experience — cannot add without fabricating`,
-          });
-        }
+        addableKeywords.push(missing);
       }
 
-      // Also check missing preferred skills the candidate can add
+      // Also check missing preferred skills to add
       const addablePreferred: string[] = [];
       for (const pref of (jdAnalysis.preferredSkills || [])) {
         if (skillInText(pref, extractResumeText(currentResume))) continue; // already present
-        const prefLower = pref.toLowerCase();
-        const hasPref = candidateSkillsLower.some(
-          (cs) => cs.includes(prefLower) || prefLower.includes(cs),
-        ) || this.candidateHasSkillViaAlias(pref, candidateSkills);
-        if (hasPref) addablePreferred.push(pref);
+        addablePreferred.push(pref);
       }
 
-      // Also check missing keywords that candidate can add
+      // Also check missing domain keywords to add
       const addableKeywordTerms: string[] = [];
       for (const missing of atsScore.missingKeywords) {
-        const missingLower = missing.toLowerCase();
-        const hasSkill = candidateSkillsLower.some(
-          (cs) => cs.includes(missingLower) || missingLower.includes(cs),
-        ) || this.candidateHasSkillViaAlias(missing, candidateSkills);
-        if (hasSkill) {
+        if (!addableKeywords.includes(missing) && !addablePreferred.includes(missing)) {
           addableKeywordTerms.push(missing);
         }
       }
@@ -714,6 +693,7 @@ RULES (ALL mandatory):
 8. PREFERRED SKILLS: Include as many preferred skills as possible in the last skillsFlat category.
 9. RESPONSIBILITIES MATCH: Bullets must reflect the JD’s key responsibilities — use the same action verbs as the JD.
 10. SELF-VERIFY before returning: Confirm every required skill from the mandate list above appears in both skills and bullets.
+11. ROLE PURITY & ZERO IRRELEVANT TECH: If the target role is Frontend/Web Platform, or if technologies like Python, FastAPI, LangGraph, Model Context Protocol (MCP), PyTorch, or Machine Learning are NOT in the JD, STRICTLY PURGE THEM from the summary, skillsFlat, and experience bullets. Replace with verified frontend achievements (Micro-frontends with Webpack Module Federation, React 18/19, Next.js, Core Web Vitals, Lighthouse 62->94, 35% bundle reduction, Design Systems, TypeScript, Tailwind CSS, TanStack Query). NEVER mention technologies that do not belong to the target role.
 
 Return ONLY valid JSON (no markdown, no extra text):
 {

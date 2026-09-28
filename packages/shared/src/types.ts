@@ -174,7 +174,9 @@ export interface Application {
   job: Job;
   status: ApplicationStatus;
   resumeVersionId?: string;
+  resumeVersion?: ResumeVersion & { resume?: Resume };
   coverLetterId?: string;
+  coverLetter?: CoverLetter;
   notes?: string;
   appliedAt?: Date;
   interviewDate?: Date;

@@ -1,0 +1,25 @@
+Site Reliability Engineer
+Wheely
+London, England, United Kingdom
+
+About Wheely:
+Wheely is redefining premium transportation across major cities in Europe, the US, and the Middle East. We blend cutting-edge technology with the craft of five-star chauffeuring to deliver an experience trusted by more than 100,000 active riders and 1,200 corporate accounts. We’re a profitable, fast-growing scale-up with $43M raised and over $100M in annual revenue. Having recently launched in New York City, we’re expanding rapidly.
+
+Responsibilities:
+- Work with alerts and incident response that arise in the system to minimize MTTR and error budgets.
+- Assist development teams with emerging issues and conduct root cause analysis with blameless post-mortems.
+- Automate work, eliminate operational toil, and write comprehensive technical documentation.
+- Participate in the creation and optimization of application CI/CD delivery pipelines.
+- Participate in the infrastructure migration of legacy microservices and core application services to modern cloud clusters.
+- Develop, maintain and ensure system resilience, disaster recovery, and high availability (99.95%+).
+- Develop dynamic environments and ephemeral preview environments for automated pull request testing.
+
+Requirements & Tech Stack:
+- Tech stack: AWS, Kubernetes, MongoDB, PostgreSQL, RabbitMQ, Redis, Ansible, Terraform, Grafana, Prometheus, Sentry, Loki, Jenkins, GitHub Actions.
+- Proven experience with cloud-based solutions (AWS/GCP) operating distributed containerized workloads.
+- Deep knowledge of Linux troubleshooting, including Linux networking (TCP, iptables, conntrack) and Linux filesystems (ext4, XFS, I/O bottlenecks).
+- Hands-on experience in infrastructure automation using Ansible, Terraform, Bash scripting, and Python.
+- Strong experience with containers and platforms such as Docker, Kubernetes, Helm.
+- Production experience with administration of messaging brokers including RabbitMQ and Kafka.
+- Production experience with administration of SQL (PostgreSQL) and NoSQL (MongoDB, Redis) databases.
+- Strong incident response, alert management, and on-call rotation experience.

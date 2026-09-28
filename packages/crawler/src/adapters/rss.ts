@@ -53,15 +53,7 @@ export class RSSAdapter extends BaseCrawlerAdapter {
           const description = item.content || item.contentSnippet || item.description || '';
           const lowerDesc = description.toLowerCase();
 
-          // Apply filters
-          if (filters.query && !`${item.title} ${description}`.toLowerCase().includes(filters.query.toLowerCase())) {
-            continue;
-          }
-          if (filters.countries?.length && !filters.countries.some((c) => description.toLowerCase().includes(c.toLowerCase()))) {
-            continue;
-          }
-
-          yield this.normalizeJob({
+          const normalized = this.normalizeJob({
             externalId: item.guid || item.link || '',
             title: item.title || 'Unknown Position',
             companyName: item.creator || (feed.title ? feed.title.replace(/RSS Feed/i, '').trim() : 'Tech Employer'),
@@ -81,6 +73,16 @@ export class RSSAdapter extends BaseCrawlerAdapter {
             skills: this.extractSkills(description),
             postedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
           });
+
+          // Apply filters consistently
+          if (!this.matchesQueryFilter(normalized, filters.query)) {
+            continue;
+          }
+          if (!this.matchesCountryFilter(normalized, filters.countries)) {
+            continue;
+          }
+
+          yield normalized;
         }
       } catch {
         // Skip failed feeds gracefully

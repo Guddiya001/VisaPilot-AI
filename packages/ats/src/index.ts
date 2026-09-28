@@ -68,12 +68,16 @@ export class ATSService {
 
   private extractKeywords(text: string): string[] {
     const commonKeywords = [
-      'javascript', 'typescript', 'python', 'java', 'react', 'angular',
-      'vue', 'node', 'nodejs', 'aws', 'azure', 'gcp', 'docker',
-      'kubernetes', 'sql', 'nosql', 'mongodb', 'postgresql', 'redis',
-      'graphql', 'rest', 'api', 'microservices', 'devops', 'ci/cd',
+      'javascript', 'typescript', 'python', 'java', 'go', 'golang', 'rust', 'c#', '.net',
+      'react', 'angular', 'vue', 'node', 'nodejs', 'aws', 'azure', 'gcp', 'docker',
+      'kubernetes', 'helm', 'terraform', 'ansible', 'bash', 'shell', 'linux',
+      'networking', 'filesystems', 'prometheus', 'grafana', 'loki', 'sentry',
+      'datadog', 'opentelemetry', 'incident response', 'alert management', 'sre',
+      'sql', 'nosql', 'mongodb', 'postgresql', 'redis', 'rabbitmq', 'kafka',
+      'graphql', 'rest', 'api', 'microservices', 'devops', 'ci/cd', 'jenkins', 'github actions',
       'git', 'agile', 'scrum', 'machine learning', 'ai', 'data science',
       'full-stack', 'frontend', 'backend', 'leadership', 'management',
+      'dynamic environments', 'infrastructure migration', 'high availability',
     ];
 
     const lower = text.toLowerCase();

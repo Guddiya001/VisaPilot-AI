@@ -19,11 +19,12 @@ type PreviewMode = 'resume' | 'cover-letter';
 type MobileTab = 'edit' | 'preview';
 
 function ResumeBuilderInner() {
-  const { data, dispatch } = useResume();
+  const { data, dispatch, loadPreset } = useResume();
   const searchParams = useSearchParams();
   const jobId = searchParams ? searchParams.get('jobId') : null;
   const autoTailorParam = searchParams ? searchParams.get('autoTailor') === 'true' : false;
   const autoGenerateParam = searchParams ? searchParams.get('autoGenerate') === 'true' : false;
+  const presetParam = searchParams ? searchParams.get('preset') : null;
 
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState<PreviewMode>('resume');
@@ -38,6 +39,12 @@ function ResumeBuilderInner() {
   const jobTitle = searchParams ? searchParams.get('jobTitle') : null;
   const jobCompany = searchParams ? searchParams.get('jobCompany') : null;
   const jobUrl = searchParams ? searchParams.get('jobUrl') : null;
+
+  useEffect(() => {
+    if (presetParam && ['frontend', 'backend', 'ai', 'fde', 'master'].includes(presetParam)) {
+      loadPreset(presetParam as any);
+    }
+  }, [presetParam, loadPreset]);
 
   useEffect(() => {
     // Path 1: Load job from DB by ID

@@ -101,18 +101,22 @@ export class SearchAgent implements IAgent {
     const tools: string[] = ['search_jobs'];
     if (needsVisa) tools.push('validate_visa');
 
-    const queries = query 
+    const parsedItems = query 
       ? query.split(/\s+or\s+|,/i).map(q => q.trim()).filter(q => q.length > 0)
-      : ['software engineer jobs'];
+      : ['software engineer'];
 
     return {
       intent: 'JOB_SEARCH',
-      semanticRequirements: { skills: [], roles: [], locations: [] },
+      semanticRequirements: {
+        skills: parsedItems,
+        roles: parsedItems.filter(item => /engineer|developer|architect|scientist|lead|manager|analyst/i.test(item)),
+        locations: ['Worldwide', 'United States', 'Canada', 'United Kingdom', 'Germany', 'Remote'],
+      },
       hardConstraints: needsVisa
         ? [{ type: 'VISA_SPONSORSHIP', value: 'H-1B', required: true }]
         : [],
       preferences: {},
-      queries: queries,
+      queries: parsedItems,
       tools,
     };
   }

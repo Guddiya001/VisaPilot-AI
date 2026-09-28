@@ -105,11 +105,15 @@ function JobsContent() {
           if (cached) {
             const parsed = JSON.parse(cached);
             if (parsed && Array.isArray(parsed.data)) {
-              setJobs(parsed.data);
-              setAiSearchInfo(parsed.meta?.intent || null);
-              setPage(parsed.meta?.page || pg);
-              setTotalPages(parsed.meta?.totalPages || 1);
-              return; // Skip API call
+              // Invalidate stale cache if any job had 0% match when a query was provided
+              const hasBrokenZeroMatches = query && parsed.data.some((j: any) => !j.semanticMatch || j.semanticMatch === 0);
+              if (!hasBrokenZeroMatches) {
+                setJobs(parsed.data);
+                setAiSearchInfo(parsed.meta?.intent || null);
+                setPage(parsed.meta?.page || pg);
+                setTotalPages(parsed.meta?.totalPages || 1);
+                return; // Skip API call
+              }
             }
           }
         } catch (e) {
@@ -465,7 +469,7 @@ function JobsContent() {
                           <Globe className="w-3 h-3" /> Visa Sponsorship
                         </span>
                       )}
-                      {job.semanticMatch !== undefined && (
+                      {job.semanticMatch !== undefined && job.semanticMatch > 0 && (
                         <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
                           Match: {job.semanticMatch}%
                         </span>
