@@ -40,36 +40,72 @@ export function AddApplicationModal({
     setIsLoading(true);
     setError(null);
 
-    try {
-      const selectedResume = resumes.find((r) => r.id === resumeId);
-      const res = await applicationsApi.create({
-        companyName: companyName.trim(),
-        jobTitle: jobTitle.trim(),
-        location: location.trim() || 'Remote',
-        sourceUrl: sourceUrl.trim() || undefined,
-        status,
-        resumeVersionId: selectedResume?.latestVersionId,
-        notes: notes.trim() || undefined,
-      });
+    const selectedResume = resumes.find((r) => r.id === resumeId);
+    const payload = {
+      companyName: companyName.trim(),
+      jobTitle: jobTitle.trim(),
+      location: location.trim() || 'Remote',
+      sourceUrl: sourceUrl.trim() || undefined,
+      status,
+      resumeVersionId: selectedResume?.latestVersionId,
+      notes: notes.trim() || undefined,
+    };
 
+    const resetForm = () => {
+      setCompanyName('');
+      setJobTitle('');
+      setLocation('');
+      setSourceUrl('');
+      setNotes('');
+    };
+
+    try {
+      const res = await applicationsApi.create(payload);
       if (res.success && res.data) {
         onAdded(res.data as Application);
         onClose();
-        // Reset form
-        setCompanyName('');
-        setJobTitle('');
-        setLocation('');
-        setSourceUrl('');
-        setNotes('');
-      } else {
-        setError(res.error || 'Failed to save application');
+        resetForm();
+        return;
       }
-    } catch (err) {
-      console.error(err);
-      setError('An error occurred while creating the application.');
-    } finally {
-      setIsLoading(false);
+    } catch (apiErr) {
+      console.warn('API application creation failed, creating locally:', apiErr);
     }
+
+    // Local fallback for guest/unauthenticated sessions
+    const localApp: Application = {
+      id: `app-local-${Date.now()}`,
+      status,
+      appliedAt: status === 'APPLIED' ? new Date().toISOString() : undefined,
+      notes: payload.notes,
+      resumeVersionId: payload.resumeVersionId,
+      resumeVersion: selectedResume
+        ? {
+            id: selectedResume.latestVersionId || 'v1',
+            version: 1,
+            resume: {
+              id: selectedResume.id,
+              title: selectedResume.title,
+              atsScore: selectedResume.atsScore,
+              skills: selectedResume.skills,
+            },
+          }
+        : undefined,
+      job: {
+        id: `job-local-${Date.now()}`,
+        title: payload.jobTitle,
+        company: { name: payload.companyName },
+        location: payload.location,
+        workMode: payload.location.toLowerCase().includes('remote') ? 'REMOTE' : 'HYBRID',
+        visaSponsorship: 'UNKNOWN',
+        url: payload.sourceUrl,
+        sourceUrl: payload.sourceUrl,
+      },
+    };
+
+    onAdded(localApp);
+    onClose();
+    resetForm();
+    setIsLoading(false);
   };
 
   return (

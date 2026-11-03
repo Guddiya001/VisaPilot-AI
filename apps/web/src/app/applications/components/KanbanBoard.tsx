@@ -59,7 +59,8 @@ export function KanbanBoard({
     setDraggedApp(null);
   };
 
-  const getCompanyName = (job: Application['job']) => {
+  const getCompanyName = (job?: Application['job']) => {
+    if (!job) return 'Unknown';
     if (typeof job.company === 'string') return job.company;
     return job.company?.name || 'Unknown';
   };
@@ -141,7 +142,7 @@ export function KanbanBoard({
 
                     <div className="flex justify-between items-start gap-2">
                       <h4 className="font-bold text-sm text-gray-900 leading-snug group-hover:text-primary-600 transition-colors">
-                        {app.job.title}
+                        {app.job?.title || 'Untitled Position'}
                       </h4>
                       <button
                         onClick={(e) => {
@@ -160,7 +161,7 @@ export function KanbanBoard({
                         <Building2 className="w-3.5 h-3.5 text-gray-400 shrink-0" />
                         <span className="truncate">{companyName}</span>
                       </div>
-                      {app.job.location && (
+                      {app.job?.location && (
                         <div className="flex items-center gap-1.5 text-[11px] text-gray-500">
                           <MapPin className="w-3 h-3 text-gray-400 shrink-0" />
                           <span className="truncate">{app.job.location}</span>
@@ -209,15 +210,15 @@ export function KanbanBoard({
 
                       <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                         <Link
-                          href={`/resume-builder?jobId=${app.job.id}&jobTitle=${encodeURIComponent(app.job.title)}&jobCompany=${encodeURIComponent(companyName)}`}
+                          href={`/resume-builder?jobId=${app.job?.id || ''}&jobTitle=${encodeURIComponent(app.job?.title || '')}&jobCompany=${encodeURIComponent(companyName)}`}
                           className="text-[11px] font-semibold text-primary-600 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 px-2 py-1 rounded-md transition-colors"
                           title="Tailor resume for this role"
                         >
                           Tailor
                         </Link>
-                        {(app.job.url || app.job.sourceUrl) && (
+                        {(app.job?.url || app.job?.sourceUrl) && (
                           <a
-                            href={app.job.url || app.job.sourceUrl}
+                            href={app.job?.url || app.job?.sourceUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 p-1.5 rounded-md transition-colors"

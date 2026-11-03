@@ -77,16 +77,22 @@ function ResumeBuilderInner() {
     if (jobTitle) {
       let desc = '';
       let reqs = '';
-      if (typeof window !== 'undefined' && jobUrl) {
-        try {
-          const cached = localStorage.getItem(`jd_${jobUrl}`);
-          if (cached) {
-            const parsed = JSON.parse(cached);
-            desc = parsed.description || '';
-            reqs = parsed.requirements || '';
+      if (typeof window !== 'undefined') {
+        if (jobUrl) {
+          try {
+            const cached = localStorage.getItem(`jd_${jobUrl}`);
+            if (cached) {
+              const parsed = JSON.parse(cached);
+              desc = parsed.description || '';
+              reqs = parsed.requirements || '';
+            }
+          } catch (err) {
+            console.error('Failed to parse cached job description', err);
           }
-        } catch (err) {
-          console.error('Failed to parse cached job description', err);
+        }
+        if (!desc) {
+          desc = sessionStorage.getItem('tempJobDescription') || '';
+          reqs = sessionStorage.getItem('tempJobRequirements') || '';
         }
       }
 

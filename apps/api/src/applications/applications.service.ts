@@ -39,6 +39,8 @@ export class ApplicationsService {
 
     if (params.status) {
       where.status = params.status;
+    } else {
+      where.status = { not: ApplicationStatus.WITHDRAWN };
     }
 
     if (params.resumeId) {
@@ -99,6 +101,25 @@ export class ApplicationsService {
       ? { jobId: payload, notes: optionalNotes }
       : payload;
 
+    // Ensure user exists in database to prevent foreign key constraint violation
+    let validUserId = userId;
+    const userExists = await this.db.user.findUnique({ where: { id: userId } });
+    if (!userExists) {
+      let demoUser = await this.db.user.findUnique({ where: { email: 'demo@visapilot.ai' } });
+      if (!demoUser) {
+        demoUser = await this.db.user.create({
+          data: {
+            id: userId,
+            email: 'demo@visapilot.ai',
+            name: 'Demo User',
+            passwordHash: '$2a$10$w/xY.9X0u5K3Zg8p0Y1CaeJcZ3bJ4bYxY.9X0u5K3Zg8p0Y1CaeJc',
+            role: 'USER',
+          },
+        });
+      }
+      validUserId = demoUser.id;
+    }
+
     let targetJobId = data.jobId;
 
     // If no jobId provided, create or find company and create a manual job
@@ -140,25 +161,25 @@ export class ApplicationsService {
 
     // Return existing application if already saved (upsert-like behaviour)
     const existing = await this.db.application.findUnique({
-      where: { userId_jobId: { userId, jobId: targetJobId } },
+      where: { userId_jobId: { userId: validUserId, jobId: targetJobId } },
       include: this.appInclude,
     });
 
     if (existing) {
-      this.logger.log(`Application already exists for user=${userId} job=${targetJobId}`);
+      this.logger.log(`Application already exists for user=${validUserId} job=${targetJobId}`);
       if (data.resumeVersionId || data.notes || data.status) {
         return this.update(existing.id, {
           resumeVersionId: data.resumeVersionId,
           notes: data.notes,
           status: data.status,
-        }, userId);
+        }, validUserId);
       }
       return { success: true, data: existing };
     }
 
     const application = await this.db.application.create({
       data: {
-        userId,
+        userId: validUserId,
         jobId: targetJobId,
         status: data.status || ApplicationStatus.SAVED,
         notes: data.notes,

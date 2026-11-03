@@ -197,16 +197,95 @@ function JobsContent() {
     [],
   );
 
-  const handleSaveApplication = async (jobId: string) => {
+  const [savedJobKeys, setSavedJobKeys] = useState<Set<string>>(new Set());
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Initialize saved jobs set from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('visapilot_applications');
+        if (stored) {
+          const list = JSON.parse(stored);
+          const keys = new Set<string>();
+          list.forEach((app: any) => {
+            const comp = typeof app.job?.company === 'string' ? app.job.company : app.job?.company?.name || '';
+            if (app.job?.title) {
+              keys.add(`${app.job.title}::${comp}`);
+            }
+          });
+          setSavedJobKeys(keys);
+        }
+      } catch (err) {
+        console.error('Error reading saved jobs', err);
+      }
+    }
+  }, []);
+
+  const handleSaveApplication = async (job: Job) => {
+    const compName = typeof job.company === 'string' ? job.company : job.company?.name || 'Unknown Company';
+    const key = `${job.title}::${compName}`;
+
+    // Add to saved state immediately for instant feedback
+    setSavedJobKeys((prev) => {
+      const updated = new Set(prev);
+      updated.add(key);
+      return updated;
+    });
+
+    // Save to local tracker storage
     try {
-      const res = await applicationsApi.create(jobId);
-      if (res.success) {
-        alert('Job saved to your tracker successfully!');
-      } else {
-        alert(`Failed to save job: ${res.error}`);
+      const stored = localStorage.getItem('visapilot_applications');
+      const list = stored ? JSON.parse(stored) : [];
+      const exists = list.some((a: any) => {
+        const c = typeof a.job?.company === 'string' ? a.job.company : a.job?.company?.name || '';
+        return a.job?.title === job.title && c === compName;
+      });
+
+      if (!exists) {
+        const newApp = {
+          id: `app-saved-${Date.now()}`,
+          status: 'SAVED',
+          appliedAt: new Date().toISOString(),
+          notes: `Saved from search: ${job.title} at ${compName}`,
+          job: {
+            id: job.id || `job-saved-${Date.now()}`,
+            title: job.title,
+            company: { name: compName },
+            location: job.location || 'Remote',
+            workMode: job.remote ? 'REMOTE' : 'HYBRID',
+            visaSponsorship: job.visa?.status || 'UNKNOWN',
+            url: job.url || job.sourceUrl || '',
+            sourceUrl: job.url || job.sourceUrl || '',
+            description: job.description || '',
+            requirements: job.requirements || '',
+          },
+        };
+        localStorage.setItem('visapilot_applications', JSON.stringify([newApp, ...list]));
       }
     } catch (err) {
-      alert('Error saving job. Are you logged in?');
+      console.warn('Failed to save to local tracker', err);
+    }
+
+    setToastMessage(`✓ Saved "${job.title}" to Application Tracking System!`);
+    setTimeout(() => setToastMessage(null), 4000);
+
+    // Sync with backend if logged in
+    try {
+      if (job.id) {
+        await applicationsApi.create(job.id);
+      } else {
+        await applicationsApi.create({
+          companyName: compName,
+          jobTitle: job.title,
+          location: job.location || 'Remote',
+          sourceUrl: job.url || job.sourceUrl || undefined,
+          status: 'SAVED',
+          notes: job.description ? job.description.slice(0, 300) : undefined,
+        });
+      }
+    } catch (err) {
+      console.warn('Backend sync failed (saved locally to Application Tracking System)', err);
     }
   };
 
@@ -486,37 +565,62 @@ function JobsContent() {
                   <div className="text-xs font-semibold uppercase tracking-wide text-primary-600">
                     {job.remote ? 'Remote' : 'Onsite'}
                   </div>
-                  <div className="flex gap-3 mt-1">
+                  <div className="flex items-center gap-2.5 mt-1">
                     <Link
                       href={`/resume-builder?${job.id ? `jobId=${encodeURIComponent(job.id)}&` : ''}jobTitle=${encodeURIComponent(job.title || '')}&jobCompany=${encodeURIComponent(companyName)}&jobUrl=${encodeURIComponent(job.url || job.sourceUrl || '')}&autoGenerate=true`}
                       onClick={() => {
-                        if (!job.id && (job.description || job.requirements)) {
-                          sessionStorage.setItem('tempJobDescription', job.description || '');
-                          sessionStorage.setItem('tempJobRequirements', job.requirements || '');
+                        const targetUrl = job.url || job.sourceUrl || '';
+                        sessionStorage.setItem('tempJobDescription', job.description || '');
+                        sessionStorage.setItem('tempJobRequirements', job.requirements || '');
+                        sessionStorage.setItem('tempJobTitle', job.title || '');
+                        sessionStorage.setItem('tempJobCompany', companyName);
+                        if (targetUrl) {
+                          try {
+                            localStorage.setItem(`jd_${targetUrl}`, JSON.stringify({
+                              description: job.description || '',
+                              requirements: job.requirements || '',
+                              title: job.title,
+                              company: companyName,
+                            }));
+                          } catch (e) {
+                            console.warn('Failed to cache JD', e);
+                          }
                         }
                       }}
-                      className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-gradient-to-r from-violet-50 to-purple-50 text-violet-700 border border-violet-200 hover:from-violet-100 hover:to-purple-100 hover:border-violet-300 transition-all"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-gradient-to-r from-violet-50 to-purple-50 text-violet-700 border border-violet-200 hover:from-violet-100 hover:to-purple-100 hover:border-violet-300 transition-all shadow-2xs"
                     >
                       <FileText className="w-3.5 h-3.5" />
                       ATS Resume
                     </Link>
-                    {job.id && (
-                      <button
-                        type="button"
-                        onClick={() => handleSaveApplication(job.id as string)}
-                        className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 hover:border-gray-300 transition-all"
-                        title="Save to Applications Tracker"
-                      >
-                        <Bookmark className="w-3.5 h-3.5" />
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleSaveApplication(job)}
+                      className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg border transition-all shadow-2xs ${
+                        savedJobKeys.has(`${job.title}::${companyName}`)
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                          : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                      }`}
+                      title="Save to Application Tracking System"
+                    >
+                      {savedJobKeys.has(`${job.title}::${companyName}`) ? (
+                        <>
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Tracked</span>
+                        </>
+                      ) : (
+                        <>
+                          <Bookmark className="w-3.5 h-3.5 text-gray-500" />
+                          <span>Track</span>
+                        </>
+                      )}
+                    </button>
                     <a
                       href={job.url || job.sourceUrl || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-medium text-primary-600 hover:text-primary-800"
+                      className="inline-flex items-center text-xs font-medium text-primary-600 hover:text-primary-800 py-1.5 px-1"
                     >
-                      Apply / Details ↗
+                      Apply ↗
                     </a>
                   </div>
                 </div>
@@ -556,6 +660,22 @@ function JobsContent() {
           >
             Next <ChevronRight className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {/* Application Tracker Toast */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 animate-fade-in">
+          <div className="flex items-center gap-3 bg-gray-900 text-white px-5 py-3 rounded-2xl shadow-xl border border-gray-700">
+            <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0" />
+            <span className="text-xs font-semibold">{toastMessage}</span>
+            <Link
+              href="/applications"
+              className="ml-2 text-xs font-bold text-primary-400 hover:text-primary-300 underline"
+            >
+              View in Tracker →
+            </Link>
+          </div>
         </div>
       )}
     </div>

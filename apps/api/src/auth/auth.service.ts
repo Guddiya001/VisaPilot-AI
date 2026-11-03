@@ -6,10 +6,12 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { getPrismaClient } from '@visapilot/database';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private readonly db = getPrismaClient();
   private readonly refreshTokens = new Map<string, { userId: string; expiresAt: Date }>();
 
   constructor(private readonly jwtService: JwtService) { }
@@ -17,17 +19,21 @@ export class AuthService {
   async register(params: { email: string; password: string; name: string }) {
     const { email, password, name } = params;
 
-    // In production, use the UserRepository from @visapilot/database
+    const existing = await this.db.user.findUnique({ where: { email } });
+    if (existing) {
+      throw new ConflictException('User with this email already exists');
+    }
+
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Mock user creation - replace with Prisma call
-    const user = {
-      id: crypto.randomUUID(),
-      email,
-      name,
-      role: 'USER',
-      createdAt: new Date(),
-    };
+    const user = await this.db.user.create({
+      data: {
+        email,
+        passwordHash: hashedPassword,
+        name: name || email.split('@')[0],
+        role: 'USER',
+      },
+    });
 
     this.logger.log(`User registered: ${email}`);
 
@@ -37,20 +43,46 @@ export class AuthService {
   async login(params: { email: string; password: string }) {
     const { email, password } = params;
 
-    // Mock validation - replace with Prisma call
-    if (email !== 'demo@visapilot.ai' || password !== 'demo1234') {
-      // For demo purposes, allow any login in development
+    // Validate demo credentials or standard credentials
+    if (email === 'demo@visapilot.ai' && password === 'demo1234') {
+      // Find or create demo user
+      let demoUser = await this.db.user.findUnique({ where: { email } });
+      if (!demoUser) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        demoUser = await this.db.user.create({
+          data: {
+            email,
+            passwordHash: hashedPassword,
+            name: 'Demo User',
+            role: 'USER',
+          },
+        });
+      }
+      return this.generateTokens(demoUser);
+    }
+
+    const user = await this.db.user.findUnique({ where: { email } });
+    if (!user) {
       if (process.env.NODE_ENV === 'production') {
         throw new UnauthorizedException('Invalid email or password');
       }
+      // In dev, auto-create user on first login
+      const hashedPassword = await bcrypt.hash(password || 'demo1234', 10);
+      const newUser = await this.db.user.create({
+        data: {
+          email,
+          passwordHash: hashedPassword,
+          name: email.split('@')[0],
+          role: 'USER',
+        },
+      });
+      return this.generateTokens(newUser);
     }
 
-    const user = {
-      id: crypto.randomUUID(),
-      email,
-      name: email.split('@')[0],
-      role: 'USER',
-    };
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch && process.env.NODE_ENV === 'production') {
+      throw new UnauthorizedException('Invalid email or password');
+    }
 
     return this.generateTokens(user);
   }

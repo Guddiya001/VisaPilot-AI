@@ -220,32 +220,60 @@ export default function ApplicationsPage() {
   const [selectedAppForDrawer, setSelectedAppForDrawer] = useState<Application | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
+  const STORAGE_KEY = 'visapilot_applications';
+
   useEffect(() => {
     fetchData();
   }, []);
 
+  const saveToLocalStorage = (apps: Application[]) => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
+      } catch (err) {
+        console.error('Failed to save applications to localStorage', err);
+      }
+    }
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
+      // 1. Check local storage first for instant responsiveness
+      let localApps: Application[] = [];
+      if (typeof window !== 'undefined') {
+        try {
+          const cached = localStorage.getItem(STORAGE_KEY);
+          if (cached) {
+            localApps = JSON.parse(cached);
+          }
+        } catch (err) {
+          console.error('Failed to read cached applications', err);
+        }
+      }
+
       const [appsRes, resumesRes] = await Promise.all([
-        applicationsApi.getAll(),
-        resumesApi.getAll(),
+        applicationsApi.getAll().catch(() => ({ success: false, data: undefined })),
+        resumesApi.getAll().catch(() => ({ success: false, data: undefined })),
       ]);
 
       let userResumes = SAMPLE_RESUMES;
-      if (resumesRes.success && resumesRes.data?.data && Array.isArray(resumesRes.data.data)) {
+      if (resumesRes?.success && resumesRes.data?.data && Array.isArray(resumesRes.data.data) && resumesRes.data.data.length > 0) {
         userResumes = resumesRes.data.data as UserResume[];
       }
       setResumes(userResumes);
 
-      if (appsRes.success && appsRes.data?.data && appsRes.data.data.length > 0) {
+      if (appsRes?.success && appsRes.data?.data && appsRes.data.data.length > 0) {
         setApplications(appsRes.data.data as Application[]);
+        saveToLocalStorage(appsRes.data.data as Application[]);
+      } else if (localApps.length > 0) {
+        setApplications(localApps);
       } else {
-        // Use demo sample data if user hasn't added applications yet
         setApplications(SAMPLE_APPLICATIONS);
+        saveToLocalStorage(SAMPLE_APPLICATIONS);
       }
     } catch (err) {
-      console.warn('Using sample applications data', err);
+      console.warn('Falling back to local applications data', err);
       setApplications(SAMPLE_APPLICATIONS);
       setResumes(SAMPLE_RESUMES);
     } finally {
@@ -254,9 +282,11 @@ export default function ApplicationsPage() {
   };
 
   const handleStatusChange = async (id: string, newStatus: ApplicationStatus) => {
-    setApplications((prev) =>
-      prev.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
-    );
+    setApplications((prev) => {
+      const updated = prev.map((app) => (app.id === id ? { ...app, status: newStatus } : app));
+      saveToLocalStorage(updated);
+      return updated;
+    });
 
     if (selectedAppForDrawer && selectedAppForDrawer.id === id) {
       setSelectedAppForDrawer((prev) => (prev ? { ...prev, status: newStatus } : null));
@@ -265,31 +295,41 @@ export default function ApplicationsPage() {
     try {
       await applicationsApi.updateStatus(id, newStatus);
     } catch (err) {
-      console.error('Failed to update status', err);
+      console.warn('Could not sync status change to backend (using local persistence)', err);
     }
   };
 
   const handleUpdateApplication = (updatedApp: Application) => {
-    setApplications((prev) =>
-      prev.map((app) => (app.id === updatedApp.id ? updatedApp : app))
-    );
+    setApplications((prev) => {
+      const updated = prev.map((app) => (app.id === updatedApp.id ? updatedApp : app));
+      saveToLocalStorage(updated);
+      return updated;
+    });
     setSelectedAppForDrawer(updatedApp);
   };
 
   const handleDeleteApplication = async (id: string) => {
-    setApplications((prev) => prev.filter((app) => app.id !== id));
+    setApplications((prev) => {
+      const updated = prev.filter((app) => app.id !== id);
+      saveToLocalStorage(updated);
+      return updated;
+    });
     if (selectedAppForDrawer?.id === id) {
       setSelectedAppForDrawer(null);
     }
     try {
       await applicationsApi.delete(id);
     } catch (err) {
-      console.error('Failed to delete application', err);
+      console.warn('Could not sync delete to backend (using local persistence)', err);
     }
   };
 
   const handleAddApplication = (newApp: Application) => {
-    setApplications((prev) => [newApp, ...prev]);
+    setApplications((prev) => {
+      const updated = [newApp, ...prev];
+      saveToLocalStorage(updated);
+      return updated;
+    });
   };
 
   // Filtered Applications
@@ -298,8 +338,8 @@ export default function ApplicationsPage() {
       // Search query filter
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
-        const title = app.job.title.toLowerCase();
-        const company = (typeof app.job.company === 'string' ? app.job.company : app.job.company?.name || '').toLowerCase();
+        const title = (app.job?.title || '').toLowerCase();
+        const company = (typeof app.job?.company === 'string' ? app.job.company : app.job?.company?.name || '').toLowerCase();
         const notes = (app.notes || '').toLowerCase();
         if (!title.includes(query) && !company.includes(query) && !notes.includes(query)) {
           return false;

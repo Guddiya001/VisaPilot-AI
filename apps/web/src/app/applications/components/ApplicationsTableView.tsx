@@ -44,6 +44,7 @@ export function ApplicationsTableView({
   onDeleteApplication,
 }: ApplicationsTableViewProps) {
   const getCompanyName = (app: Application) => {
+    if (!app.job) return 'Unknown Company';
     if (typeof app.job.company === 'string') return app.job.company;
     return app.job.company?.name || 'Unknown Company';
   };
@@ -105,7 +106,6 @@ export function ApplicationsTableView({
             const companyName = getCompanyName(app);
             const resumeInfo = getResumeForApp(app);
             const statusConfig = STATUS_CONFIG[app.status] || STATUS_CONFIG.SAVED;
-
             const isStale =
               app.status === 'APPLIED' &&
               app.appliedAt &&
@@ -125,10 +125,10 @@ export function ApplicationsTableView({
                     </div>
                     <div className="min-w-0">
                       <div className="font-bold text-gray-900 truncate flex items-center gap-2">
-                        {app.job.title}
-                        {(app.job.url || app.job.sourceUrl) && (
+                        {app.job?.title || 'Untitled Position'}
+                        {(app.job?.url || app.job?.sourceUrl) && (
                           <a
-                            href={app.job.url || app.job.sourceUrl}
+                            href={app.job?.url || app.job?.sourceUrl}
                             target="_blank"
                             rel="noreferrer"
                             onClick={(e) => e.stopPropagation()}
@@ -141,7 +141,7 @@ export function ApplicationsTableView({
                       </div>
                       <div className="flex items-center gap-2 text-gray-500 text-[11px] mt-0.5">
                         <span className="font-medium text-gray-700">{companyName}</span>
-                        {app.job.location && (
+                        {app.job?.location && (
                           <>
                             <span>•</span>
                             <span className="truncate">{app.job.location}</span>
