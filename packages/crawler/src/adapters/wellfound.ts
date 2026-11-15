@@ -1,7 +1,6 @@
-import { BaseCrawlerAdapter } from './base';
+import { BaseCrawlerAdapter } from './base.ts';
 import type { Job, SearchFilters } from '@visapilot/shared';
-import { JobSource, JobType, WorkMode, VisaSponsorshipStatus } from '@visapilot/shared';
-import { randomUUID } from 'crypto';
+import { JobSource } from '@visapilot/shared';
 
 export class WellfoundAdapter extends BaseCrawlerAdapter {
   readonly source = JobSource.WELLFOUND;
@@ -9,7 +8,7 @@ export class WellfoundAdapter extends BaseCrawlerAdapter {
 
   constructor() {
     super(JobSource.WELLFOUND, {
-      baseUrl: 'https://wellfound.com/graphql', // Or proxy
+      baseUrl: 'https://wellfound.com/graphql',
       rateLimitPerMinute: 30,
     });
   }
@@ -18,48 +17,16 @@ export class WellfoundAdapter extends BaseCrawlerAdapter {
     this.initialized = true;
   }
 
-  async *searchJobs(filters: SearchFilters): AsyncGenerator<Job> {
-    console.warn('Wellfound adapter is a stub. Returning mock data.');
-    if (filters.query) {
-      yield this.createStubJob('AngelTech', filters.query);
-      yield this.createStubJob('StartupX', filters.query);
-    }
+  async *searchJobs(_filters: SearchFilters): AsyncGenerator<Job> {
+    // Wellfound GraphQL requires authenticated session; never emit fake stubs.
+    yield* [] as Job[];
   }
 
-  async getJobDetails(externalId: string): Promise<Job> {
+  async getJobDetails(_externalId: string): Promise<Job> {
     throw new Error('Method not implemented.');
   }
 
-  normalizeJob(rawJob: Record<string, unknown>): Job {
+  normalizeJob(_rawJob: Record<string, unknown>): Job {
     throw new Error('Method not implemented.');
-  }
-
-  private createStubJob(company: string, query: string): Job {
-    return {
-      id: randomUUID(),
-      externalId: `wf-${randomUUID().slice(0, 8)}`,
-      title: `${query} (Wellfound Stub)`,
-      company: {
-        id: company.toLowerCase(),
-        name: company,
-        website: `https://${company.toLowerCase()}.com`,
-      },
-      description: 'Wellfound parsed job stub (Mock Data)',
-      requirements: [],
-      responsibilities: [],
-      location: 'Remote',
-      remote: true,
-      workMode: WorkMode.REMOTE,
-      type: JobType.FULL_TIME,
-      sourceUrl: `https://wellfound.com/jobs/12345`,
-      postedAt: new Date(),
-      expiresAt: null,
-      salaryMin: null,
-      salaryMax: null,
-      salaryCurrency: 'USD',
-      skills: [query],
-      category: 'Engineering',
-      visaSponsorship: VisaSponsorshipStatus.UNKNOWN,
-    } as unknown as Job;
   }
 }

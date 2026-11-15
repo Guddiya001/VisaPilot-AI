@@ -1,6 +1,6 @@
-import { JobSource, JobType, WorkMode, VisaSponsorshipStatus } from '@visapilot/shared';
+import { JobSource, JobType, WorkMode } from '@visapilot/shared';
 import type { SearchFilters, Job } from '@visapilot/shared';
-import { BaseCrawlerAdapter } from './base';
+import { BaseCrawlerAdapter } from './base.ts';
 
 interface LeverJob {
   id: string;
@@ -39,28 +39,49 @@ export class LeverAdapter extends BaseCrawlerAdapter {
     this.boardTokens = tokens.length > 0 ? tokens : ['atlassian'];
   }
 
+  getBoardTokens(): string[] {
+    return [...this.boardTokens];
+  }
+
   async initialize(): Promise<void> {
     this.initialized = true;
   }
 
   async *searchJobs(filters: SearchFilters): AsyncGenerator<Job> {
-    for (const company of this.boardTokens) {
-      try {
-        const url = `${this.config.baseUrl}/postings/${company}?limit=50&mode=json`;
-        const response = await this.makeRequest(url);
-        const data = await response.json();
-        const rawJobs: LeverJob[] = Array.isArray(data) ? data : (data as { data?: LeverJob[] })?.data || [];
+    const results = await this.mapWithConcurrency(
+      this.boardTokens,
+      8,
+      async (company): Promise<Job[]> => {
+        try {
+          const url = `${this.config.baseUrl}/postings/${company}?limit=50&mode=json`;
+          const response = await this.makeRequest(url);
+          if (!response.ok) return [];
+          const data = await response.json();
+          const rawJobs: LeverJob[] = Array.isArray(data)
+            ? data
+            : (data as { data?: LeverJob[] })?.data || [];
 
-        const companyName = company.charAt(0).toUpperCase() + company.slice(1);
+          const companyName = company.charAt(0).toUpperCase() + company.slice(1);
+          const validJobs: Job[] = [];
 
-        for (const rawJob of rawJobs) {
-          const normalizedJob = this.createJobFromLever(rawJob, companyName);
-          if (this.matchesFilters(normalizedJob, filters)) {
-            yield normalizedJob;
+          for (const rawJob of rawJobs) {
+            const normalizedJob = this.createJobFromLever(rawJob, companyName);
+            if (this.matchesFilters(normalizedJob, filters)) {
+              validJobs.push(normalizedJob);
+            }
           }
+          return validJobs;
+        } catch {
+          return [];
         }
-      } catch {
-        // Skip inaccessible company boards
+      },
+    );
+
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        for (const job of result.value) {
+          yield job;
+        }
       }
     }
   }
@@ -78,7 +99,6 @@ export class LeverAdapter extends BaseCrawlerAdapter {
 
   private createJobFromLever(job: LeverJob, companyName: string): Job {
     const description = job.descriptionPlain || job.description || '';
-    const lowerDesc = description.toLowerCase();
     const location = job.categories?.location || 'Remote';
     const country = this.extractCountry(location);
 
@@ -95,12 +115,15 @@ export class LeverAdapter extends BaseCrawlerAdapter {
         : JobType.FULL_TIME;
 
     const skills = this.extractSkills(description);
-
-    const sponsorsVisa = lowerDesc.includes('visa sponsorship')
-      ? VisaSponsorshipStatus.SPONSORS
-      : lowerDesc.includes('no visa sponsorship') || lowerDesc.includes('must be authorized')
-        ? VisaSponsorshipStatus.DOES_NOT_SPONSOR
-        : VisaSponsorshipStatus.UNKNOWN;
+    const sourceUrl = job.hostedUrl || job.applyUrl || '';
+    const { visaSponsorship, visaNotes } = this.classifyVisaStatus({
+      title: job.text || 'Untitled Position',
+      companyName,
+      location,
+      country,
+      description,
+      sourceUrl,
+    });
 
     return {
       id: '',
@@ -116,8 +139,9 @@ export class LeverAdapter extends BaseCrawlerAdapter {
       workMode,
       type: jobType,
       source: JobSource.LEVER,
-      sourceUrl: job.hostedUrl || job.applyUrl || '',
-      visaSponsorship: sponsorsVisa,
+      sourceUrl,
+      visaSponsorship,
+      visaNotes,
       skills,
       postedAt: new Date(),
       createdAt: new Date(),

@@ -1,0 +1,487 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<<
+  /Type /Catalog
+  /Pages 2 0 R
+>>
+endobj
+2 0 obj
+<<
+  /Type /Pages
+  /Kids [3 0 R 5 0 R]
+  /Count 2
+>>
+endobj
+3 0 obj
+<<
+  /Type /Page
+  /Parent 2 0 R
+  /MediaBox [0 0 595.28 841.89]
+  /Resources <<
+    /Font <<
+      /F1 7 0 R
+      /F2 8 0 R
+    >>
+  >>
+  /Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+  /Length 6315
+>>
+stream
+BT
+/F2 18 Tf
+211.24 801.89 Td
+(Ashish Kumar Singh) Tj
+ET
+BT
+/F2 11 Tf
+220.14 781.89 Td
+(Senior Frontend Architect) Tj
+ET
+BT
+/F1 9 Tf
+86.44 766.89 Td
+(Noida, India \(Open to Netherlands Relocation | EU Blue Card / Visa Sponsorship Required\)) Tj
+ET
+BT
+/F1 8.5 Tf
+40.00 752.89 Td
+(Email: ashish.singh.careers@gmail.com | Phone: +91 7982169443 | LinkedIn: https://www.linkedin.com/in/ashish-kumar-singh1986 | GitHub: https://github.com/guddiya001) Tj
+ET
+BT
+/F2 11 Tf
+40.00 732.89 Td
+(PROFESSIONAL SUMMARY) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 728.89 m
+555 728.89 l
+S
+BT
+/F1 9 Tf
+40.00 714.89 Td
+(Staff- and Senior-level Frontend & Web Platform Engineer with 10+ years of experience building) Tj
+ET
+BT
+/F1 9 Tf
+40.00 701.89 Td
+(high-performance enterprise web applications, micro-frontends, and design systems across healthcare,) Tj
+ET
+BT
+/F1 9 Tf
+40.00 688.89 Td
+(banking, and global retail e-commerce. Led frontend architecture across 6+ engineering teams,) Tj
+ET
+BT
+/F1 9 Tf
+40.00 675.89 Td
+(decoupling portals with Webpack Module Federation, React 18/19, and Next.js \(App Router, Server) Tj
+ET
+BT
+/F1 9 Tf
+40.00 662.89 Td
+(Components\), reducing JavaScript bundle sizes by 35%, raising Lighthouse scores from 62 to 94, and) Tj
+ET
+BT
+/F1 9 Tf
+40.00 649.89 Td
+(improving page load speed by 40%. Deep expertise in TypeScript, Redux Toolkit, Zustand, React Query,) Tj
+ET
+BT
+/F1 9 Tf
+40.00 636.89 Td
+(Core Web Vitals \(LCP, INP, CLS\), and WCAG 2.1 AA accessibility.) Tj
+ET
+BT
+/F2 11 Tf
+40.00 619.89 Td
+(CORE TECHNICAL SKILLS) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 615.89 m
+555 615.89 l
+S
+BT
+/F1 9 Tf
+46.00 601.89 Td
+(Frontend Frameworks & Libraries: React.js, React 18/19, Next.js \(App Router, Server Components\),) Tj
+ET
+BT
+/F1 9 Tf
+46.00 589.39 Td
+(Redux Toolkit, React Query \(TanStack Query\), Webpack Module Federation) Tj
+ET
+BT
+/F1 9 Tf
+46.00 576.89 Td
+(Languages & Core Web: TypeScript, JavaScript \(ES6+\), HTML5, CSS3, Tailwind CSS) Tj
+ET
+BT
+/F1 9 Tf
+46.00 564.39 Td
+(Web Performance & Core Web Vitals: Core Web Vitals \(LCP, INP, CLS\), Lighthouse Optimization \(62 to) Tj
+ET
+BT
+/F1 9 Tf
+46.00 551.89 Td
+(94\), Code Splitting) Tj
+ET
+BT
+/F1 9 Tf
+46.00 539.39 Td
+(UI Architecture & Design Systems: Storybook, Radix UI, WCAG 2.1 AA Accessibility) Tj
+ET
+BT
+/F2 11 Tf
+40.00 520.89 Td
+(WORK EXPERIENCE) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 516.89 m
+555 516.89 l
+S
+BT
+/F2 9.5 Tf
+40.00 502.89 Td
+(Persistent Systems Ltd. \(UnitedHealth Group\) - Senior Engineering Lead / Frontend Architecture Lead) Tj
+ET
+BT
+/F1 9 Tf
+465.00 502.89 Td
+(Oct 2023 - Present) Tj
+ET
+BT
+/F1 9 Tf
+46.00 488.89 Td
+(- Decoupled a monolithic clinical portal into 6 independent React 18 micro-apps using Webpack) Tj
+ET
+BT
+/F1 9 Tf
+46.00 476.39 Td
+(  Module Federation, enabling parallel deployments across distributed engineering teams.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 462.39 Td
+(- Optimized client-side performance by shrinking JavaScript bundle sizes by 35%, raising Google) Tj
+ET
+BT
+/F1 9 Tf
+46.00 449.89 Td
+(  Lighthouse performance scores from 62 to 94, and improving Core Web Vitals \(LCP reduced by 1.8s\)) Tj
+ET
+BT
+/F1 9 Tf
+46.00 437.39 Td
+(  for a 40% faster page load index.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 423.39 Td
+(- Built interactive clinical diagnostic dashboards and real-time workflow portals using Next.js,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 410.89 Td
+(  React, TypeScript, and Tailwind CSS, supporting complex diagnostic tables with sub-second) Tj
+ET
+BT
+/F1 9 Tf
+46.00 398.39 Td
+(  navigation.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 384.39 Td
+(- Established a unified Design System and Storybook component library, shipping 50+ reusable,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 371.89 Td
+(  accessible UI components conforming to WCAG 2.1 AA accessibility standards.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 357.89 Td
+(- Optimized full-stack response times by implementing Redis distributed caching and client-side) Tj
+ET
+BT
+/F1 9 Tf
+46.00 345.39 Td
+(  TanStack Query, cutting overall roundtrip latency by 40%.) Tj
+ET
+BT
+/F2 9.5 Tf
+40.00 326.39 Td
+(LTIMindtree Ltd. \(DBS Bank\) - Senior Software Engineer \(Frontend & Financial UI\)) Tj
+ET
+BT
+/F1 9 Tf
+460.00 326.39 Td
+(Jul 2022 - Oct 2023) Tj
+ET
+BT
+/F1 9 Tf
+46.00 312.39 Td
+(- Built high-volume consumer banking web applications using React.js, TypeScript, and Redux,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 299.89 Td
+(  delivering real-time balance dashboards and international transfer workflows under MAS) Tj
+ET
+BT
+/F1 9 Tf
+46.00 287.39 Td
+(  regulatory standards.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 273.39 Td
+(- Built secure client-side authentication and session management workflows, integrating OAuth 2.0) Tj
+ET
+BT
+/F1 9 Tf
+46.00 260.89 Td
+(  PKCE and automated timeout guards.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 246.89 Td
+(- Engineered complex dynamic financial data tables and interactive charts, supporting) Tj
+ET
+BT
+/F1 9 Tf
+46.00 234.39 Td
+(  high-frequency client-side filtering and sorting across 50,000+ transaction rows with) Tj
+ET
+BT
+/F1 9 Tf
+46.00 221.89 Td
+(  virtualized windowing \(React Virtual\).) Tj
+ET
+BT
+/F1 9 Tf
+46.00 207.89 Td
+(- Worked closely with UX designers to translate Figma wireframes into accessible, responsive UI) Tj
+ET
+BT
+/F1 9 Tf
+46.00 195.39 Td
+(  components conforming to WCAG standards.) Tj
+ET
+BT
+/F2 9.5 Tf
+40.00 176.39 Td
+(Coforge Ltd. \(Walmart\) - Senior Software Engineer \(Web & E-Commerce Applications\)) Tj
+ET
+BT
+/F1 9 Tf
+460.00 176.39 Td
+(Oct 2020 - Jun 2022) Tj
+ET
+BT
+/F1 9 Tf
+46.00 162.39 Td
+(- Engineered high-concurrency customer-facing retail web applications and checkout workflows using) Tj
+ET
+BT
+/F1 9 Tf
+46.00 149.89 Td
+(  React, TypeScript, and Next.js during high-traffic retail spikes \(25M+ daily shoppers\).) Tj
+ET
+BT
+/F1 9 Tf
+46.00 135.89 Td
+(- Optimized client-side rendering pipelines and asset delivery, implementing route-based code) Tj
+ET
+BT
+/F1 9 Tf
+46.00 123.39 Td
+(  splitting and image optimization, reducing cart abandonment rate by 12%.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 109.39 Td
+(- Architected shopping cart and checkout state management using Redux Toolkit, ensuring persistent) Tj
+ET
+BT
+/F1 9 Tf
+46.00 96.89 Td
+(  offline cart recovery and multi-item inventory validation.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 82.89 Td
+(- Integrated web observability tools \(DataDog RUM, Sentry\) to monitor real-time client-side) Tj
+ET
+BT
+/F1 9 Tf
+46.00 70.39 Td
+(  JavaScript error rates, maintaining a 99.95% error-free user session rate.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<<
+  /Type /Page
+  /Parent 2 0 R
+  /MediaBox [0 0 595.28 841.89]
+  /Resources <<
+    /Font <<
+      /F1 7 0 R
+      /F2 8 0 R
+    >>
+  >>
+  /Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+  /Length 2120
+>>
+stream
+BT
+/F2 9.5 Tf
+40.00 801.89 Td
+(Previous Technology Organizations - Software Engineer \(Full-Stack & Web Development\)) Tj
+ET
+BT
+/F1 9 Tf
+460.00 801.89 Td
+(Jan 2016 - Oct 2020) Tj
+ET
+BT
+/F1 9 Tf
+46.00 787.89 Td
+(- Constructed responsive, cross-browser frontend user interfaces using React, JavaScript \(ES6+\),) Tj
+ET
+BT
+/F1 9 Tf
+46.00 775.39 Td
+(  HTML5, and CSS3 across healthcare and SaaS domains.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 761.39 Td
+(- Integrated frontend applications with scalable RESTful API backends built with Node.js and) Tj
+ET
+BT
+/F1 9 Tf
+46.00 748.89 Td
+(  Express.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 734.89 Td
+(- Designed mobile-first responsive layouts tested across modern desktop and mobile browsers,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 722.39 Td
+(  eliminating visual discrepancies.) Tj
+ET
+BT
+/F2 11 Tf
+40.00 703.39 Td
+(SELECTED ENGINEERING PROJECTS) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 699.39 m
+555 699.39 l
+S
+BT
+/F2 9.5 Tf
+40.00 685.39 Td
+(Enterprise Micro-Frontend Architecture & Webpack Module Federation | React 18, Next.js, Webpack Module Federation, TypeScript, TanStack Query, Redux Toolkit) Tj
+ET
+BT
+/F1 9 Tf
+46.00 671.39 Td
+(- Decoupled legacy clinical views with Webpack Module Federation, React 18, and Next.js, enabling) Tj
+ET
+BT
+/F1 9 Tf
+46.00 658.89 Td
+(  6+ squads to ship independent UI deployments with zero downtime.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 644.89 Td
+(- Reduced JavaScript bundle payloads by 35% and improved Core Web Vitals \(LCP cut by 1.8s\),) Tj
+ET
+BT
+/F1 9 Tf
+46.00 632.39 Td
+(  raising Lighthouse scores from 62 to 94.) Tj
+ET
+BT
+/F2 9.5 Tf
+40.00 613.39 Td
+(Accessible Enterprise Design System & Component Library | React, TypeScript, Storybook, Tailwind CSS, Radix UI, WCAG 2.1 AA, Jest) Tj
+ET
+BT
+/F1 9 Tf
+46.00 599.39 Td
+(- Authored 50+ reusable accessible UI primitives using React, TypeScript, Radix UI, and Storybook) Tj
+ET
+BT
+/F1 9 Tf
+46.00 586.89 Td
+(  with automated visual regression testing.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 572.89 Td
+(- Guaranteed 100% compliance with WCAG 2.1 AA accessibility guidelines across healthcare and) Tj
+ET
+BT
+/F1 9 Tf
+46.00 560.39 Td
+(  consumer banking applications.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<<
+  /Type /Font
+  /Subtype /Type1
+  /BaseFont /Helvetica
+  /Encoding /StandardEncoding
+>>
+endobj
+8 0 obj
+<<
+  /Type /Font
+  /Subtype /Type1
+  /BaseFont /Helvetica-Bold
+  /Encoding /StandardEncoding
+>>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000015 00000 n 
+0000000068 00000 n 
+0000000137 00000 n 
+0000000311 00000 n 
+0000006680 00000 n 
+0000006854 00000 n 
+0000009028 00000 n 
+0000009134 00000 n 
+trailer
+<<
+  /Size 9
+  /Root 1 0 R
+>>
+startxref
+9245
+%%EOF

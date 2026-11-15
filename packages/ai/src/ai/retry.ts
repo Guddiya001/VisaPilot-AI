@@ -7,7 +7,7 @@
  *   - Use exponential backoff: baseDelay * 2^attempt (jittered ±10%).
  */
 
-import { BASE_DELAY_MS, MAX_RETRY_ATTEMPTS } from './config';
+import { BASE_DELAY_MS, MAX_RETRY_ATTEMPTS } from './config.ts';
 
 // ---------------------------------------------------------------------------
 // Error classification
@@ -20,14 +20,21 @@ const TRANSIENT_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
 const HARD_ERROR_STATUS_CODES = new Set([400, 401, 403]);
 
 export class AgentRouterError extends Error {
+  public readonly statusCode: number;
+  public readonly isTransient: boolean;
+  public readonly body?: string;
+
   constructor(
     message: string,
-    public readonly statusCode: number,
-    public readonly isTransient: boolean,
-    public readonly body?: string,
+    statusCode: number,
+    isTransient: boolean,
+    body?: string,
   ) {
     super(message);
     this.name = 'AgentRouterError';
+    this.statusCode = statusCode;
+    this.isTransient = isTransient;
+    this.body = body;
   }
 }
 

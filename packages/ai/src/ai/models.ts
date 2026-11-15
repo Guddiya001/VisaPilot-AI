@@ -23,7 +23,7 @@ export const MODELS = {
   CLAUDE_OPUS_5: 'claude-opus-5',
   GPT_56: 'gpt-5.6-sol',
   /** Ultra-fast cloud model — ideal for low-latency intent extraction & search routing */
-  MINIMAX_M3: 'minmax-m3:cloud',
+  MINIMAX_M3: 'minimax-m3:cloud',
   /** Strong at structured JSON, classification, and visa detection */
   NEMOTRON_3_ULTRA: 'nemotron-3-ultra:cloud',
 } as const;

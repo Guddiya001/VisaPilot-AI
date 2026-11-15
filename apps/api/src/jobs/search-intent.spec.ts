@@ -10,22 +10,49 @@ declare const it: any;
 declare const expect: any;
 declare const beforeEach: any;
 
-jest.mock('@visapilot/ai', () => ({
-  SearchAgent: jest.fn().mockImplementation(() => ({
-    process: jest.fn(),
-  })),
-  visaDetectionAgent: {
-    process: jest.fn(),
-  },
-}));
+jest.mock('@visapilot/ai', () => {
+  const actual = jest.requireActual('@visapilot/ai');
+  return {
+    ...actual,
+    SearchAgent: jest.fn().mockImplementation(() => ({
+      process: jest.fn(),
+    })),
+    visaDetectionAgent: {
+      process: jest.fn(),
+    },
+    llm: {
+      generate: jest.fn(),
+    },
+    extractFastVisaTableBatch: jest.fn(async (jobs: any[]) => ({
+      rows: jobs.map((j) => ({
+        jobTitle: j.title || 'Unknown',
+        company: j.companyName || 'Unknown',
+        locationCountry: j.location || 'Remote',
+        visaRelocationSignal: 'Check JD',
+        matchScore: 75,
+        directApplyUrl: j.applyUrl || j.sourceUrl || '',
+      })),
+      markdownTable: '',
+      usedFallback: true,
+      llmDurationMs: 0,
+      modelUsed: 'mock',
+      restoredUrlsCount: 0,
+    })),
+  };
+});
 
-jest.mock('@visapilot/crawler', () => ({
-  crawlerService: {
-    searchJobs: jest.fn(),
-  },
-}));
+jest.mock('@visapilot/crawler', () => {
+  const actual = jest.requireActual('@visapilot/crawler');
+  return {
+    ...actual,
+    crawlerService: {
+      searchJobs: jest.fn(),
+    },
+  };
+});
 
 jest.mock('@visapilot/database', () => ({
+  getPrismaClient: jest.fn(() => null),
   jobRepository: {
     findByExternalId: jest.fn(),
     create: jest.fn(),

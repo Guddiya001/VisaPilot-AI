@@ -336,12 +336,13 @@ Respond strictly with a JSON object containing:
 5. "atsScoreAfter": Estimated ATS match after tailoring (MUST BE 100).
 6. "keyChanges": Array of 4-6 specific bullets describing exactly what was changed and why.
 7. "coverLetter": A tailored 3-paragraph cover letter — paragraph 1 mentions ${companyName} and ${inferredLocation || jobTitle} specifically; paragraph 2 maps candidate skills to JD requirements; paragraph 3 states relocation intent to ${inferredLocation || 'the target location'} and calls to action.
-8. "rolePurity": If the target job is a Frontend, Web, or UI role, or if technologies like Python, FastAPI, LangGraph, Model Context Protocol (MCP), PyTorch, or Generative AI are NOT in the JD: You MUST replace or remove any irrelevant AI/Python/FastAPI/LangGraph/MCP bullets with verified frontend achievements (Webpack Module Federation micro-frontends, React 18/19, Next.js, Core Web Vitals, Lighthouse 62->94, 35% bundle reduction, Design Systems, TypeScript, Tailwind CSS, TanStack Query). NEVER include technologies in the tailored resume that do not belong to the target role.
+8. "rolePurity": If the target job is a Frontend, Web, or UI role, or if technologies like Python, FastAPI, LangGraph, Model Context Protocol (MCP), PyTorch, or Generative AI are NOT in the JD: You MUST replace or remove any irrelevant AI/Python/FastAPI/LangGraph/MCP bullets with verified frontend achievements (Webpack Module Federation micro-frontends, React 18/19, Next.js, Core Web Vitals, Lighthouse 62 to 94, 35% bundle reduction, Design Systems, TypeScript, Tailwind CSS, TanStack Query). NEVER include technologies in the tailored resume that do not belong to the target role.
+9. "humanVoice": Write in a direct, conversational senior engineering voice using concrete verbs (Built, Scaled, Migrated, Optimized, Refactored, Designed, Reduced, Automated, Deployed, Wrote, Configured, Decoupled). STRICTLY BAN AI buzzwords: spearheaded, pioneered, orchestrated, delved into, testaments to, dynamic landscape, robustly, seamlessly, cutting-edge, synergy, revolutionized, mission-critical.
 
 Return ONLY valid JSON:`;
 
       const response = await this.aiService.generateChatCompletion([
-        { role: 'system', content: 'You are an expert AI Resume Tailor.' },
+        { role: 'system', content: 'You are a senior technical resume editor writing in a direct, factual human engineering voice. Ban AI buzzwords (spearheaded, pioneered, orchestrated, seamlessly, robustly, cutting-edge, mission-critical).' },
         { role: 'user', content: prompt },
       ]);
 
@@ -360,7 +361,7 @@ Return ONLY valid JSON:`;
             if (/langgraph|model context protocol|\bmcp\b|fastapi|generative ai context retrieval|clinician research time/i.test(imp)) {
               return {
                 original: b.original || 'Architected and deployed enterprise-grade platforms',
-                improved: 'Spearheaded enterprise micro-frontend architecture utilizing Webpack Module Federation and React 18, decoupling monolithic clinical portals into independently deployable micro-apps adopted across 6+ distributed engineering teams.',
+                improved: 'Decoupled a monolithic clinical portal into 6 independent React 18 micro-apps using Webpack Module Federation, enabling parallel deployments across distributed engineering teams.',
                 reason: 'Replaced irrelevant AI/backend bullet with verified enterprise frontend micro-frontends achievement.',
               };
             }
@@ -1028,9 +1029,9 @@ CRITICAL RULES — ALL MANDATORY FOR 100% ATS:
 4. AGGRESSIVE ADAPTATION: Re-frame the candidate's experience using the JD's exact tech terminology. If JD says "${primaryStack}", bullets must say "${primaryStack}" — not a substitute.
 5. DOMAIN LANGUAGE: This is a ${detectedDomain} role. Use ${detectedDomain} domain terminology throughout (e.g., ${domainLanguageExamples}).
 ${greenfieldRule}7. SUMMARY RULE: summary MUST contain: exact job title "${jdAnalysis.jobTitle}", company name "${jdAnalysis.companyName}", primary tech "${primaryStack}", and 4-5 required skills from the checklist.
-8. ACTION VERBS: EVERY bullet starts with a strong action verb (Architected, Built, Designed, Engineered, Led, Optimized, Scaled, Shipped, Spearheaded, etc.). Never start with "Worked on", "Responsible for", or pronouns.
-9. METRICS: At least 60% of bullets must have quantified metrics (%, x multiplier, absolute numbers, team sizes).
-10. SKILLS GROUPING: Group skills by category, lead each category with highest-priority JD skills. First category MUST be "Core Languages: ${primaryStack}, ...".
+8. HUMAN ENGINEERING VOICE & ACTIVE VERBS: Start every bullet with a direct technical verb (Built, Scaled, Migrated, Optimized, Refactored, Designed, Reduced, Automated, Deployed, Wrote, Configured, Decoupled). STRICTLY BAN AI buzzwords: spearheaded, pioneered, orchestrated, delved into, testaments to, dynamic landscape, robustly, seamlessly, leveraging cutting-edge, synergy, revolutionized, mission-critical. Never start with "Worked on", "Responsible for", or pronouns. Write tight, factual, cause-and-effect sentences like a senior engineer speaking in a design review (e.g., "Decoupled a monolithic clinical portal into 6 independent React micro-apps using Webpack Module Federation, enabling parallel deployments across teams.").
+9. NATURAL XYZ FORMULA & TRUTHFUL METRICS: Format every bullet naturally as "[Action verb] [what was built/fixed] using [tech stack], which [measurable business or performance outcome]." Never invent or inflate percentages; if a metric is not provided in the candidate profile, describe architectural scale, throughput, or latency reduction directly.
+10. SKILLS GROUPING: Group skills by technical domain (e.g., Languages, Backend & APIs, Distributed Systems, Databases, Cloud & DevOps). Lead each category with highest-priority JD skills. First category MUST be "Core Languages: ${primaryStack}, ...". NEVER create an "Additional Skills" category. EVERY listed skill MUST have direct supporting bullet evidence in work experience or selected projects.
 11. LOCATION: basics.location = "India → Open to Relocation to ${locationTarget} | Visa Sponsorship Required".
 12. TITLE: basics.title = "${jdAnalysis.jobTitle}" (exact match from JD).
 13. CULTURE FIT: Tone must reflect company values: ${companyCulture || 'results-driven, high-performance, collaborative'}.
@@ -1096,7 +1097,7 @@ Return ONLY a valid JSON object with this exact structure:
 
     try {
       const response = await this.aiService.generateChatCompletion([
-        { role: 'system', content: 'You are an elite ATS resume writer. Return only valid JSON.' },
+        { role: 'system', content: 'You are a senior technical resume editor writing in a direct, human engineering voice. Strictly ban robotic AI buzzwords (spearheaded, pioneered, orchestrated, delved into, testaments to, dynamic landscape, robustly, seamlessly, cutting-edge, synergy, revolutionized, mission-critical). Return only valid JSON.' },
         { role: 'user', content: prompt },
       ]);
 
@@ -1470,7 +1471,7 @@ Ashish Kumar Singh`;
             location: 'Noida, India',
             period: 'Oct 2023 – Present',
             bullets: [
-              'Spearheaded enterprise micro-frontend architecture utilizing Webpack Module Federation and React 18, decoupling monolithic clinical portals into independently deployable micro-apps adopted across 6+ distributed engineering teams.',
+              'Decoupled a monolithic clinical portal into 6 independent React 18 micro-apps using Webpack Module Federation, enabling parallel deployments across distributed engineering teams.',
               'Engineered systematic web performance optimizations, shrinking JavaScript bundle sizes by 35%, elevating Google Lighthouse performance scores from 62 to 94, and improving Core Web Vitals (Largest Contentful Paint LCP improved by 1.8s), delivering a 40% uplift in page speed index.',
               'Architected interactive clinical diagnostic dashboards and real-time workflow portals using Next.js, React, TypeScript, and Tailwind CSS, enabling healthcare providers to review complex diagnostic data with zero lag and sub-second navigation.',
               'Implemented resilient client-side data fetching and state synchronization utilizing TanStack Query and Redux Toolkit, incorporating optimistic UI updates, background cache invalidation, and automated retry policies for mission-critical medical records.',
@@ -1674,7 +1675,7 @@ Ashish Kumar Singh`;
             'Institutionalized rigorous LLM evaluation frameworks using Ragas and Deepeval to continuously benchmark faithfulness, context recall, and answer relevancy; instrumented LangSmith and OpenTelemetry for end-to-end distributed tracing, monitoring, and token latency optimization.',
             'Led AI solutions from initial discovery and exploration to resilient high-throughput production (handling 15M+ requests/month), containerizing microservices on Docker, Kubernetes (EKS/AKS), and integrating Azure OpenAI Service with zero-trust RBAC guardrails.',
             'Developed classical ML and NLP baseline classifiers using scikit-learn and PyTorch for named entity recognition (NER) and clinical intent classification, optimizing compute cost by routing simple queries away from large LLMs.',
-            'Spearheaded zero-downtime infrastructure migration of 45+ distributed healthcare microservices and core databases from legacy virtualized infrastructure to AWS (EKS, RDS PostgreSQL, S3) using Terraform and Helm; implemented canary cutover strategies, DNS traffic shifting, and dual-write data replication, achieving 100% data integrity with zero downtime.',
+            'Migrated 45+ distributed healthcare microservices and databases from legacy VMs to AWS EKS (RDS PostgreSQL, S3) using Terraform and Helm with canary cutovers and dual-write replication, maintaining 100% data integrity with zero downtime.',
             'Resolved critical Linux networking bottlenecks across multi-node Kubernetes clusters, diagnosing TCP connection resets, iptables NAT connection tracking table exhaustion (nf_conntrack: table full), socket buffer overruns (net.core.somaxconn, tcp_max_syn_backlog), and DNS query latency (ndots:5 query storms) using tcpdump, ss, and ip route, reducing p99 network latency by 38%.',
             'Diagnosed and optimized Linux filesystems and storage I/O, isolating disk latency bottlenecks on ext4 and XFS filesystems via iostat -xz, vmstat, iotop, and blktrace; tuned kernel dirty page writebacks (vm.dirty_ratio), mount options (noatime), and file descriptor limits (sysctl fs.file-max, ulimit -n), eliminating AWS EBS storage IOPS throttling.',
             'Directed 24/7 incident response and alert management as primary on-call SRE commander for Sev-1/Sev-2 production outages; re-architected alerting rules in Prometheus, Grafana, Loki, and Sentry with dynamic thresholding and alert deduplication, eliminating 65% of alert fatigue noise, reducing MTTD to < 2 minutes, and cutting MTTR by 45%.',
@@ -1767,7 +1768,7 @@ Ashish Kumar Singh`;
             location: 'Noida, India',
             period: 'Oct 2023 – Present',
             bullets: [
-              'Spearheaded enterprise micro-frontend architecture utilizing Webpack Module Federation and React 18, decoupling monolithic clinical portals into independently deployable micro-apps adopted across 6+ distributed engineering teams.',
+              'Decoupled a monolithic clinical portal into 6 independent React 18 micro-apps using Webpack Module Federation, enabling parallel deployments across distributed engineering teams.',
               'Engineered systematic web performance optimizations, shrinking JavaScript bundle sizes by 35%, elevating Google Lighthouse performance scores from 62 to 94, and improving Core Web Vitals (Largest Contentful Paint LCP improved by 1.8s), delivering a 40% uplift in page speed index.',
               'Architected interactive clinical diagnostic dashboards and real-time workflow portals using Next.js, React, TypeScript, and Tailwind CSS, enabling healthcare providers to review complex diagnostic data with zero lag and sub-second navigation.',
               'Implemented resilient client-side data fetching and state synchronization utilizing TanStack Query and Redux Toolkit, incorporating optimistic UI updates, background cache invalidation, and automated retry policies for mission-critical medical records.',
@@ -2130,7 +2131,7 @@ Ashish Kumar Singh`;
             location: 'Noida, India',
             period: 'Oct 2023 – Present',
             bullets: [
-              'Spearheaded zero-downtime infrastructure migration of 45+ distributed healthcare microservices and core databases from legacy virtualized infrastructure to AWS (EKS, RDS PostgreSQL, S3) using Terraform and Helm; implemented canary cutover strategies, DNS traffic shifting, and dual-write data replication, achieving 100% data integrity with zero downtime.',
+              'Migrated 45+ distributed healthcare microservices and databases from legacy VMs to AWS EKS (RDS PostgreSQL, S3) using Terraform and Helm with canary cutovers and dual-write replication, maintaining 100% data integrity with zero downtime.',
               'Resolved critical Linux networking bottlenecks across multi-node Kubernetes clusters, diagnosing TCP connection resets, iptables NAT connection tracking table exhaustion (nf_conntrack: table full), socket buffer overruns (net.core.somaxconn, tcp_max_syn_backlog), and DNS query latency (ndots:5 query storms) using tcpdump, ss, and ip route, reducing p99 network latency by 38%.',
               'Diagnosed and optimized Linux filesystems and storage I/O, isolating disk latency bottlenecks on ext4 and XFS filesystems via iostat -xz, vmstat, iotop, and blktrace; tuned kernel dirty page writebacks (vm.dirty_ratio), mount options (noatime), and file descriptor limits (sysctl fs.file-max, ulimit -n), eliminating AWS EBS storage IOPS throttling.',
               'Directed 24/7 incident response and alert management as primary on-call SRE commander for Sev-1/Sev-2 production outages; re-architected alerting rules in Prometheus, Grafana, Loki, and Sentry with dynamic thresholding and alert deduplication, eliminating 65% of alert fatigue noise, reducing MTTD to < 2 minutes, and cutting MTTR by 45%.',
@@ -2251,7 +2252,7 @@ Ashish Kumar Singh`;
           bullets: [
             'Architected and scaled high-performance distributed backend microservices and event streaming data pipelines using Go (Golang), Python (FastAPI), and Node.js, handling 15M+ daily requests with a 40% reduction in endpoint latency.',
             'Engineered resilient RESTful and gRPC microservice APIs integrated with PostgreSQL, Redis, and Apache Kafka, maintaining 99.95%+ service availability across enterprise healthcare platforms.',
-            'Spearheaded an enterprise micro-frontend architecture utilizing Webpack Module Federation and React 18, enabling independent continuous deployment across 6+ distributed engineering teams.',
+            'Decoupled a monolithic healthcare web portal into independent React 18 micro-apps using Webpack Module Federation, allowing 6+ teams to ship releases independently.',
             'Optimized client-side application bundle sizes by 35% and improved Core Web Vitals (Lighthouse score 62 → 94), delivering a 40% uplift in web application load performance.',
             'Built comprehensive backend observability pipelines incorporating OpenTelemetry, DataDog, and Prometheus to monitor latency budgets, error rates, and system uptime.',
             'Led technical architecture reviews, code quality governance, and mentorship for 12+ engineers across Agile sprints, establishing reusable backend libraries and CI/CD pipelines.'
@@ -2269,7 +2270,7 @@ Ashish Kumar Singh`;
             'Optimized high-concurrency database queries, table indexing, and partition schemes in PostgreSQL and Oracle, decreasing transaction query execution times by 30% for financial reporting.',
             'Created reusable modular web applications using React.js and TypeScript, integrating banking authentication workflows, real-time balance feeds, and end-to-end type safety.',
             'Implemented automated integration and unit testing suites using JUnit, Mockito, and Jest, maintaining 85%+ test coverage across core financial components.',
-            'Collaborated directly with enterprise security auditors, technical product managers, and infrastructure teams to ensure fault tolerance, zero-trust network policies, and seamless deployments.'
+            'Worked directly with security auditors, product managers, and infrastructure engineers to maintain zero-trust network policies and automated deployments.'
           ],
         },
         {
@@ -2338,9 +2339,9 @@ Ashish Kumar Singh`;
       achievements: [
         'Distributed Scale: Built high-concurrency Go and Python microservices handling 15M+ daily requests with 40% latency reduction.',
         'Engineered high-performance Go and Python microservices handling 15M+ daily requests with 40% latency reduction.',
-        'Spearheaded enterprise micro-frontend architecture utilizing Webpack Module Federation adopted across 6+ distributed engineering teams.',
+        'Decoupled monolithic clinical portals into independent React micro-apps using Webpack Module Federation across 6+ distributed engineering teams.',
         'Optimized client-side web application performance, improving Lighthouse score from 62 to 94 and reducing bundle size by 35%.',
-        'Maintained 99.95% production availability for mission-critical banking and global retail e-commerce systems.',
+        'Maintained 99.95% production availability for high-throughput consumer banking and global retail e-commerce platforms.',
       ],
       languages: [
         'English – Full Professional Proficiency',
@@ -2457,7 +2458,7 @@ Ashish Kumar Singh`;
             if (isIrrelevantBullet) {
               const companyLower = String(exp.company || '').toLowerCase();
               if (companyLower.includes('persistent') || companyLower.includes('unitedhealth')) {
-                cleanedBullets.push('Spearheaded enterprise micro-frontend architecture utilizing Webpack Module Federation and React 18, decoupling monolithic clinical portals into independently deployable micro-apps adopted across 6+ distributed engineering teams.');
+                cleanedBullets.push('Decoupled a monolithic clinical portal into 6 independent React 18 micro-apps using Webpack Module Federation, enabling parallel deployments across distributed engineering teams.');
               } else if (companyLower.includes('dbs') || companyLower.includes('ltimindtree')) {
                 cleanedBullets.push('Developed mission-critical consumer banking web applications using React.js, TypeScript, and Redux, delivering real-time balance dashboards and transaction histories under strict MAS regulatory standards.');
               } else if (companyLower.includes('walmart') || companyLower.includes('coforge')) {

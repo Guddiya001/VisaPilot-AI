@@ -23,9 +23,9 @@
  *   NEVER logs: API key, Authorization header, prompt content, or sensitive user data.
  */
 
-import { selectModelForTask, type TaskType, type ModelId } from './models';
-import { generateWithFallback, streamFromAgentRouter, type ChatMessage, type LLMResult } from './model-router';
-import { buildBaseMessages, BASE_SYSTEM_PROMPT } from './prompts/base';
+import { selectModelForTask, type TaskType, type ModelId } from './models.ts';
+import { generateWithFallback, streamFromAgentRouter, type ChatMessage, type LLMResult } from './model-router.ts';
+import { buildBaseMessages, BASE_SYSTEM_PROMPT } from './prompts/base.ts';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -49,6 +49,8 @@ export interface GenerateParams {
   maxTokens?: number;
   /** Optional request ID for tracing. Auto-generated if not provided. */
   requestId?: string;
+  /** Optional structured JSON schema for schema-guided generation. */
+  responseSchema?: Record<string, unknown>;
 }
 
 export interface StreamParams {
@@ -151,6 +153,7 @@ class LLMService {
         temperature: params.temperature,
         maxTokens: params.maxTokens,
         requestId,
+        responseSchema: params.responseSchema,
       });
 
       logRequest({

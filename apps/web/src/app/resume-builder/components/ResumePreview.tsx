@@ -31,9 +31,6 @@ export function ResumePreview() {
                 {data.basics.portfolio && <span>{data.basics.portfolio.replace(/^https?:\/\//, '')}</span>}
               </div>
             )}
-            {data.basics.openTo && (
-              <p className="rp-open-to">Open to: {data.basics.openTo}</p>
-            )}
           </header>
 
           {data.basics.summary && (
@@ -181,7 +178,6 @@ export function generatePrintHTML(data: ResumeData): string {
     if (data.basics.portfolio) parts.push('<span>' + esc(data.basics.portfolio.replace(/^https?:\/\//, '')) + '</span>');
     parts.push('</div>');
   }
-  if (data.basics.openTo) parts.push('<p class="rp-open-to">Open to: ' + esc(data.basics.openTo) + '</p>');
   parts.push('</header>');
 
   // Summary
@@ -301,7 +297,18 @@ export function generatePrintHTML(data: ResumeData): string {
 }
 
 function esc(str: string): string {
-  return str
+  const clean = str
+    .replace(/\(6294\)/g, '(62 to 94)')
+    .replace(/\b6294\b/g, '62 to 94')
+    .replace(
+      /(\b[Ff]rom\s+)?(\d+(?:\.\d+)?(?:%|ms|s|k|K|M|B|x|GB|MB|KB)?)\s*(?:->|-->|=>|==>|~>|→|➔|➜|➝|➞|➡|🡒|⟶|⟹|⇒|⇨|►|▶|❯|›)\s*(\d+(?:\.\d+)?(?:%|ms|s|k|K|M|B|x|GB|MB|KB)?)/g,
+      (_m, fromPrefix, p1, p2) => (fromPrefix ? `${fromPrefix.trim()} ${p1} to ${p2}` : `${p1} to ${p2}`)
+    )
+    .replace(/[“”«»„‟❝❞]/g, '"')
+    .replace(/[‘’‚‛❛❜ʻʼ´′‵]/g, "'")
+    .replace(/[—–―‒]/g, '-');
+
+  return clean
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')

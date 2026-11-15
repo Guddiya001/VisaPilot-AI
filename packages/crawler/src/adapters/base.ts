@@ -1,6 +1,16 @@
-import { JobSource } from '@visapilot/shared';
+import { JobSource, VisaSponsorshipStatus } from '@visapilot/shared';
 import type { ICrawlerAdapter, SearchFilters, Job, CrawlerConfig } from '@visapilot/shared';
-import type { CrawlerAdapterConfig, CrawledJob, CrawlerError } from '../types';
+import type { CrawlerAdapterConfig, CrawlerError } from '../types';
+import {
+  COUNTRY_CITY_LOOKUP,
+  NON_TECHNICAL_TITLES as DISCOVERY_NON_TECHNICAL_TITLES,
+  TECH_AND_ROLE_ALIASES,
+  buildSafeTermRegex,
+  resolveCountryRegionCodes,
+  scoreTokenizedRelevance,
+} from '../discovery/query-expander.ts';
+import { classifySponsorshipTwoTier } from '../discovery/visa-classifier.ts';
+import type { VisaClassifiableJob } from '../discovery/visa-classifier.ts';
 
 export abstract class BaseCrawlerAdapter implements ICrawlerAdapter {
   abstract readonly source: JobSource;
@@ -96,25 +106,11 @@ export abstract class BaseCrawlerAdapter implements ICrawlerAdapter {
   }
 
   protected extractCountry(location: string): string {
-    const countryMap: Record<string, string> = {
-      'united states': 'United States',
-      'usa': 'United States',
-      'uk': 'United Kingdom',
-      'united kingdom': 'United Kingdom',
-      'canada': 'Canada',
-      'australia': 'Australia',
-      'germany': 'Germany',
-      'france': 'France',
-      'netherlands': 'Netherlands',
-      'singapore': 'Singapore',
-      'japan': 'Japan',
-      'india': 'India',
-    };
-
-    const lower = location.toLowerCase();
-    for (const [key, country] of Object.entries(countryMap)) {
-      if (lower.includes(key)) {
-        return country;
+    const codes = resolveCountryRegionCodes(location, true);
+    if (codes.length > 0) {
+      const entry = COUNTRY_CITY_LOOKUP.find((c) => c.code === codes[0]);
+      if (entry) {
+        return entry.country;
       }
     }
 
@@ -142,178 +138,123 @@ export abstract class BaseCrawlerAdapter implements ICrawlerAdapter {
   // ─── Shared Smart Filter Utilities ───
 
   /**
-   * Words to strip from search queries before matching against job data.
-   * Includes visa/sponsorship terms (handled separately), common English stop words, and filler words.
+   * Common tech & role aliases shared with the query discovery module.
    */
-  private static readonly QUERY_STOP_WORDS = new Set([
-    'jobs', 'job', 'for', 'with', 'and', 'the', 'a', 'an', 'in', 'at', 'of', 'to',
-    'h1b', 'h-1b', 'visa', 'sponsorship', 'sponsor', 'remote', 'worldwide', 'global',
-    'immigration', 'work', 'permit', 'relocation', 'engineer', 'developer', 'senior',
-    'lead', 'staff', 'principal', 'junior', 'mid', 'level',
-  ]);
+  public static readonly TECH_ALIASES: Record<string, string[]> = TECH_AND_ROLE_ALIASES;
+
+  public static readonly NON_TECHNICAL_TITLES = DISCOVERY_NON_TECHNICAL_TITLES;
 
   /**
-   * Common tech aliases. When a user searches for one variant,
-   * we also try the canonical alternatives.
-   */
-  public static readonly TECH_ALIASES: Record<string, string[]> = {
-    'react': ['reactjs', 'react.js'],
-    'reactjs': ['react', 'react.js'],
-    'react.js': ['react', 'reactjs'],
-    'node': ['nodejs', 'node.js'],
-    'nodejs': ['node', 'node.js'],
-    'node.js': ['node', 'nodejs'],
-    'next': ['nextjs', 'next.js'],
-    'nextjs': ['next', 'next.js'],
-    'next.js': ['next', 'nextjs'],
-    'vue': ['vuejs', 'vue.js'],
-    'vuejs': ['vue', 'vue.js'],
-    'typescript': ['ts'],
-    'ts': ['typescript'],
-    'javascript': ['js'],
-    'js': ['javascript'],
-    'python': ['py'],
-    'golang': ['go'],
-    'kubernetes': ['k8s'],
-    'k8s': ['kubernetes'],
-    'postgresql': ['postgres'],
-    'postgres': ['postgresql'],
-    'mongodb': ['mongo'],
-    'mongo': ['mongodb'],
-    'gen ai': ['gen ai', 'genai', 'generative ai', 'llm', 'llms', 'large language model', 'large language models', 'foundation model'],
-    'genai': ['gen ai', 'genai', 'generative ai', 'llm', 'llms', 'large language model', 'large language models'],
-    'generative ai': ['gen ai', 'genai', 'generative ai', 'llm', 'llms', 'large language model', 'large language models'],
-    'agentic ai': ['agentic ai', 'agentic', 'ai agent', 'ai agents', 'autonomous agent', 'autonomous agents', 'multi-agent'],
-    'agentic': ['agentic ai', 'agentic', 'ai agent', 'ai agents', 'autonomous agent', 'autonomous agents'],
-    'ai agent': ['agentic ai', 'agentic', 'ai agent', 'ai agents', 'autonomous agent', 'autonomous agents'],
-    'ai agents': ['agentic ai', 'agentic', 'ai agent', 'ai agents', 'autonomous agent', 'autonomous agents'],
-    'machine learning': ['machine learning', 'ml', 'deep learning', 'neural network'],
-    'ml': ['machine learning', 'deep learning'],
-    'deep learning': ['machine learning', 'ml', 'deep learning', 'neural network'],
-    'llm': ['gen ai', 'genai', 'generative ai', 'large language model', 'llms'],
-    'llms': ['gen ai', 'genai', 'generative ai', 'large language model', 'llm'],
-    'ci/cd': ['cicd'],
-    'cicd': ['ci/cd'],
-    'artificial intelligence': ['ai', 'artificial intelligence'],
-    'ai': ['artificial intelligence'],
-  };
-
-  public static readonly NON_TECHNICAL_TITLES = [
-    'alliance director', 'partner manager', 'partner development', 'strategic events',
-    'program manager', 'product marketing', 'account executive', 'sales manager', 'sales development',
-    'recruiter', 'talent acquisition', 'legal counsel', 'general counsel', 'accountant',
-    'finance manager', 'events manager', 'event coordinator', 'office manager', 'customer success manager',
-  ];
-
-  /**
-   * Smart query matching: parses user queries with OR/comma logic,
-   * strips stop words, and matches ANY keyword group against the job.
-   * Uses strict word-boundary matching and alias expansion so short words
-   * like 'ai' or 'gen' do not match substrings in 'email', 'gender', etc.
-   *
-   * Query "Gen AI or ReactJS, Python" becomes groups: ["gen ai", "reactjs", "python"]
-   * A job matches if ALL tokens within ANY single group appear in the haystack.
+   * Smart query matching using tokenized weighted overlap, alias expansion,
+   * OR/comma group splitting, and non-technical title filtering.
    *
    * Returns true if the job matches the query (or if there's no query).
    */
   protected matchesQueryFilter(job: Job, query: string | undefined): boolean {
     if (!query || query.trim().length === 0) return true;
 
-    // Split query by "or" (case insensitive) and commas to create OR groups
-    const orGroups = query
-      .split(/\s+or\s+|,/i)
-      .map(g => g.trim().toLowerCase())
-      .filter(g => g.length > 0);
-
-    if (orGroups.length === 0) return true;
-
-    const titleLower = (job.title || '').toLowerCase();
-    const haystack = `${titleLower} ${job.description || ''} ${(job.skills || []).join(' ')}`.toLowerCase();
-
-    const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-    return orGroups.some(group => {
-      // 1. Direct phrase or alias check with word boundaries
-      const aliases = BaseCrawlerAdapter.TECH_ALIASES[group] || [group];
-      for (const alias of aliases) {
-        const reg = new RegExp(`\\b${escapeRegex(alias)}\\b`, 'i');
-        if (reg.test(haystack)) {
-          // If non-technical title, verify that the technical term is actually in the title
-          const isNonTech = BaseCrawlerAdapter.NON_TECHNICAL_TITLES.some(nt => titleLower.includes(nt));
-          if (isNonTech && !reg.test(titleLower)) {
-            return false;
-          }
-          return true;
-        }
-      }
-
-      // 2. Multi-word phrase matching directly
-      if (group.includes(' ')) {
-        const phraseRegex = new RegExp(`\\b${escapeRegex(group).replace(/\s+/g, '\\s+')}\\b`, 'i');
-        if (phraseRegex.test(haystack)) {
-          const isNonTech = BaseCrawlerAdapter.NON_TECHNICAL_TITLES.some(nt => titleLower.includes(nt));
-          if (isNonTech && !phraseRegex.test(titleLower)) {
-            return false;
-          }
-          return true;
-        }
-      }
-
-      // 3. Tokenize group with stop words removed
-      const tokens = group
-        .replace(/[^a-z0-9+#./\s-]/g, ' ')
-        .split(/\s+/)
-        .filter(w => w.length > 0 && !BaseCrawlerAdapter.QUERY_STOP_WORDS.has(w));
-
-      if (tokens.length === 0) return false;
-
-      // Every token must match with word boundaries and alias expansion
-      const allTokensMatch = tokens.every(token => {
-        const tokenAliases = BaseCrawlerAdapter.TECH_ALIASES[token] || [token];
-        return tokenAliases.some(ta => {
-          const reg = new RegExp(`\\b${escapeRegex(ta)}\\b`, 'i');
-          return reg.test(haystack);
-        });
-      });
-
-      if (!allTokensMatch) return false;
-
-      const isNonTech = BaseCrawlerAdapter.NON_TECHNICAL_TITLES.some(nt => titleLower.includes(nt));
-      if (isNonTech) {
-        // Must match in title as well if non-technical title
-        const tokenInTitle = tokens.some(token => {
-          const tokenAliases = BaseCrawlerAdapter.TECH_ALIASES[token] || [token];
-          return tokenAliases.some(ta => new RegExp(`\\b${escapeRegex(ta)}\\b`, 'i').test(titleLower));
-        });
-        if (!tokenInTitle) return false;
-      }
-
-      return true;
-    });
+    return scoreTokenizedRelevance(query, {
+      title: job.title,
+      description: job.description,
+      skills: job.skills,
+    }).matched;
   }
 
   /**
-   * Smart country/location matching with city → country inference.
+   * Smart country/location matching using the expanded 9-region + global hub city lookup map.
    * Returns true if the job location matches any of the filter countries, or if no countries filter is set.
    */
   protected matchesCountryFilter(job: Job, countries: string[] | undefined): boolean {
     if (!countries?.length) return true;
 
-    const location = (job.location || '').toLowerCase();
-    const country = (job.country || '').toLowerCase();
+    const location = job.location || '';
+    const country = job.country || '';
 
-    return countries.some(fc => {
-      const fcl = fc.toLowerCase();
-      if (country.includes(fcl) || location.includes(fcl)) return true;
-      if ((fcl === 'united states' || fcl === 'us' || fcl === 'usa') &&
-          /\b(ca|ny|tx|wa|il|co|ma|fl|ga|nj|nc|va|or|az|mn)\b|san francisco|new york|seattle|austin|boston|chicago|los angeles|remote/i.test(location)) return true;
-      if ((fcl === 'united kingdom' || fcl === 'uk') &&
-          /london|manchester|edinburgh|birmingham|bristol/i.test(location)) return true;
-      if (fcl === 'canada' && /toronto|vancouver|montreal|ottawa/i.test(location)) return true;
-      if (fcl === 'germany' && /berlin|munich|hamburg|frankfurt/i.test(location)) return true;
-      if (fcl === 'remote') return job.remote === true;
-      return false;
+    const jobCountryCodes = resolveCountryRegionCodes(country, false);
+    const jobLocationCodes = resolveCountryRegionCodes(location, true);
+    const jobCodes = new Set([...jobCountryCodes, ...jobLocationCodes]);
+
+    return countries.some((fc) => {
+      const fcl = fc.trim().toLowerCase();
+      if (!fcl) return false;
+      if (fcl === 'all' || fcl === 'worldwide' || fcl === 'global') return true;
+      if (fcl === 'remote') {
+        return job.remote === true || /\bremote\b/i.test(location);
+      }
+
+      const filterCodes = resolveCountryRegionCodes(fc, false);
+      if (filterCodes.length > 0) {
+        return filterCodes.some((code) => jobCodes.has(code));
+      }
+
+      // Fallback word-boundary match for regions/cities outside the core lookup map
+      const fallbackReg = buildSafeTermRegex(fcl);
+      return fallbackReg.test(country) || fallbackReg.test(location);
     });
+  }
+
+  /**
+   * Executes async workers over items with bounded concurrency using Promise.allSettled.
+   */
+  protected async mapWithConcurrency<T, R>(
+    items: readonly T[],
+    concurrency: number,
+    worker: (item: T, index: number) => Promise<R>,
+  ): Promise<PromiseSettledResult<R>[]> {
+    const results: PromiseSettledResult<R>[] = new Array(items.length);
+    if (items.length === 0) return results;
+
+    const workerCount = Math.max(1, Math.min(concurrency, items.length));
+    let nextIndex = 0;
+
+    const runWorker = async () => {
+      while (true) {
+        const currentIndex = nextIndex++;
+        if (currentIndex >= items.length) break;
+        try {
+          const value = await worker(items[currentIndex], currentIndex);
+          results[currentIndex] = { status: 'fulfilled', value };
+        } catch (reason) {
+          results[currentIndex] = { status: 'rejected', reason };
+        }
+      }
+    };
+
+    await Promise.allSettled(Array.from({ length: workerCount }, () => runWorker()));
+    return results;
+  }
+
+  /**
+   * Classifies job sponsorship via the Two-Tier classifier and maps it to VisaSponsorshipStatus.
+   */
+  protected classifyVisaStatus(job: VisaClassifiableJob): {
+    visaSponsorship: VisaSponsorshipStatus;
+    visaNotes: string;
+  } {
+    const classification = classifySponsorshipTwoTier(job);
+
+    let visaSponsorship: VisaSponsorshipStatus;
+    switch (classification.category) {
+      case 'VISA_SPONSORED':
+      case 'KNOWN_SPONSOR_SILENT':
+        visaSponsorship = VisaSponsorshipStatus.SPONSORS;
+        break;
+      case 'RELOCATION_PROVIDED':
+        visaSponsorship = VisaSponsorshipStatus.RELOCATION_SUPPORT;
+        break;
+      case 'NOT_SPONSORED':
+        visaSponsorship = VisaSponsorshipStatus.DOES_NOT_SPONSOR;
+        break;
+      case 'UNCLEAR':
+      default:
+        visaSponsorship = VisaSponsorshipStatus.UNKNOWN;
+        break;
+    }
+
+    const schemeLabel = classification.primaryScheme ? ` [${classification.primaryScheme}]` : '';
+    const visaNotes = `${classification.category}${schemeLabel}: ${classification.evidence.join('; ')}`;
+
+    return { visaSponsorship, visaNotes };
   }
 }
 

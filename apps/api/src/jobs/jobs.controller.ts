@@ -146,4 +146,24 @@ export class JobsController {
   async getSimilar(@Param('id') id: string) {
     return this.jobsService.findSimilar(id);
   }
+
+  @Post(':id/prepare-application')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary:
+      'Extracts ATS form questions, answers compliance/visa questions, generates persona-grounded answers, and prepares auto-fill plan',
+  })
+  async prepareApplication(
+    @Param('id') jobId: string,
+    @Body()
+    body?: {
+      candidateProfile?: any;
+      formHtml?: string;
+      applyUrl?: string;
+    },
+  ) {
+    return this.jobsService.prepareApplication(jobId, body);
+  }
 }
+

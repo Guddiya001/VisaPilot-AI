@@ -1,6 +1,6 @@
 import { config } from '@visapilot/config';
-import type { IProvider, CompletionOptions, ChatMessage, CompletionResponse, EmbeddingResponse } from './base';
-import { AIProviderType } from './base';
+import type { IProvider, CompletionOptions, ChatMessage, CompletionResponse, EmbeddingResponse } from './base.ts';
+import { AIProviderType } from './base.ts';
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 
@@ -55,6 +55,24 @@ export class GeminiProvider implements IProvider {
     }
   }
 
+  private buildGenerationConfig(options: CompletionOptions): Record<string, unknown> {
+    const generationConfig: Record<string, unknown> = {
+      temperature: options.temperature ?? 0.7,
+      maxOutputTokens: options.maxTokens ?? 2048,
+      topP: options.topP ?? 0.9,
+      frequencyPenalty: options.frequencyPenalty ?? 0,
+      presencePenalty: options.presencePenalty ?? 0,
+      stopSequences: options.stop,
+    };
+
+    if (options.responseSchema) {
+      generationConfig.responseMimeType = 'application/json';
+      generationConfig.responseSchema = options.responseSchema;
+    }
+
+    return generationConfig;
+  }
+
   async generateCompletion(
     prompt: string,
     options: CompletionOptions = {},
@@ -72,14 +90,7 @@ export class GeminiProvider implements IProvider {
       };
     }>(`models/${model}:generateContent`, {
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: options.temperature ?? 0.7,
-        maxOutputTokens: options.maxTokens ?? 2048,
-        topP: options.topP ?? 0.9,
-        frequencyPenalty: options.frequencyPenalty ?? 0,
-        presencePenalty: options.presencePenalty ?? 0,
-        stopSequences: options.stop,
-      },
+      generationConfig: this.buildGenerationConfig(options),
     });
 
     return {
@@ -119,14 +130,7 @@ export class GeminiProvider implements IProvider {
       };
     }>(`models/${model}:generateContent`, {
       contents,
-      generationConfig: {
-        temperature: options.temperature ?? 0.7,
-        maxOutputTokens: options.maxTokens ?? 2048,
-        topP: options.topP ?? 0.9,
-        frequencyPenalty: options.frequencyPenalty ?? 0,
-        presencePenalty: options.presencePenalty ?? 0,
-        stopSequences: options.stop,
-      },
+      generationConfig: this.buildGenerationConfig(options),
     });
 
     return {

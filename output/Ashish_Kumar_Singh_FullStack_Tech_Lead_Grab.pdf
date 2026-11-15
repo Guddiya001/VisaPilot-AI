@@ -1,0 +1,577 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<<
+  /Type /Catalog
+  /Pages 2 0 R
+>>
+endobj
+2 0 obj
+<<
+  /Type /Pages
+  /Kids [3 0 R 5 0 R]
+  /Count 2
+>>
+endobj
+3 0 obj
+<<
+  /Type /Page
+  /Parent 2 0 R
+  /MediaBox [0 0 595.28 841.89]
+  /Resources <<
+    /Font <<
+      /F1 7 0 R
+      /F2 8 0 R
+    >>
+  >>
+  /Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+  /Length 6380
+>>
+stream
+BT
+/F2 18 Tf
+211.24 801.89 Td
+(Ashish Kumar Singh) Tj
+ET
+BT
+/F2 11 Tf
+217.04 781.89 Td
+(Staff Full-Stack Tech Lead) Tj
+ET
+BT
+/F1 9 Tf
+84.04 766.89 Td
+(Noida, India \(Open to Singapore Relocation | Employment Pass / Visa Sponsorship Required\)) Tj
+ET
+BT
+/F1 8.5 Tf
+40.00 752.89 Td
+(Email: ashish.singh.careers@gmail.com | Phone: +91 7982169443 | LinkedIn: https://www.linkedin.com/in/ashish-kumar-singh1986 | GitHub: https://github.com/guddiya001) Tj
+ET
+BT
+/F2 11 Tf
+40.00 732.89 Td
+(PROFESSIONAL SUMMARY) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 728.89 m
+555 728.89 l
+S
+BT
+/F1 9 Tf
+40.00 714.89 Td
+(Staff Full-Stack Software Engineer with 10+ years of experience building end-to-end cloud) Tj
+ET
+BT
+/F1 9 Tf
+40.00 701.89 Td
+(applications, fast web frontends, and distributed backend microservices across healthcare, banking,) Tj
+ET
+BT
+/F1 9 Tf
+40.00 688.89 Td
+(and retail. Led full-stack engineering across 6+ squads, pairing backend services \(Python FastAPI,) Tj
+ET
+BT
+/F1 9 Tf
+40.00 675.89 Td
+(Go, Node.js/NestJS, PostgreSQL, Redis\) with accessible web interfaces \(TypeScript, Next.js, React\),) Tj
+ET
+BT
+/F1 9 Tf
+40.00 662.89 Td
+(taking systems from initial design to containerized Kubernetes deployments on AWS and GCP.) Tj
+ET
+BT
+/F2 11 Tf
+40.00 645.89 Td
+(CORE TECHNICAL SKILLS) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 641.89 m
+555 641.89 l
+S
+BT
+/F1 9 Tf
+46.00 627.89 Td
+(Languages & Core Web: TypeScript, JavaScript, Python, Go, HTML5, CSS3, SQL) Tj
+ET
+BT
+/F1 9 Tf
+46.00 615.39 Td
+(Frontend Frameworks: React 18/19, Next.js, Redux Toolkit, Tailwind CSS) Tj
+ET
+BT
+/F1 9 Tf
+46.00 602.89 Td
+(Backend Frameworks & APIs: Node.js, NestJS, FastAPI, Spring Boot, GraphQL, gRPC) Tj
+ET
+BT
+/F1 9 Tf
+46.00 590.39 Td
+(Databases & Storage: PostgreSQL, Redis, MongoDB, Apache Cassandra) Tj
+ET
+BT
+/F1 9 Tf
+46.00 577.89 Td
+(Cloud & DevOps: Docker, Kubernetes, AWS, GCP, Terraform, CI/CD Pipelines) Tj
+ET
+BT
+/F2 11 Tf
+40.00 559.39 Td
+(WORK EXPERIENCE) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 555.39 m
+555 555.39 l
+S
+BT
+/F2 9.5 Tf
+40.00 541.39 Td
+(Persistent Systems Ltd. \(UnitedHealth Group\) - Staff Full-Stack Platform Engineer) Tj
+ET
+BT
+/F1 9 Tf
+465.00 541.39 Td
+(Oct 2023 - Present) Tj
+ET
+BT
+/F1 9 Tf
+46.00 527.39 Td
+(- Built end-to-end healthcare workflow platforms uniting resilient Node.js/NestJS and Python) Tj
+ET
+BT
+/F1 9 Tf
+46.00 514.89 Td
+(  microservices with Next.js/React diagnostic dashboards for 6+ engineering teams.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 500.89 Td
+(- Architected and deployed high-throughput healthcare backend microservices using Python) Tj
+ET
+BT
+/F1 9 Tf
+46.00 488.39 Td
+(  \(FastAPI\), Java \(Spring Boot\), and Node.js/NestJS, handling 15M+ monthly API transactions with) Tj
+ET
+BT
+/F1 9 Tf
+46.00 475.89 Td
+(  99.99% availability under strict HIPAA data privacy regulations.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 461.89 Td
+(- Decoupled a monolithic clinical portal into 6 independent React 18 micro-apps using Webpack) Tj
+ET
+BT
+/F1 9 Tf
+46.00 449.39 Td
+(  Module Federation, enabling parallel deployments across distributed engineering teams.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 435.39 Td
+(- Designed type-safe REST and GraphQL APIs using TypeScript, Zod, and PostgreSQL, ensuring zero) Tj
+ET
+BT
+/F1 9 Tf
+46.00 422.89 Td
+(  regression and consistent bidirectional state synchronization.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 408.89 Td
+(- Tuned high-volume SQL and NoSQL database clusters \(PostgreSQL, MongoDB, Apache Cassandra\),) Tj
+ET
+BT
+/F1 9 Tf
+46.00 396.39 Td
+(  optimizing sharding keys and Elasticsearch indexes to cut peak primary database load by 45%.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 382.39 Td
+(- Architected shopping cart and checkout state management using Redux Toolkit, ensuring persistent) Tj
+ET
+BT
+/F1 9 Tf
+46.00 369.89 Td
+(  offline cart recovery and multi-item inventory validation.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 355.89 Td
+(- Built interactive clinical diagnostic dashboards and real-time workflow portals using Next.js,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 343.39 Td
+(  React, TypeScript, and Tailwind CSS, supporting complex diagnostic tables with sub-second) Tj
+ET
+BT
+/F1 9 Tf
+46.00 330.89 Td
+(  navigation.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 316.89 Td
+(- Directed technical architecture reviews, API contracts \(REST, gRPC, Protobuf\), and zero-trust) Tj
+ET
+BT
+/F1 9 Tf
+46.00 304.39 Td
+(  RBAC authentication with OAuth 2.0 and JWT, mentoring 12+ backend developers in distributed) Tj
+ET
+BT
+/F1 9 Tf
+46.00 291.89 Td
+(  systems best practices.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 277.89 Td
+(- Containerized full-stack services using Docker and Kubernetes on AWS, automating GitHub Actions) Tj
+ET
+BT
+/F1 9 Tf
+46.00 265.39 Td
+(  CI/CD deployment pipelines with canary releases.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 251.39 Td
+(- Migrated 45+ monolithic services to containerized microservices on Kubernetes \(AWS EKS & GCP\)) Tj
+ET
+BT
+/F1 9 Tf
+46.00 238.89 Td
+(  using automated Terraform modules and Helm deployment charts, achieving zero-downtime cutovers.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 224.89 Td
+(- Automated CI/CD pipelines and deployment guardrails using Docker, Jenkins, and Helm, running) Tj
+ET
+BT
+/F1 9 Tf
+46.00 212.39 Td
+(  automated security vulnerability scans and artifact signing.) Tj
+ET
+BT
+/F2 9.5 Tf
+40.00 193.39 Td
+(LTIMindtree Ltd. \(DBS Bank\) - Senior Full-Stack Software Engineer \(Banking Platform\)) Tj
+ET
+BT
+/F1 9 Tf
+460.00 193.39 Td
+(Jul 2022 - Oct 2023) Tj
+ET
+BT
+/F1 9 Tf
+46.00 179.39 Td
+(- Delivered full-stack consumer banking features across secure Node.js backend services and) Tj
+ET
+BT
+/F1 9 Tf
+46.00 166.89 Td
+(  React/TypeScript web interfaces conforming to MAS banking standards.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 152.89 Td
+(- Built high-volume core banking backend microservices and payment ledger integrations using Go,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 140.39 Td
+(  Java \(Spring Boot\), Node.js, and PostgreSQL under Monetary Authority of Singapore \(MAS\)) Tj
+ET
+BT
+/F1 9 Tf
+46.00 127.89 Td
+(  regulatory standards.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 113.89 Td
+(- Built high-volume consumer banking web applications using React.js, TypeScript, and Redux,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 101.39 Td
+(  delivering real-time balance dashboards and international transfer workflows under MAS) Tj
+ET
+BT
+/F1 9 Tf
+46.00 88.89 Td
+(  regulatory standards.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 74.89 Td
+(- Built end-to-end authenticated payment workflows integrating OAuth 2.0 PKCE and multi-factor) Tj
+ET
+BT
+/F1 9 Tf
+46.00 62.39 Td
+(  authentication with automated audit trail logging.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<<
+  /Type /Page
+  /Parent 2 0 R
+  /MediaBox [0 0 595.28 841.89]
+  /Resources <<
+    /Font <<
+      /F1 7 0 R
+      /F2 8 0 R
+    >>
+  >>
+  /Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+  /Length 4077
+>>
+stream
+BT
+/F2 9.5 Tf
+40.00 801.89 Td
+(Coforge Ltd. \(Walmart\) - Senior Full-Stack Engineer \(Retail Systems\)) Tj
+ET
+BT
+/F1 9 Tf
+460.00 801.89 Td
+(Oct 2020 - Jun 2022) Tj
+ET
+BT
+/F1 9 Tf
+46.00 787.89 Td
+(- Delivered distributed order management features spanning scalable Node.js microservices and) Tj
+ET
+BT
+/F1 9 Tf
+46.00 775.39 Td
+(  Next.js/React storefront applications for 25M+ daily retail shoppers.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 761.39 Td
+(- Built high-concurrency order processing and checkout backend microservices on Kubernetes for) Tj
+ET
+BT
+/F1 9 Tf
+46.00 748.89 Td
+(  Walmart's global e-commerce platform, handling 25M+ daily retail events during peak traffic) Tj
+ET
+BT
+/F1 9 Tf
+46.00 736.39 Td
+(  spikes.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 722.39 Td
+(- Engineered high-concurrency customer-facing retail web applications and checkout workflows using) Tj
+ET
+BT
+/F1 9 Tf
+46.00 709.89 Td
+(  React, TypeScript, and Next.js during high-traffic retail spikes \(25M+ daily shoppers\).) Tj
+ET
+BT
+/F1 9 Tf
+46.00 695.89 Td
+(- Integrated distributed event pipelines with Kafka and Redis to ensure synchronized stock) Tj
+ET
+BT
+/F1 9 Tf
+46.00 683.39 Td
+(  reservation and real-time inventory updates.) Tj
+ET
+BT
+/F2 9.5 Tf
+40.00 664.39 Td
+(Previous Technology Organizations - Software Engineer \(Full-Stack Development\)) Tj
+ET
+BT
+/F1 9 Tf
+460.00 664.39 Td
+(Jan 2016 - Oct 2020) Tj
+ET
+BT
+/F1 9 Tf
+46.00 650.39 Td
+(- Developed end-to-end web applications combining Python/Node.js backend APIs with responsive) Tj
+ET
+BT
+/F1 9 Tf
+46.00 637.89 Td
+(  frontend user interfaces.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 623.89 Td
+(- Architected and maintained scalable RESTful backend services and APIs using Python \(Django,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 611.39 Td
+(  Flask\) and Node.js/Express, supporting high-throughput CRUD workflows and third-party) Tj
+ET
+BT
+/F1 9 Tf
+46.00 598.89 Td
+(  integrations.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 584.89 Td
+(- Constructed responsive, cross-browser frontend user interfaces using React, JavaScript \(ES6+\),) Tj
+ET
+BT
+/F1 9 Tf
+46.00 572.39 Td
+(  HTML5, and CSS3 across healthcare and SaaS domains.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 558.39 Td
+(- Implemented secure user authentication, role-based access control \(RBAC\), and automated database) Tj
+ET
+BT
+/F1 9 Tf
+46.00 545.89 Td
+(  migrations.) Tj
+ET
+BT
+/F2 11 Tf
+40.00 526.89 Td
+(SELECTED ENGINEERING PROJECTS) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 522.89 m
+555 522.89 l
+S
+BT
+/F2 9.5 Tf
+40.00 508.89 Td
+(High-Throughput Distributed Event Processing & Ledger Platform | Go, Python, Apache Kafka, Apache Cassandra, Redis, PostgreSQL, Docker, Kubernetes, gRPC) Tj
+ET
+BT
+/F1 9 Tf
+46.00 494.89 Td
+(- Architected end-to-end event-driven transaction pipelines pairing high-throughput Python/Node.js) Tj
+ET
+BT
+/F1 9 Tf
+46.00 482.39 Td
+(  APIs with live operational observability dashboards.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 468.39 Td
+(- Architected idempotent event ingestion pipelines with Apache Kafka and RabbitMQ, handling 150k+) Tj
+ET
+BT
+/F1 9 Tf
+46.00 455.89 Td
+(  transaction messages/sec with zero message loss.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 441.89 Td
+(- Engineered distributed database topology using Apache Cassandra and PostgreSQL with) Tj
+ET
+BT
+/F1 9 Tf
+46.00 429.39 Td
+(  active-active replication, slashing write latencies by 42%.) Tj
+ET
+BT
+/F2 9.5 Tf
+40.00 410.39 Td
+(Cloud-Native Kubernetes Infrastructure & Dynamic Environments | AWS EKS, GCP, Kubernetes, Terraform, Helm, ArgoCD, Prometheus, Grafana, Loki, Docker) Tj
+ET
+BT
+/F1 9 Tf
+46.00 396.39 Td
+(- Built ephemeral full-stack preview environments automated on every pull request, enabling rapid) Tj
+ET
+BT
+/F1 9 Tf
+46.00 383.89 Td
+(  end-to-end QA across frontend and backend squads.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 369.89 Td
+(- Designed resilient container networking, automated horizontal pod autoscaling, and) Tj
+ET
+BT
+/F1 9 Tf
+46.00 357.39 Td
+(  connection-pooled PostgreSQL operators on Kubernetes.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 343.39 Td
+(- Hardened service-to-service communication with mutual TLS \(mTLS\) and circuit-breaker policies) Tj
+ET
+BT
+/F1 9 Tf
+46.00 330.89 Td
+(  across distributed microservices.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<<
+  /Type /Font
+  /Subtype /Type1
+  /BaseFont /Helvetica
+  /Encoding /StandardEncoding
+>>
+endobj
+8 0 obj
+<<
+  /Type /Font
+  /Subtype /Type1
+  /BaseFont /Helvetica-Bold
+  /Encoding /StandardEncoding
+>>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000015 00000 n 
+0000000068 00000 n 
+0000000137 00000 n 
+0000000311 00000 n 
+0000006745 00000 n 
+0000006919 00000 n 
+0000011050 00000 n 
+0000011156 00000 n 
+trailer
+<<
+  /Size 9
+  /Root 1 0 R
+>>
+startxref
+11267
+%%EOF

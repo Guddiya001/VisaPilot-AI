@@ -1,4 +1,4 @@
-import { BaseCrawlerAdapter } from './base';
+import { BaseCrawlerAdapter } from './base.ts';
 import type { Job, SearchFilters } from '@visapilot/shared';
 import { JobSource, JobType, WorkMode, VisaSponsorshipStatus } from '@visapilot/shared';
 import { randomUUID } from 'crypto';
@@ -25,10 +25,6 @@ export class IndeedAdapter extends BaseCrawlerAdapter {
 
   async *searchJobs(filters: SearchFilters): AsyncGenerator<Job> {
     if (!this.proxyApiKey || this.proxyApiKey === 'your_proxy_api_key_here') {
-      console.warn('Indeed proxy API key missing or invalid. Returning stub data.');
-      if (filters.query) {
-        yield this.createStubJob('IndeedTech', filters.query);
-      }
       return;
     }
 
@@ -124,36 +120,7 @@ export class IndeedAdapter extends BaseCrawlerAdapter {
     throw new Error('Method not implemented.');
   }
 
-  normalizeJob(rawJob: Record<string, unknown>): Job {
+  normalizeJob(_rawJob: Record<string, unknown>): Job {
     throw new Error('Method not implemented.');
-  }
-
-  private createStubJob(company: string, query: string): Job {
-    return {
-      id: randomUUID(),
-      externalId: `ind-${randomUUID().slice(0, 8)}`,
-      title: `${query} (Indeed Stub)`,
-      company: {
-        id: company.toLowerCase(),
-        name: company,
-        website: `https://${company.toLowerCase()}.com`,
-      },
-      description: 'Indeed parsed job stub (Mock Data)',
-      requirements: [],
-      responsibilities: [],
-      location: 'New York, NY',
-      remote: false,
-      workMode: WorkMode.ONSITE,
-      type: JobType.FULL_TIME,
-      sourceUrl: `https://www.indeed.com/viewjob?jk=12345`,
-      postedAt: new Date(),
-      expiresAt: null,
-      salaryMin: null,
-      salaryMax: null,
-      salaryCurrency: 'USD',
-      skills: [query],
-      category: 'Engineering',
-      visaSponsorship: VisaSponsorshipStatus.UNKNOWN,
-    } as unknown as Job;
   }
 }

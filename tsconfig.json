@@ -11,7 +11,10 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "typeRoots": ["./node_modules/@types", "./node_modules/.pnpm/node_modules/@types"]
   },
-  "exclude": ["node_modules", "dist", ".next"]
+  "include": ["src/**/*", "tests/**/*"],
+  "exclude": ["node_modules", "dist", ".next", "apps", "packages", "test-*.ts"]
 }

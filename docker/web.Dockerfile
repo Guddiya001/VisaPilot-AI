@@ -20,9 +20,9 @@ COPY apps/web ./apps/web
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Build
+# Build workspace dependencies first, then Next.js app
 ENV NEXT_STANDALONE=true
-RUN pnpm --filter @visapilot/web build
+RUN pnpm --filter @visapilot/shared build && pnpm --filter @visapilot/config build && pnpm --filter @visapilot/web build
 
 # Production image
 FROM node:22-alpine AS runner

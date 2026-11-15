@@ -1,5 +1,3 @@
-version: '3.8'
-
 name: visapilot
 
 services:
@@ -60,6 +58,9 @@ services:
       dockerfile: docker/api.Dockerfile
     container_name: visapilot-api
     restart: unless-stopped
+    env_file:
+      - path: ../.env
+        required: false
     ports:
       - '4000:4000'
     environment:
@@ -67,10 +68,7 @@ services:
       DATABASE_URL: postgresql://visapilot:visapilot@postgres:5432/visapilot
       REDIS_URL: redis://redis:6379
       OLLAMA_BASE_URL: http://ollama:11434
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       CORS_ORIGIN: http://localhost:3001
-      PROXY_API_KEY: ${PROXY_API_KEY}
     depends_on:
       postgres:
         condition: service_healthy
@@ -100,12 +98,14 @@ services:
       dockerfile: docker/worker.Dockerfile
     container_name: visapilot-worker
     restart: unless-stopped
+    env_file:
+      - path: ../.env
+        required: false
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://visapilot:visapilot@postgres:5432/visapilot
       REDIS_URL: redis://redis:6379
       OLLAMA_BASE_URL: http://ollama:11434
-      PROXY_API_KEY: ${PROXY_API_KEY}
     depends_on:
       postgres:
         condition: service_healthy

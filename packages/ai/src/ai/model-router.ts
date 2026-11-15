@@ -19,9 +19,9 @@ import {
   ANTHROPIC_VERSION,
   DEFAULT_TIMEOUT_MS,
   getApiKey,
-} from './config';
-import { MODELS, FALLBACK_CHAIN, type ModelId } from './models';
-import { withRetry, throwForStatus, isHardError } from './retry';
+} from './config.ts';
+import { MODELS, FALLBACK_CHAIN, type ModelId } from './models.ts';
+import { withRetry, throwForStatus, isHardError } from './retry.ts';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -38,6 +38,7 @@ export interface LLMRequestParams {
   temperature?: number;
   maxTokens?: number;
   requestId?: string;
+  responseSchema?: Record<string, unknown>;
 }
 
 export interface LLMResult {
@@ -100,7 +101,18 @@ function buildAnthropicBody(params: LLMRequestParams): AnthropicRequest {
     messages: finalTurns,
   };
 
-  if (systemMsg) body.system = systemMsg.content;
+  const systemParts: string[] = [];
+  if (systemMsg?.content) {
+    systemParts.push(systemMsg.content);
+  }
+  if (params.responseSchema) {
+    systemParts.push(
+      `Return ONLY valid JSON conforming strictly to this JSON Schema:\n${JSON.stringify(params.responseSchema)}`,
+    );
+  }
+  if (systemParts.length > 0) {
+    body.system = systemParts.join('\n\n');
+  }
   if (params.temperature !== undefined) body.temperature = params.temperature;
 
   return body;
@@ -110,13 +122,13 @@ function buildAnthropicBody(params: LLMRequestParams): AnthropicRequest {
 // Raw fetch to AgentRouter (Anthropic Messages API)
 // ---------------------------------------------------------------------------
 
-async function callAgentRouter(params: LLMRequestParams): Promise<LLMResult> {
+async function callAgentRouter(params: LLMRequestParams, timeoutMs: number = DEFAULT_TIMEOUT_MS): Promise<LLMResult> {
   const apiKey = getApiKey(); // throws if missing
   const url = `${AGENTROUTER_BASE_URL}${AGENTROUTER_CHAT_PATH}`;
   const startMs = Date.now();
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   let response: Response;
   try {
@@ -168,8 +180,20 @@ async function callAgentRouter(params: LLMRequestParams): Promise<LLMResult> {
 // ---------------------------------------------------------------------------
 
 /**
+ * Aggregate time budget for the entire fallback chain.
+ * Must stay well below the 60 s outer search timeout so the deterministic
+ * fallback in batch-visa-table.ts has time to run.
+ */
+export const FALLBACK_BUDGET_MS = 15_000;
+
+/**
  * Executes a chat completion against AgentRouter, starting with the requested
  * model and falling back down the chain on transient failures.
+ *
+ * The entire chain is constrained to FALLBACK_BUDGET_MS.  If elapsed time
+ * exceeds the budget before a model responds, the loop breaks immediately
+ * and the last error is thrown, letting callers (e.g. extractFastVisaTableBatch)
+ * fall through to a deterministic path.
  *
  * Hard errors (401, 403, 400) are re-thrown immediately without fallback.
  */
@@ -183,10 +207,27 @@ export async function generateWithFallback(
   ];
 
   let lastError: unknown;
+  const chainStart = Date.now();
 
   for (const model of chain) {
+    // ── Aggregate budget check ──────────────────────────────────────
+    const elapsed = Date.now() - chainStart;
+    if (elapsed >= FALLBACK_BUDGET_MS) {
+      console.warn(
+        `[AgentRouter] Aggregate fallback budget exhausted (${elapsed}ms >= ${FALLBACK_BUDGET_MS}ms). ` +
+          `Aborting chain with ${chain.length} models remaining.`,
+      );
+      break;
+    }
+
+    // Shrink the per-model timeout to whatever budget is left (capped at DEFAULT_TIMEOUT_MS)
+    const remainingBudget = FALLBACK_BUDGET_MS - elapsed;
+    const perModelTimeout = Math.min(DEFAULT_TIMEOUT_MS, remainingBudget);
+
     try {
-      const result = await withRetry(() => callAgentRouter({ ...params, model }));
+      const result = await withRetry(() =>
+        callAgentRouter({ ...params, model }, perModelTimeout),
+      );
       return result;
     } catch (err) {
       lastError = err;
@@ -201,7 +242,8 @@ export async function generateWithFallback(
 
       const errorMsg = err instanceof Error ? err.message : String(err);
       console.warn(
-        `[AgentRouter] Model "${model}" failed (${isHardError(err) ? 'hard' : 'transient'}): ${errorMsg}. Trying next model.`,
+        `[AgentRouter] Model "${model}" failed (${isHardError(err) ? 'hard' : 'transient'}): ${errorMsg}. ` +
+          `Elapsed: ${Date.now() - chainStart}ms. Trying next model.`,
       );
     }
   }

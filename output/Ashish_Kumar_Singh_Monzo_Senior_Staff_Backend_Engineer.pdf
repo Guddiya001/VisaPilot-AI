@@ -1,0 +1,682 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<<
+  /Type /Catalog
+  /Pages 2 0 R
+>>
+endobj
+2 0 obj
+<<
+  /Type /Pages
+  /Kids [3 0 R 5 0 R]
+  /Count 2
+>>
+endobj
+3 0 obj
+<<
+  /Type /Page
+  /Parent 2 0 R
+  /MediaBox [0 0 595.28 841.89]
+  /Resources <<
+    /Font <<
+      /F1 7 0 R
+      /F2 8 0 R
+    >>
+  >>
+  /Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+  /Length 6514
+>>
+stream
+BT
+/F2 18 Tf
+211.24 801.89 Td
+(Ashish Kumar Singh) Tj
+ET
+BT
+/F2 11 Tf
+207.74 781.89 Td
+(Senior Staff Backend Engineer) Tj
+ET
+BT
+/F1 9 Tf
+108.04 766.89 Td
+(Noida, India \(Open to UK Relocation | Skilled Worker Visa Sponsorship Required\)) Tj
+ET
+BT
+/F1 8.5 Tf
+40.00 752.89 Td
+(Email: ashish.singh.careers@gmail.com | Phone: +91 7982169443 | LinkedIn: https://www.linkedin.com/in/ashish-kumar-singh1986 | GitHub: https://github.com/guddiya001) Tj
+ET
+BT
+/F2 11 Tf
+40.00 732.89 Td
+(PROFESSIONAL SUMMARY) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 728.89 m
+555 728.89 l
+S
+BT
+/F1 9 Tf
+40.00 714.89 Td
+(Senior Staff Backend Engineer with 10+ years of experience designing, operating, and scaling) Tj
+ET
+BT
+/F1 9 Tf
+40.00 701.89 Td
+(high-throughput distributed systems, event-driven microservices, and fault-tolerant database) Tj
+ET
+BT
+/F1 9 Tf
+40.00 688.89 Td
+(topologies across banking, healthcare, and global retail e-commerce. Proven track record leading) Tj
+ET
+BT
+/F1 9 Tf
+40.00 675.89 Td
+(distributed platform architecture across 6+ teams, building RESTful and gRPC microservices in Go,) Tj
+ET
+BT
+/F1 9 Tf
+40.00 662.89 Td
+(Python \(FastAPI\), Java \(Spring Boot\), and Node.js/NestJS. Deep expertise in high-throughput) Tj
+ET
+BT
+/F1 9 Tf
+40.00 649.89 Td
+(streaming with Apache Kafka and RabbitMQ, distributed databases \(PostgreSQL, Apache Cassandra,) Tj
+ET
+BT
+/F1 9 Tf
+40.00 636.89 Td
+(Redis\), Kubernetes container clusters on AWS and GCP, and regulatory compliance \(MAS, SOC 2, HIPAA\).) Tj
+ET
+BT
+/F2 11 Tf
+40.00 619.89 Td
+(CORE TECHNICAL SKILLS) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 615.89 m
+555 615.89 l
+S
+BT
+/F1 9 Tf
+46.00 601.89 Td
+(Core Programming Languages: Go, Python, Java, TypeScript, Node.js, SQL) Tj
+ET
+BT
+/F1 9 Tf
+46.00 589.39 Td
+(Backend Frameworks & APIs: FastAPI, Spring Boot, NestJS, gRPC, GraphQL, Protocol Buffers) Tj
+ET
+BT
+/F1 9 Tf
+46.00 576.89 Td
+(Distributed Systems & Messaging: Apache Kafka, RabbitMQ, Distributed Caching, Microservices) Tj
+ET
+BT
+/F1 9 Tf
+46.00 564.39 Td
+(Architecture, System Design) Tj
+ET
+BT
+/F1 9 Tf
+46.00 551.89 Td
+(Databases & Storage: PostgreSQL, Apache Cassandra, Redis, MongoDB, DynamoDB, Elasticsearch,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 539.39 Td
+(SQL/NoSQL Database Tuning) Tj
+ET
+BT
+/F1 9 Tf
+46.00 526.89 Td
+(Cloud & Infrastructure: Kubernetes, Docker, AWS, GCP, Terraform, Helm, CI/CD, GitHub Actions) Tj
+ET
+BT
+/F1 9 Tf
+46.00 514.39 Td
+(Security & Reliability: OAuth 2.0 PKCE, RBAC, HIPAA, Prometheus, Grafana, OpenTelemetry) Tj
+ET
+BT
+/F2 11 Tf
+40.00 495.89 Td
+(WORK EXPERIENCE) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 491.89 m
+555 491.89 l
+S
+BT
+/F2 9.5 Tf
+40.00 477.89 Td
+(Persistent Systems Ltd. \(UnitedHealth Group\) - Senior Staff Backend Engineer / Engineering Lead) Tj
+ET
+BT
+/F1 9 Tf
+465.00 477.89 Td
+(Oct 2023 - Present) Tj
+ET
+BT
+/F1 9 Tf
+46.00 463.89 Td
+(- Architected and deployed high-throughput healthcare backend microservices using Python) Tj
+ET
+BT
+/F1 9 Tf
+46.00 451.39 Td
+(  \(FastAPI\), Java \(Spring Boot\), and Node.js/NestJS, handling 15M+ monthly API transactions with) Tj
+ET
+BT
+/F1 9 Tf
+46.00 438.89 Td
+(  99.99% availability under strict HIPAA data privacy regulations.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 424.89 Td
+(- Engineered resilient event-driven data streaming pipelines utilizing Apache Kafka and RabbitMQ,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 412.39 Td
+(  establishing dead-letter queue \(DLQ\) policies, consumer lag monitoring, and idempotent) Tj
+ET
+BT
+/F1 9 Tf
+46.00 399.89 Td
+(  transaction processing across 45+ distributed clinical microservices.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 385.89 Td
+(- Optimized relational and NoSQL database topologies \(PostgreSQL, MongoDB, DynamoDB, and Redis\),) Tj
+ET
+BT
+/F1 9 Tf
+46.00 373.39 Td
+(  tuning connection pooling with PgBouncer, index strategy, and query plans to slash p99 database) Tj
+ET
+BT
+/F1 9 Tf
+46.00 360.89 Td
+(  response latency from 180ms to 28ms.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 346.89 Td
+(- Migrated 45+ monolithic services to containerized microservices on Kubernetes \(AWS EKS & GCP\)) Tj
+ET
+BT
+/F1 9 Tf
+46.00 334.39 Td
+(  using automated Terraform modules and Helm deployment charts, achieving zero-downtime cutovers.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 320.39 Td
+(- Architected high-throughput microservices using Golang and Python, handling 150k+ financial) Tj
+ET
+BT
+/F1 9 Tf
+46.00 307.89 Td
+(  transactions/sec with sub-25ms p99 latency \(slashing latency by 45%\), by implementing) Tj
+ET
+BT
+/F1 9 Tf
+46.00 295.39 Td
+(  asynchronous worker pools and resilient circuit breakers.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 281.39 Td
+(- Architected high-throughput distributed database topology using Apache Cassandra and PostgreSQL) Tj
+ET
+BT
+/F1 9 Tf
+46.00 268.89 Td
+(  with active-active replication, slashing write latencies by 42% under peak transaction spikes,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 256.39 Td
+(  by optimizing partition distribution and PgBouncer connection pooling.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 242.39 Td
+(- Designed type-safe REST and GraphQL APIs using TypeScript, Zod, and PostgreSQL, ensuring zero) Tj
+ET
+BT
+/F1 9 Tf
+46.00 229.89 Td
+(  regression and consistent bidirectional state synchronization.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 215.89 Td
+(- Optimized full-stack response times by implementing Redis distributed caching and client-side) Tj
+ET
+BT
+/F1 9 Tf
+46.00 203.39 Td
+(  TanStack Query, cutting overall roundtrip latency by 40%.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 189.39 Td
+(- Migrated 45+ monolithic services to distributed microservices architecture, meeting strict HIPAA) Tj
+ET
+BT
+/F1 9 Tf
+46.00 176.89 Td
+(  and SOC 2 regulatory compliance.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 162.89 Td
+(- Mentored junior and mid-level engineers on microservices scalability, distributed caching, and) Tj
+ET
+BT
+/F1 9 Tf
+46.00 150.39 Td
+(  resilient system design.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 136.39 Td
+(- Built end-to-end GitOps delivery pipelines using GitHub Actions, ArgoCD, and Docker,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 123.89 Td
+(  implementing blue-green rollouts and automated canary analysis with zero deployment downtime.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 109.89 Td
+(- Containerized full-stack services using Docker and Kubernetes on AWS, automating GitHub Actions) Tj
+ET
+BT
+/F1 9 Tf
+46.00 97.39 Td
+(  CI/CD deployment pipelines with canary releases.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 83.39 Td
+(- Built end-to-end authenticated payment workflows integrating OAuth 2.0 PKCE and multi-factor) Tj
+ET
+BT
+/F1 9 Tf
+46.00 70.89 Td
+(  authentication with automated audit trail logging.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 56.89 Td
+(- Directed technical architecture reviews, API contracts \(REST, gRPC, Protobuf\), and zero-trust) Tj
+ET
+endstream
+endobj
+5 0 obj
+<<
+  /Type /Page
+  /Parent 2 0 R
+  /MediaBox [0 0 595.28 841.89]
+  /Resources <<
+    /Font <<
+      /F1 7 0 R
+      /F2 8 0 R
+    >>
+  >>
+  /Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+  /Length 6526
+>>
+stream
+BT
+/F1 9 Tf
+46.00 801.89 Td
+(  RBAC authentication with OAuth 2.0 and JWT, mentoring 12+ backend developers in distributed) Tj
+ET
+BT
+/F1 9 Tf
+46.00 789.39 Td
+(  systems best practices.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 775.39 Td
+(- Built distributed tracing and APM observability using Prometheus, Grafana, and Jaeger, isolating) Tj
+ET
+BT
+/F1 9 Tf
+46.00 762.89 Td
+(  and resolving multi-service network latency bottlenecks.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 748.89 Td
+(- Built enterprise observability and telemetry infrastructure using Prometheus, Grafana,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 736.39 Td
+(  OpenTelemetry, and Loki, establishing SLI/SLO tracking, APM tracing, and cutting incident MTTR) Tj
+ET
+BT
+/F1 9 Tf
+46.00 723.89 Td
+(  by 45%.) Tj
+ET
+BT
+/F2 9.5 Tf
+40.00 704.89 Td
+(LTIMindtree Ltd. \(DBS Bank\) - Senior Backend Engineer \(Financial Systems & Core Banking\)) Tj
+ET
+BT
+/F1 9 Tf
+460.00 704.89 Td
+(Jul 2022 - Oct 2023) Tj
+ET
+BT
+/F1 9 Tf
+46.00 690.89 Td
+(- Built high-volume core banking backend microservices and payment ledger integrations using Go,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 678.39 Td
+(  Java \(Spring Boot\), Node.js, and PostgreSQL under Monetary Authority of Singapore \(MAS\)) Tj
+ET
+BT
+/F1 9 Tf
+46.00 665.89 Td
+(  regulatory standards.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 651.89 Td
+(- Implemented resilient, high-security authentication and authorization services integrating OAuth) Tj
+ET
+BT
+/F1 9 Tf
+46.00 639.39 Td
+(  2.0 with PKCE, biometric handshake verifications, and JWT session rotation, securing 500k+ daily) Tj
+ET
+BT
+/F1 9 Tf
+46.00 626.89 Td
+(  consumer banking sessions with zero security incidents.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 612.89 Td
+(- Engineered distributed database transaction pipelines and audit ledgers using PostgreSQL and) Tj
+ET
+BT
+/F1 9 Tf
+46.00 600.39 Td
+(  MongoDB, guaranteeing ACID compliance, read-replica replication, and zero transaction data loss) Tj
+ET
+BT
+/F1 9 Tf
+46.00 587.89 Td
+(  during high-volume international remittance surges.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 573.89 Td
+(- Designed high-throughput REST and gRPC API endpoints with Protocol Buffers, achieving sub-30ms) Tj
+ET
+BT
+/F1 9 Tf
+46.00 561.39 Td
+(  p99 latency for real-time balance calculations, FX currency conversions, and wire transfer) Tj
+ET
+BT
+/F1 9 Tf
+46.00 548.89 Td
+(  validations.) Tj
+ET
+BT
+/F2 9.5 Tf
+40.00 529.89 Td
+(Coforge Ltd. \(Walmart\) - Senior Software Engineer \(Backend & Distributed Data Systems\)) Tj
+ET
+BT
+/F1 9 Tf
+460.00 529.89 Td
+(Oct 2020 - Jun 2022) Tj
+ET
+BT
+/F1 9 Tf
+46.00 515.89 Td
+(- Built high-concurrency order processing and checkout backend microservices on Kubernetes for) Tj
+ET
+BT
+/F1 9 Tf
+46.00 503.39 Td
+(  Walmart's global e-commerce platform, handling 25M+ daily retail events during peak traffic) Tj
+ET
+BT
+/F1 9 Tf
+46.00 490.89 Td
+(  spikes.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 476.89 Td
+(- Scaled distributed messaging and caching layers with Apache Kafka, RabbitMQ, and Redis, tuning) Tj
+ET
+BT
+/F1 9 Tf
+46.00 464.39 Td
+(  partition distribution and consumer group rebalancing to sustain sub-millisecond cache hits.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 450.39 Td
+(- Tuned high-volume SQL and NoSQL database clusters \(PostgreSQL, MongoDB, Apache Cassandra\),) Tj
+ET
+BT
+/F1 9 Tf
+46.00 437.89 Td
+(  optimizing sharding keys and Elasticsearch indexes to cut peak primary database load by 45%.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 423.89 Td
+(- Automated continuous delivery pipelines using Jenkins and Kubernetes, running blue/green) Tj
+ET
+BT
+/F1 9 Tf
+46.00 411.39 Td
+(  zero-downtime microservice deployments with automated rollback on health probe failure.) Tj
+ET
+BT
+/F2 9.5 Tf
+40.00 392.39 Td
+(Previous Technology Organizations - Software Engineer \(Backend & Systems\)) Tj
+ET
+BT
+/F1 9 Tf
+460.00 392.39 Td
+(Jan 2016 - Oct 2020) Tj
+ET
+BT
+/F1 9 Tf
+46.00 378.39 Td
+(- Architected and maintained scalable RESTful backend services and APIs using Python \(Django,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 365.89 Td
+(  Flask\) and Node.js/Express, supporting high-throughput CRUD workflows and third-party) Tj
+ET
+BT
+/F1 9 Tf
+46.00 353.39 Td
+(  integrations.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 339.39 Td
+(- Administered enterprise Linux server infrastructure \(Ubuntu, CentOS\), managing filesystem) Tj
+ET
+BT
+/F1 9 Tf
+46.00 326.89 Td
+(  partitions, network sockets, process supervisors, and automated log rotations.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 312.89 Td
+(- Managed relational database schemas, migrations, and query tuning in PostgreSQL and MySQL,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 300.39 Td
+(  configuring automated backup, point-in-time recovery, and read replicas.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 286.39 Td
+(- Served in 24/7 on-call production support rotations, diagnosing server deadlocks, network) Tj
+ET
+BT
+/F1 9 Tf
+46.00 273.89 Td
+(  timeouts, and memory leaks with root cause analyses \(RCA\).) Tj
+ET
+BT
+/F2 11 Tf
+40.00 254.89 Td
+(SELECTED ENGINEERING PROJECTS) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 250.89 m
+555 250.89 l
+S
+BT
+/F2 9.5 Tf
+40.00 236.89 Td
+(High-Throughput Distributed Event Processing & Ledger Platform | Go, Python, Apache Kafka, Apache Cassandra, Redis, PostgreSQL, Docker, Kubernetes, gRPC) Tj
+ET
+BT
+/F1 9 Tf
+46.00 222.89 Td
+(- Architected idempotent event ingestion pipelines with Apache Kafka and RabbitMQ, handling 150k+) Tj
+ET
+BT
+/F1 9 Tf
+46.00 210.39 Td
+(  transaction messages/sec with zero message loss.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 196.39 Td
+(- Engineered distributed database topology using Apache Cassandra and PostgreSQL with) Tj
+ET
+BT
+/F1 9 Tf
+46.00 183.89 Td
+(  active-active replication, slashing write latencies by 42%.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 169.89 Td
+(- Designed low-latency gRPC and Go/Python microservice contracts enforcing strict ACID ledger) Tj
+ET
+BT
+/F1 9 Tf
+46.00 157.39 Td
+(  guarantees at sub-25ms p99 latency.) Tj
+ET
+BT
+/F2 9.5 Tf
+40.00 138.39 Td
+(Cloud-Native Kubernetes Infrastructure & Dynamic Environments | AWS EKS, GCP, Kubernetes, Terraform, Helm, ArgoCD, Prometheus, Grafana, Loki, Docker) Tj
+ET
+BT
+/F1 9 Tf
+46.00 124.39 Td
+(- Designed resilient container networking, automated horizontal pod autoscaling, and) Tj
+ET
+BT
+/F1 9 Tf
+46.00 111.89 Td
+(  connection-pooled PostgreSQL operators on Kubernetes.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 97.89 Td
+(- Hardened service-to-service communication with mutual TLS \(mTLS\) and circuit-breaker policies) Tj
+ET
+BT
+/F1 9 Tf
+46.00 85.39 Td
+(  across distributed microservices.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 71.39 Td
+(- Engineered self-service cloud infrastructure with Terraform, Helm, and ArgoCD on AWS EKS & GCP,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 58.89 Td
+(  provisioning dynamic ephemeral PR environments in under 4 minutes.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<<
+  /Type /Font
+  /Subtype /Type1
+  /BaseFont /Helvetica
+  /Encoding /StandardEncoding
+>>
+endobj
+8 0 obj
+<<
+  /Type /Font
+  /Subtype /Type1
+  /BaseFont /Helvetica-Bold
+  /Encoding /StandardEncoding
+>>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000015 00000 n 
+0000000068 00000 n 
+0000000137 00000 n 
+0000000311 00000 n 
+0000006879 00000 n 
+0000007053 00000 n 
+0000013633 00000 n 
+0000013739 00000 n 
+trailer
+<<
+  /Size 9
+  /Root 1 0 R
+>>
+startxref
+13850
+%%EOF

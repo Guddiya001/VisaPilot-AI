@@ -1,6 +1,6 @@
-import { JobSource, JobType, WorkMode, VisaSponsorshipStatus } from '@visapilot/shared';
+import { JobSource, JobType, WorkMode } from '@visapilot/shared';
 import type { SearchFilters, Job } from '@visapilot/shared';
-import { BaseCrawlerAdapter } from './base';
+import { BaseCrawlerAdapter } from './base.ts';
 import type { CrawledJob } from '../types';
 
 interface GreenhouseJob {
@@ -40,41 +40,48 @@ export class GreenhouseAdapter extends BaseCrawlerAdapter {
     this.boardTokens = tokens.length > 0 ? tokens : ['github'];
   }
 
+  getBoardTokens(): string[] {
+    return [...this.boardTokens];
+  }
+
   async initialize(): Promise<void> {
     this.initialized = true;
   }
 
   async *searchJobs(filters: SearchFilters): AsyncGenerator<Job> {
-    const promises = this.boardTokens.map(async (token) => {
-      const boardUrl = `https://boards-api.greenhouse.io/v1/boards/${token}`;
-      try {
-        const url = `${boardUrl}/jobs?page=1&per_page=50&content=true`;
-        const response = await this.makeRequest(url);
-        const data = (await response.json()) as { jobs: GreenhouseJob[] };
+    const results = await this.mapWithConcurrency(
+      this.boardTokens,
+      8,
+      async (token): Promise<Job[]> => {
+        const boardUrl = `https://boards-api.greenhouse.io/v1/boards/${token}`;
+        try {
+          const url = `${boardUrl}/jobs?page=1&per_page=50&content=true`;
+          const response = await this.makeRequest(url);
+          if (!response.ok) return [];
+          const data = (await response.json()) as { jobs: GreenhouseJob[] };
 
-        if (!data.jobs || data.jobs.length === 0) {
+          if (!data.jobs || data.jobs.length === 0) {
+            return [];
+          }
+
+          const validJobs: Job[] = [];
+          for (const rawJob of data.jobs) {
+            const job = this.createJobFromGreenhouse(
+              rawJob,
+              rawJob as unknown as GreenhouseJobDetail,
+              token,
+            );
+            if (this.matchesFilters(job, filters)) {
+              validJobs.push(job);
+            }
+          }
+          return validJobs;
+        } catch {
           return [];
         }
+      },
+    );
 
-        const validJobs: Job[] = [];
-        for (const rawJob of data.jobs) {
-          const job = this.createJobFromGreenhouse(
-            rawJob,
-            rawJob as unknown as GreenhouseJobDetail,
-            token,
-          );
-          if (this.matchesFilters(job, filters)) {
-            validJobs.push(job);
-          }
-        }
-        return validJobs;
-      } catch {
-        // Skip board on network error
-        return [];
-      }
-    });
-
-    const results = await Promise.allSettled(promises);
     for (const result of results) {
       if (result.status === 'fulfilled' && result.value) {
         for (const job of result.value) {
@@ -109,22 +116,36 @@ export class GreenhouseAdapter extends BaseCrawlerAdapter {
       ? token.charAt(0).toUpperCase() + token.slice(1)
       : this.extractCompanyName();
 
+    const country = this.extractCountry(location);
+    const fullDescription = description.fullDescription || `Position: ${job.title} at ${companyName}.`;
+    const sourceUrl = job.absolute_url || '';
+    const { visaSponsorship, visaNotes } = this.classifyVisaStatus({
+      title: job.title || '',
+      companyName,
+      location,
+      country,
+      description: fullDescription,
+      sourceUrl,
+      atsSlug: token,
+    });
+
     return {
       id: '',
       externalId: String(job.id || detail.internal_job_id),
       title: job.title || '',
       company: { id: '', name: companyName, locations: [], createdAt: new Date(), updatedAt: new Date() },
-      description: description.fullDescription || `Position: ${job.title} at ${companyName}.`,
+      description: fullDescription,
       requirements: description.requirements,
       responsibilities: description.responsibilities,
       location,
-      country: this.extractCountry(location),
+      country,
       remote: location.toLowerCase().includes('remote'),
       workMode: this.detectWorkMode(location),
       type: JobType.FULL_TIME,
       source: JobSource.GREENHOUSE,
-      sourceUrl: job.absolute_url || '',
-      visaSponsorship: VisaSponsorshipStatus.UNKNOWN,
+      sourceUrl,
+      visaSponsorship,
+      visaNotes,
       skills: this.extractSkills(description.fullDescription),
       department: detail.departments?.[0]?.name,
       experienceLevel: detail.experience,
@@ -140,23 +161,35 @@ export class GreenhouseAdapter extends BaseCrawlerAdapter {
    */
   private createJobFromListing(job: GreenhouseJob): Job {
     const location = job.location?.name || 'Unknown';
+    const companyName = this.extractCompanyName();
+    const country = this.extractCountry(location);
+    const sourceUrl = job.absolute_url || '';
+    const { visaSponsorship, visaNotes } = this.classifyVisaStatus({
+      title: job.title || '',
+      companyName,
+      location,
+      country,
+      description: '',
+      sourceUrl,
+    });
 
     return {
       id: '',
       externalId: String(job.id),
       title: job.title || '',
-      company: { id: '', name: this.extractCompanyName(), locations: [], createdAt: new Date(), updatedAt: new Date() },
-      description: `Position: ${job.title} at ${this.extractCompanyName()}. Location: ${location}. Apply at ${job.absolute_url}`,
+      company: { id: '', name: companyName, locations: [], createdAt: new Date(), updatedAt: new Date() },
+      description: `Position: ${job.title} at ${companyName}. Location: ${location}. Apply at ${job.absolute_url}`,
       requirements: '',
       responsibilities: '',
       location,
-      country: this.extractCountry(location),
+      country,
       remote: location.toLowerCase().includes('remote'),
       workMode: this.detectWorkMode(location),
       type: JobType.FULL_TIME,
       source: JobSource.GREENHOUSE,
-      sourceUrl: job.absolute_url || '',
-      visaSponsorship: VisaSponsorshipStatus.UNKNOWN,
+      sourceUrl,
+      visaSponsorship,
+      visaNotes,
       skills: [],
       department: undefined,
       experienceLevel: undefined,

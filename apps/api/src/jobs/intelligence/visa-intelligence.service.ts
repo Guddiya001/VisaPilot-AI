@@ -6,8 +6,12 @@ import {
   VisaSponsorshipStatus,
 } from '@visapilot/shared';
 import { userRepository, jobRepository } from '@visapilot/database';
-import { ollamaClient } from '@visapilot/ai';
-import { crawlerService } from '@visapilot/crawler';
+import {
+  llm,
+  extractFastVisaTableBatch,
+  type FastVisaTableBatchResult,
+} from '@visapilot/ai';
+import { crawlerService, classifySponsorshipTwoTier } from '@visapilot/crawler';
 
 @Injectable()
 export class VisaIntelligenceService {
@@ -153,7 +157,37 @@ export class VisaIntelligenceService {
     return Math.max(0, score);
   }
 
-  // LLM-based intelligent scoring
+  /**
+   * Single-shot batch AI scoring and structured visa table extraction (zero N+1 calls).
+   */
+  async scoreJobsBatchWithAI(
+    jobs: Job[],
+    profile: CandidateProfile,
+    query?: string,
+  ): Promise<FastVisaTableBatchResult> {
+    return extractFastVisaTableBatch(
+      jobs.map((job) => ({
+        title: job.title,
+        company: job.company,
+        location: job.location,
+        country: job.country,
+        description: job.description,
+        requirements: job.requirements,
+        skills: job.skills,
+        sourceUrl: job.sourceUrl,
+        applyUrl: (job as Job & { applyUrl?: string }).applyUrl || job.sourceUrl,
+      })),
+      {
+        query: query || profile.targetRoles[0] || 'Software Engineer',
+        skills: profile.skills,
+        targetCountries: profile.targetCountries,
+        requiresVisa: profile.visaRequirements.requiresSponsorship,
+      },
+      llm,
+    );
+  }
+
+  // LLM-based intelligent scoring routed through multi-model LLMService
   async scoreJobWithAI(job: Job, profile: CandidateProfile): Promise<{
     matchScore: number;
     skillMatch: number;
@@ -162,6 +196,16 @@ export class VisaIntelligenceService {
     locationMatch: number;
     overallReason: string;
   }> {
+    const twoTier = classifySponsorshipTwoTier({
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      country: job.country,
+      description: job.description,
+      requirements: job.requirements,
+      sourceUrl: job.sourceUrl,
+    });
+
     const prompt = `Evaluate the match between this job description and the candidate's profile.
 
 Candidate Profile:
@@ -174,7 +218,7 @@ Job Details:
 - Title: ${job.title}
 - Company: ${job.company?.name || 'Unknown'}
 - Location: ${job.location}, ${job.country}
-- Visa Status: ${job.visaSponsorship}
+- Visa Status: ${job.visaSponsorship} (${twoTier.category}${twoTier.primaryScheme ? ` - ${twoTier.primaryScheme}` : ''})
 - Description: ${job.description.substring(0, 2000)}
 
 Calculate match scores (0-100) and provide a JSON response matching this exact structure:
@@ -184,7 +228,7 @@ Calculate match scores (0-100) and provide a JSON response matching this exact s
   "experienceMatch": 95,
   "visaMatch": 100,
   "locationMatch": 90,
-  "overallReason": "Strong React/TypeScript/Node.js alignment with required seniority and H-1B sponsorship."
+  "overallReason": "Strong backend/distributed systems alignment with required seniority and UK Skilled Worker / international relocation support."
 }
 
 Ensure the overall matchScore uses weights similar to: 30% Skill, 20% Experience, 25% Visa, 10% Location, 15% Other.
@@ -192,12 +236,14 @@ Return ONLY valid JSON.
 `;
 
     try {
-      const response = await ollamaClient.generateCompletion(prompt, {
+      const result = await llm.generate({
+        task: 'fast-extraction',
+        prompt,
         temperature: 0.1,
         maxTokens: 500,
       });
 
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      const jsonMatch = result.content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
         return {

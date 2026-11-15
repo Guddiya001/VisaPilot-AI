@@ -98,23 +98,23 @@ function extractResumeText(resumeData: Record<string, unknown>): string {
 function startsWithActionVerb(bullet: string): boolean {
   const actionVerbs = [
     'architected', 'built', 'created', 'designed', 'developed', 'delivered',
-    'drove', 'engineered', 'established', 'executed', 'implemented', 'improved',
+    'decoupled', 'drove', 'engineered', 'established', 'executed', 'implemented', 'improved',
     'increased', 'integrated', 'launched', 'led', 'managed', 'migrated',
-    'modernized', 'optimized', 'orchestrated', 'pioneered', 'reduced',
-    'refactored', 'scaled', 'shipped', 'spearheaded', 'streamlined',
+    'modernized', 'optimized', 'reduced',
+    'refactored', 'scaled', 'shipped', 'streamlined',
     'transformed', 'upgraded', 'automated', 'collaborated', 'configured',
     'consolidated', 'contributed', 'coordinated', 'customized', 'debugged',
     'defined', 'deployed', 'diagnosed', 'documented', 'eliminated',
     'enhanced', 'ensured', 'evaluated', 'expanded', 'facilitated',
     'formulated', 'generated', 'guided', 'handled', 'identified',
     'initiated', 'instrumented', 'introduced', 'investigated', 'iterated',
-    'leveraged', 'maintained', 'mentored', 'monitored', 'negotiated',
+    'maintained', 'mentored', 'monitored', 'negotiated',
     'overhauled', 'performed', 'planned', 'prepared', 'presented',
     'prioritized', 'programmed', 'proposed', 'provisioned', 'published',
     'rebuilt', 'recommended', 'redesigned', 'reengineered', 'researched',
     'resolved', 'restructured', 'revamped', 'reviewed', 'simplified',
     'solved', 'standardized', 'strengthened', 'supervised', 'supported',
-    'tested', 'trained', 'troubleshot', 'unified', 'utilized', 'validated',
+    'tested', 'trained', 'troubleshot', 'unified', 'used', 'validated', 'wrote',
   ];
   const firstWord = bullet.trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z]/g, '');
   return actionVerbs.includes(firstWord);
@@ -683,17 +683,17 @@ ${requiredSkillsTracking}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 RULES (ALL mandatory):
-1. DUAL PLACEMENT: Every required skill → in improvedSkillsFlat category AND ≥1 experience bullet. This alone drives 30% of ATS score.
-2. NATURAL INTEGRATION: Integrate skills contextually ("Built ${jdAnalysis.requiredSkills[0] || 'Go'} microservices...", "Designed ${jdAnalysis.requiredSkills[1] || 'REST API'} for..."). Do NOT keyword-stuff.
-3. REWRITE BULLETS POWERFULLY: Every bullet = action verb + technology/skill + quantified result. Minimum 5 bullets per experience.
-4. ACTION VERBS ONLY: Architected / Built / Designed / Engineered / Optimized / Scaled / Led / Spearheaded / Implemented. Never "Worked on" or "Responsible for".
-5. METRICS (≥50%): Add %, x, absolute numbers, or team sizes to at least half of all bullets.
-6. SUMMARY: Must include exact job title "${jdAnalysis.jobTitle}", company "${jdAnalysis.companyName}", and 4-5 required skills.
+1. DUAL PLACEMENT: Every required skill → in improvedSkillsFlat category AND ≥1 experience bullet.
+2. NATURAL INTEGRATION: Write tight, factual, cause-and-effect engineering sentences as a senior engineer explains work in a design review ("Built ${jdAnalysis.requiredSkills[0] || 'Go'} microservices...", "Decoupled a monolithic clinical portal into 6 independent React micro-apps using Webpack Module Federation, enabling parallel deployments across teams."). Do NOT keyword-stuff.
+3. NATURAL XYZ IMPACT FORMULA: Every bullet = [Action verb] [what was built/fixed] using [tech stack], which [measurable business or performance outcome]. Minimum 5 bullets per experience.
+4. CONCRETE HUMAN VERBS & BANNED AI BUZZWORDS: Start bullets ONLY with concrete technical actions (Built / Scaled / Migrated / Optimized / Refactored / Designed / Reduced / Automated / Deployed / Wrote / Configured / Decoupled). STRICTLY BAN AI buzzwords: spearheaded, pioneered, orchestrated, delved into, testaments to, dynamic landscape, robustly, seamlessly, leveraging cutting-edge, synergy, revolutionized, mission-critical. Never start with "Worked on" or "Responsible for".
+5. TRUTHFUL METRICS (NO INVENTED %): Include verified scale, throughput, or latency reduction from the candidate profile. If no numeric metric exists, describe concrete architectural scale or latency impact instead of inventing percentages.
+6. SUMMARY: Must include exact job title "${jdAnalysis.jobTitle}", company "${jdAnalysis.companyName}", and 4-5 required skills in a direct, factual engineering tone.
 7. FIRST SKILLS CATEGORY: Must be "Core Languages: [primary language first], ..." leading with the JD’s primary tech.
-8. PREFERRED SKILLS: Include as many preferred skills as possible in the last skillsFlat category.
-9. RESPONSIBILITIES MATCH: Bullets must reflect the JD’s key responsibilities — use the same action verbs as the JD.
-10. SELF-VERIFY before returning: Confirm every required skill from the mandate list above appears in both skills and bullets.
-11. ROLE PURITY & ZERO IRRELEVANT TECH: If the target role is Frontend/Web Platform, or if technologies like Python, FastAPI, LangGraph, Model Context Protocol (MCP), PyTorch, or Machine Learning are NOT in the JD, STRICTLY PURGE THEM from the summary, skillsFlat, and experience bullets. Replace with verified frontend achievements (Micro-frontends with Webpack Module Federation, React 18/19, Next.js, Core Web Vitals, Lighthouse 62->94, 35% bundle reduction, Design Systems, TypeScript, Tailwind CSS, TanStack Query). NEVER mention technologies that do not belong to the target role.
+8. PREFERRED SKILLS: Include as many preferred skills as possible in matching technical categories (NEVER create an "Additional Skills" line).
+9. RESPONSIBILITIES MATCH: Bullets must reflect the JD’s key responsibilities truthfully.
+10. SELF-VERIFY before returning: Confirm zero banned AI buzzwords appear in any bullet, and every listed skill has bullet evidence.
+11. ROLE PURITY & ZERO IRRELEVANT TECH: If the target role is Frontend/Web Platform, or if technologies like Python, FastAPI, LangGraph, Model Context Protocol (MCP), PyTorch, or Machine Learning are NOT in the JD, STRICTLY PURGE THEM from the summary, skillsFlat, and experience bullets. Replace with verified frontend achievements (Micro-frontends with Webpack Module Federation, React 18/19, Next.js, Core Web Vitals, Lighthouse 62 to 94, 35% bundle reduction, Design Systems, TypeScript, Tailwind CSS, TanStack Query). NEVER mention technologies that do not belong to the target role.
 
 Return ONLY valid JSON (no markdown, no extra text):
 {

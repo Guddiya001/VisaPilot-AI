@@ -1,21 +1,18 @@
 import type { ICrawlerAdapter, SearchFilters, Job } from '@visapilot/shared';
 import { JobSource } from '@visapilot/shared';
-import { jobNormalizer } from './normalizer';
 import type { CrawlerResult, CrawlerError, CrawledJob } from './types';
-import { GreenhouseAdapter } from './adapters/greenhouse';
-import { LeverAdapter } from './adapters/lever';
-import { AshbyAdapter } from './adapters/ashby';
-import { RSSAdapter } from './adapters/rss';
-import { LinkedInAdapter } from './adapters/linkedin';
-import { WorkdayAdapter } from './adapters/workday';
-import { YCombinatorAdapter } from './adapters/ycombinator';
-import { IndeedAdapter } from './adapters/indeed';
-import { WellfoundAdapter } from './adapters/wellfound';
-import { GoogleJobsAdapter } from './adapters/google';
+import { GreenhouseAdapter } from './adapters/greenhouse.ts';
+import { LeverAdapter } from './adapters/lever.ts';
+import { AshbyAdapter } from './adapters/ashby.ts';
+import { RSSAdapter } from './adapters/rss.ts';
+import { LinkedInAdapter } from './adapters/linkedin.ts';
+import { IndeedAdapter } from './adapters/indeed.ts';
+import { GoogleJobsAdapter } from './adapters/google.ts';
 import { config } from '@visapilot/config';
 
 export class CrawlerService {
   private adapters: Map<JobSource, ICrawlerAdapter> = new Map();
+  private configuredBoardTokens: string[] = [];
   private isRunning = false;
   private errors: CrawlerError[] = [];
 
@@ -24,61 +21,113 @@ export class CrawlerService {
   }
 
   private registerAdapters(): void {
-    // Greenhouse — all tokens verified live (boards-api.greenhouse.io/v1/boards/{token}/jobs returns 200)
-    const greenhouse = new GreenhouseAdapter([
-      // Verified working — Big Tech & Cloud
-      'cloudflare',   // 310 jobs
-      'datadog',      // 448 jobs
-      'shopify',      // 448 jobs
-      'mongodb',      // 404 jobs
-      'gitlab',       // 204 jobs
-      'elastic',      // 249 jobs
-      'twilio',       // 145 jobs
-      'dropbox',      // 41 jobs
+    // Greenhouse — curated global visa-sponsoring tech companies across US/UK/EU/APAC/CA
+    const greenhouseBoards = [
+      // Global Visa Sponsor Hubs (UK / EU / APAC / CA)
+      'monzo',
+      'wise',
+      'deliveroo',
+      'booking',
+      'adyen',
+      'zalando',
+      'deliveryhero',
+      'hellofresh',
+      'n26',
+      'klarna',
+      'canva',
+      'atlassian',
+      'grab',
+      'checkout',
+      'starlingbank',
+      'skyscanner',
+      'miro',
+      'mollie',
+      'personio',
+      'celonis',
+      'intercom',
+      'mercari',
+      'airwallex',
+      'xero',
+      // Big Tech & Cloud
+      'cloudflare',
+      'datadog',
+      'shopify',
+      'mongodb',
+      'gitlab',
+      'elastic',
+      'twilio',
+      'dropbox',
       // Fintech & SaaS
-      'stripe',       // 575 jobs
-      'gusto',        // 91 jobs
-      'duolingo',     // 69 jobs
-      'plaid',        // 69 jobs
-      'figma',        // 161 jobs
-      'notion',       // 161 jobs
-      'robinhood',    // 130 jobs
-      'mercury',      // 56 jobs
-      'brex',         // 294 jobs
+      'stripe',
+      'gusto',
+      'duolingo',
+      'plaid',
+      'figma',
+      'notion',
+      'robinhood',
+      'mercury',
+      'brex',
       // AI / Infra
-      'openai',       // 56 jobs
-      'vercel',       // 83 jobs
-      'linear',       // 83 jobs
-      'ramp',         // 83 jobs
-      'supabase',     // 294 jobs
+      'openai',
+      'vercel',
+      'linear',
+      'ramp',
+      'supabase',
       // International-friendly
-      'airbnb',       // 189 jobs
-      'reddit',       // 151 jobs
-      'lyft',         // 162 jobs
-      'coinbase',     // 173 jobs
-    ]);
+      'airbnb',
+      'reddit',
+      'lyft',
+      'coinbase',
+    ];
+    const greenhouse = new GreenhouseAdapter(greenhouseBoards);
 
-    // Lever — verified working tokens only (from live API test)
-    const lever = new LeverAdapter([
-      'spotify',    // 95 jobs ✓
-      'figma',      // 95 jobs ✓
-      'affirm',     // 95 jobs ✓
-      'square',     // 95 jobs ✓
-      'coinbase',   // 95 jobs ✓
-      'doordash',   // 95 jobs ✓
-      'lyft',       // 95 jobs ✓
-      'palantir',   // 308 jobs ✓
-      'reddit',     // 308 jobs ✓
-      'pinterest',  // 308 jobs ✓
-      'zendesk',    // 308 jobs ✓
-      'amplitude',  // 308 jobs ✓
-      'verkada',    // 308 jobs ✓
-    ]);
+    // Lever — curated global & verified boards
+    const leverBoards = [
+      'spotify',
+      'revolut',
+      'wise',
+      'deliveroo',
+      'canva',
+      'atlassian',
+      'klarna',
+      'n26',
+      'grab',
+      'cohere',
+      'wealthsimple',
+      'figma',
+      'affirm',
+      'square',
+      'coinbase',
+      'doordash',
+      'lyft',
+      'palantir',
+      'reddit',
+      'pinterest',
+      'zendesk',
+      'amplitude',
+      'verkada',
+    ];
+    const lever = new LeverAdapter(leverBoards);
 
-    // Ashby — keep for companies that use Ashby (different from Greenhouse)
-    const ashby = new AshbyAdapter([
-      'retool', 'fly', 'resend', 'turso', 'dbt-labs', 'airbyte', 'mattermost', 'temporal',
-    ]);
+    // Ashby — curated high-growth & global sponsor boards
+    const ashbyBoards = [
+      'revolut',
+      'monzo',
+      'cohere',
+      'retool',
+      'fly',
+      'resend',
+      'turso',
+      'dbt-labs',
+      'airbyte',
+      'mattermost',
+      'temporal',
+    ];
+    const ashby = new AshbyAdapter(ashbyBoards);
+
+    this.configuredBoardTokens = Array.from(
+      new Set([...greenhouseBoards, ...leverBoards, ...ashbyBoards]),
+    );
 
     // RSS feeds — remote & visa-focused worldwide feeds
     const rss = new RSSAdapter({ baseUrl: '' });
@@ -90,12 +139,6 @@ export class CrawlerService {
     ]);
 
     const linkedin = new LinkedInAdapter();
-
-    // New Stubs
-    const workday = new WorkdayAdapter(['netflix', 'target', 'zoom']);
-    const ycombinator = new YCombinatorAdapter();
-    const indeed = new IndeedAdapter();
-    const wellfound = new WellfoundAdapter();
     const google = new GoogleJobsAdapter(config.SERP_API_KEY);
 
     this.adapters.set(JobSource.GREENHOUSE, greenhouse);
@@ -103,7 +146,23 @@ export class CrawlerService {
     this.adapters.set(JobSource.ASHBY, ashby);
     this.adapters.set(JobSource.RSS, rss);
     this.adapters.set(JobSource.LINKEDIN, linkedin);
-    this.adapters.set(JobSource.INDEED, indeed);
+    this.adapters.set(JobSource.GOOGLE_JOBS, google);
+
+    if (config.PROXY_API_KEY && config.PROXY_API_KEY !== 'your_proxy_api_key_here') {
+      this.adapters.set(JobSource.INDEED, new IndeedAdapter());
+    }
+  }
+
+  getRegisteredSources(): JobSource[] {
+    return Array.from(this.adapters.keys());
+  }
+
+  getAdapter(source: JobSource): ICrawlerAdapter | undefined {
+    return this.adapters.get(source);
+  }
+
+  getConfiguredBoardTokens(): string[] {
+    return [...this.configuredBoardTokens];
   }
 
   async searchJobs(
@@ -134,11 +193,19 @@ export class CrawlerService {
           return jobs;
         };
 
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Adapter ${source} timed out after ${ADAPTER_TIMEOUT_MS}ms`)), ADAPTER_TIMEOUT_MS),
-        );
+        let timerId: ReturnType<typeof setTimeout> | undefined;
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timerId = setTimeout(
+            () => reject(new Error(`Adapter ${source} timed out after ${ADAPTER_TIMEOUT_MS}ms`)),
+            ADAPTER_TIMEOUT_MS,
+          );
+        });
 
-        return Promise.race([collectJobs(), timeoutPromise]);
+        try {
+          return await Promise.race([collectJobs(), timeoutPromise]);
+        } finally {
+          if (timerId !== undefined) clearTimeout(timerId);
+        }
       }),
     );
 
@@ -257,10 +324,17 @@ export class CrawlerService {
         try {
           const iterator = adapter.searchJobs(filters);
           while (true) {
-            const { value: job, done } = await Promise.race([
-              iterator.next(),
-              new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), ADAPTER_TIMEOUT_MS))
-            ]);
+            let timerId: ReturnType<typeof setTimeout> | undefined;
+            const timeoutPromise = new Promise<never>((_, reject) => {
+              timerId = setTimeout(() => reject(new Error('timeout')), ADAPTER_TIMEOUT_MS);
+            });
+            let stepResult: IteratorResult<Job>;
+            try {
+              stepResult = await Promise.race([iterator.next(), timeoutPromise]);
+            } finally {
+              if (timerId !== undefined) clearTimeout(timerId);
+            }
+            const { value: job, done } = stepResult;
             if (done) break;
             if (job) {
               buffer.push(this.jobToCrawledJob(job, source));

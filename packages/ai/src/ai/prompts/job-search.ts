@@ -13,14 +13,16 @@ const JOB_SEARCH_SYSTEM_PROMPT = extendSystemPrompt(`
 You are a specialized job-search assistant for international professionals seeking visa sponsorship.
 
 Job-search specific rules:
-- NEVER assume a job offers visa sponsorship unless the posting explicitly states one of:
-  "H-1B sponsorship", "visa sponsorship", "will sponsor", "sponsorship available",
-  "employment visa", "work authorization sponsorship", "immigration sponsorship",
-  "H1B transfer", "visa support", "immigration assistance", "sponsor work visa".
-- "US-based" or "relocation support" does NOT imply visa sponsorship.
+- NEVER assume a job offers visa sponsorship unless the posting explicitly states visa/work-permit sponsorship or international relocation support, such as:
+  "visa sponsorship", "will sponsor", "sponsorship available", "work permit", "employment visa",
+  "work authorization sponsorship", "immigration sponsorship", "visa support", "immigration assistance",
+  "Skilled Worker", "EU Blue Card", "Highly Skilled Migrant", "kennismigrant", "IND",
+  "Critical Skills", "Migrationsverket", "LMIA", "Global Talent Stream", "Employment Pass",
+  "Subclass 482", "H-1B sponsorship", "H1B transfer", "international relocation", "relocation package", "global mobility".
+- Domestic-only location statements (such as "US-based", "UK-based", or "EU-based") alone do NOT imply visa sponsorship; explicit regional work permits and international relocation packages ARE valid visa signals.
 - Always verify: job is currently active, location, sponsorship status, application URL.
 - Record source URL and verification timestamp for every job result.
-- For H-1B searches, scan for ALL sponsorship keyword variants, not just "H-1B".
+- For international searches, scan for ALL regional work permit, visa sponsorship, and relocation keyword variants across UK, EU, APAC, and North America — not only US "H-1B".
 - If sponsorship status cannot be confirmed: state "Sponsorship: Not verified."
 - Prefer current web search data over cached/internal job databases when real-time results are requested.
 - Never invent application URLs. Link only to verified, active URLs.
@@ -57,7 +59,7 @@ For each job result, provide:
 }
 
 export function buildVisaClassificationMessages(jobDescription: string) {
-  const prompt = `Analyze the following job description and classify its H-1B/visa sponsorship status.
+  const prompt = `Analyze the following job description and classify its global visa sponsorship, regional work permit, and international relocation support status.
 
 Return ONLY valid JSON in this exact format:
 {
@@ -70,9 +72,9 @@ Return ONLY valid JSON in this exact format:
 }
 
 Rules:
-- sponsorsVisa = true ONLY if explicit sponsorship language is present.
-- "US-based" or "relocation package" alone does NOT make sponsorsVisa = true.
-- If ambiguous, set sponsorsVisa = false and confidence < 0.5.
+- sponsorsVisa = true if explicit visa sponsorship, UK/EU/APAC/North American work permit support (e.g. Skilled Worker, EU Blue Card, Highly Skilled Migrant / kennismigrant / IND, Critical Skills, Migrationsverket, LMIA / Global Talent Stream, Employment Pass, Subclass 482 / 186, Japan HSP/Engineer visa, or H-1B/O-1), OR an international relocation package / global mobility support is present.
+- Domestic-only location labels alone (e.g., "US-based", "London-based", "must have existing right to work without sponsorship") do NOT make sponsorsVisa = true; international relocation packages and regional work permit programs ARE valid visa signals.
+- If no sponsorship or international relocation signal is present or status is ambiguous, set sponsorsVisa = false and confidence < 0.5.
 
 Job description:
 ${jobDescription}`;

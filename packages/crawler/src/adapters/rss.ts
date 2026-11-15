@@ -1,6 +1,6 @@
-import { JobSource, JobType, WorkMode, VisaSponsorshipStatus } from '@visapilot/shared';
+import { JobSource, JobType, WorkMode } from '@visapilot/shared';
 import type { SearchFilters, Job } from '@visapilot/shared';
-import { BaseCrawlerAdapter } from './base';
+import { BaseCrawlerAdapter } from './base.ts';
 import RssParser from 'rss-parser';
 
 export class RSSAdapter extends BaseCrawlerAdapter {
@@ -42,50 +42,63 @@ export class RSSAdapter extends BaseCrawlerAdapter {
           'https://jobicy.com/?feed=job_feed',
         ];
 
-    for (const feedUrl of feedUrls) {
-      try {
-        const response = await this.makeRequest(feedUrl);
-        if (!response.ok) continue;
-        const xml = await response.text();
-        const feed = await this.parser.parseString(xml);
+    const results = await this.mapWithConcurrency(
+      feedUrls,
+      8,
+      async (feedUrl): Promise<Job[]> => {
+        try {
+          const response = await this.makeRequest(feedUrl);
+          if (!response.ok) return [];
+          const xml = await response.text();
+          const feed = await this.parser.parseString(xml);
 
-        for (const item of feed.items || []) {
-          const description = item.content || item.contentSnippet || item.description || '';
-          const lowerDesc = description.toLowerCase();
+          const validJobs: Job[] = [];
+          for (const item of feed.items || []) {
+            const description = item.content || item.contentSnippet || item.description || '';
+            const lowerDesc = description.toLowerCase();
 
-          const normalized = this.normalizeJob({
-            externalId: item.guid || item.link || '',
-            title: item.title || 'Unknown Position',
-            companyName: item.creator || (feed.title ? feed.title.replace(/RSS Feed/i, '').trim() : 'Tech Employer'),
-            description,
-            requirements: description,
-            responsibilities: undefined,
-            location: this.extractLocation(description),
-            country: this.extractCountry(description),
-            remote: lowerDesc.includes('remote') || true,
-            workMode: WorkMode.REMOTE,
-            type: this.extractJobType(description),
-            salaryMin: undefined,
-            salaryMax: undefined,
-            salaryCurrency: undefined,
-            source: JobSource.RSS,
-            sourceUrl: item.link || '',
-            skills: this.extractSkills(description),
-            postedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
-          });
+            const normalized = this.normalizeJob({
+              externalId: item.guid || item.link || '',
+              title: item.title || 'Unknown Position',
+              companyName: item.creator || (feed.title ? feed.title.replace(/RSS Feed/i, '').trim() : 'Tech Employer'),
+              description,
+              requirements: description,
+              responsibilities: undefined,
+              location: this.extractLocation(description),
+              country: this.extractCountry(description),
+              remote: lowerDesc.includes('remote') || true,
+              workMode: WorkMode.REMOTE,
+              type: this.extractJobType(description),
+              salaryMin: undefined,
+              salaryMax: undefined,
+              salaryCurrency: undefined,
+              source: JobSource.RSS,
+              sourceUrl: item.link || '',
+              skills: this.extractSkills(description),
+              postedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
+            });
 
-          // Apply filters consistently
-          if (!this.matchesQueryFilter(normalized, filters.query)) {
-            continue;
+            if (!this.matchesQueryFilter(normalized, filters.query)) {
+              continue;
+            }
+            if (!this.matchesCountryFilter(normalized, filters.countries)) {
+              continue;
+            }
+
+            validJobs.push(normalized);
           }
-          if (!this.matchesCountryFilter(normalized, filters.countries)) {
-            continue;
-          }
-
-          yield normalized;
+          return validJobs;
+        } catch {
+          return [];
         }
-      } catch {
-        // Skip failed feeds gracefully
+      },
+    );
+
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        for (const job of result.value) {
+          yield job;
+        }
       }
     }
   }
@@ -98,17 +111,28 @@ export class RSSAdapter extends BaseCrawlerAdapter {
     const companyName = (rawJob.companyName as string) || 'Tech Company';
     const location = (rawJob.location as string) || 'Remote';
     const description = (rawJob.description as string) || '';
+    const title = (rawJob.title as string) || 'Untitled Position';
+    const country = (rawJob.country as string) || this.extractCountry(location);
+    const sourceUrl = (rawJob.sourceUrl as string) || '';
+    const { visaSponsorship, visaNotes } = this.classifyVisaStatus({
+      title,
+      companyName,
+      location,
+      country,
+      description,
+      sourceUrl,
+    });
 
     return {
       id: '',
       externalId: (rawJob.externalId as string) || '',
-      title: (rawJob.title as string) || 'Untitled Position',
+      title,
       company: { id: '', name: companyName, locations: [location], createdAt: new Date(), updatedAt: new Date() },
       description,
       requirements: (rawJob.requirements as string) || '',
       responsibilities: '',
       location,
-      country: (rawJob.country as string) || this.extractCountry(location),
+      country,
       remote: Boolean(rawJob.remote),
       workMode: (rawJob.workMode as WorkMode) || WorkMode.REMOTE,
       type: (rawJob.type as JobType) || JobType.FULL_TIME,
@@ -116,8 +140,9 @@ export class RSSAdapter extends BaseCrawlerAdapter {
       salaryMax: undefined,
       salaryCurrency: undefined,
       source: JobSource.RSS,
-      sourceUrl: (rawJob.sourceUrl as string) || '',
-      visaSponsorship: VisaSponsorshipStatus.UNKNOWN,
+      sourceUrl,
+      visaSponsorship,
+      visaNotes,
       skills: Array.isArray(rawJob.skills) ? (rawJob.skills as string[]) : this.extractSkills(description),
       postedAt: rawJob.postedAt instanceof Date ? rawJob.postedAt : new Date(),
       createdAt: new Date(),

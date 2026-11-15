@@ -1,9 +1,12 @@
-export enum AIProviderType {
-  LOCAL = 'local',
-  GROQ = 'groq',
-  GEMINI = 'gemini',
-  AGENTROUTER = 'agentrouter',
-}
+export const AIProviderType = {
+  LOCAL: 'local',
+  GROQ: 'groq',
+  GEMINI: 'gemini',
+  AGENTROUTER: 'agentrouter',
+} as const;
+
+/* eslint-disable-next-line no-redeclare */
+export type AIProviderType = (typeof AIProviderType)[keyof typeof AIProviderType];
 
 export interface CompletionOptions {
   model?: string;
@@ -13,6 +16,7 @@ export interface CompletionOptions {
   frequencyPenalty?: number;
   presencePenalty?: number;
   stop?: string[];
+  responseSchema?: Record<string, unknown>;
 }
 
 export interface ChatMessage {

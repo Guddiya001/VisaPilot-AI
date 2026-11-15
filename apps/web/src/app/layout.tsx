@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+// System font fallback for offline / sandboxed builds
 import './globals.css';
 import { Sidebar } from '@/components/Sidebar';
 import { Header } from '@/components/Header';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = { className: 'font-sans' };
 
 export const metadata: Metadata = {
   title: 'VisaPilot AI - International Job Search Platform',

@@ -1,0 +1,532 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<<
+  /Type /Catalog
+  /Pages 2 0 R
+>>
+endobj
+2 0 obj
+<<
+  /Type /Pages
+  /Kids [3 0 R 5 0 R]
+  /Count 2
+>>
+endobj
+3 0 obj
+<<
+  /Type /Page
+  /Parent 2 0 R
+  /MediaBox [0 0 595.28 841.89]
+  /Resources <<
+    /Font <<
+      /F1 7 0 R
+      /F2 8 0 R
+    >>
+  >>
+  /Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+  /Length 6293
+>>
+stream
+BT
+/F2 18 Tf
+211.24 801.89 Td
+(Ashish Kumar Singh) Tj
+ET
+BT
+/F2 11 Tf
+179.84 781.89 Td
+(Senior Staff AI & LLM Systems Engineer) Tj
+ET
+BT
+/F1 9 Tf
+151.24 766.89 Td
+(Noida, India \(Open to Relocation | Visa Sponsorship Required\)) Tj
+ET
+BT
+/F1 8.5 Tf
+40.00 752.89 Td
+(Email: ashish.singh.careers@gmail.com | Phone: +91 7982169443 | LinkedIn: https://www.linkedin.com/in/ashish-kumar-singh1986 | GitHub: https://github.com/guddiya001) Tj
+ET
+BT
+/F2 11 Tf
+40.00 732.89 Td
+(PROFESSIONAL SUMMARY) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 728.89 m
+555 728.89 l
+S
+BT
+/F1 9 Tf
+40.00 714.89 Td
+(Senior Staff AI & LLM Systems Engineer with 10+ years of experience building production Generative) Tj
+ET
+BT
+/F1 9 Tf
+40.00 701.89 Td
+(AI platforms, stateful multi-agent workflows, and retrieval-augmented generation \(RAG\) pipelines) Tj
+ET
+BT
+/F1 9 Tf
+40.00 688.89 Td
+(across healthcare and financial services. Proven expertise in Model Context Protocol \(MCP\),) Tj
+ET
+BT
+/F1 9 Tf
+40.00 675.89 Td
+(LangGraph, LangChain, semantic vector search \(pgvector, Chroma, Qdrant\), high-throughput vLLM) Tj
+ET
+BT
+/F1 9 Tf
+40.00 662.89 Td
+(inference clusters, and LLM evaluation with Ragas and TruLens, keeping hallucination rates below) Tj
+ET
+BT
+/F1 9 Tf
+40.00 649.89 Td
+(1.5% across 15M+ monthly requests.) Tj
+ET
+BT
+/F2 11 Tf
+40.00 632.89 Td
+(CORE TECHNICAL SKILLS) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 628.89 m
+555 628.89 l
+S
+BT
+/F1 9 Tf
+46.00 614.89 Td
+(Generative AI & Agentic Workflows: Model Context Protocol \(MCP\), LangGraph, AI Agents, Tool) Tj
+ET
+BT
+/F1 9 Tf
+46.00 602.39 Td
+(Calling) Tj
+ET
+BT
+/F1 9 Tf
+46.00 589.89 Td
+(RAG & Vector Search: RAG, pgvector, ChromaDB, Qdrant, Hybrid Search \(BM25 + Cosine\), Reciprocal) Tj
+ET
+BT
+/F1 9 Tf
+46.00 577.39 Td
+(Rank Fusion) Tj
+ET
+BT
+/F1 9 Tf
+46.00 564.89 Td
+(LLM Serving & Evaluation: vLLM, Continuous Batching, Ragas, Pydantic Structured Outputs) Tj
+ET
+BT
+/F1 9 Tf
+46.00 552.39 Td
+(Languages & Frameworks: Python, FastAPI, PyTorch, TypeScript, Node.js, Docker, Kubernetes) Tj
+ET
+BT
+/F1 9 Tf
+46.00 539.89 Td
+(Core Programming Languages: Go, Python, Java, TypeScript, Node.js) Tj
+ET
+BT
+/F2 11 Tf
+40.00 521.39 Td
+(WORK EXPERIENCE) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 517.39 m
+555 517.39 l
+S
+BT
+/F2 9.5 Tf
+40.00 503.39 Td
+(Persistent Systems Ltd. \(UnitedHealth Group\) - Senior AI Platform & LLM Systems Lead) Tj
+ET
+BT
+/F1 9 Tf
+465.00 503.39 Td
+(Oct 2023 - Present) Tj
+ET
+BT
+/F1 9 Tf
+46.00 489.39 Td
+(- Built production Generative AI context retrieval and stateful agentic workflows using Python,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 476.89 Td
+(  FastAPI, LangGraph, and Model Context Protocol \(MCP\), automating clinical diagnostic pipelines) Tj
+ET
+BT
+/F1 9 Tf
+46.00 464.39 Td
+(  and cutting clinician research turnaround time by 40%.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 450.39 Td
+(- Designed advanced RAG pipelines incorporating hierarchical semantic chunking, dense vector) Tj
+ET
+BT
+/F1 9 Tf
+46.00 437.89 Td
+(  search \(pgvector, Chroma, Qdrant\), and hybrid search \(BM25 + cosine similarity\) with Cohere) Tj
+ET
+BT
+/F1 9 Tf
+46.00 425.39 Td
+(  reranking, reducing retrieval hallucination rates below 1.5%.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 411.39 Td
+(- Implemented defensive prompt design and guaranteed structured output enforcement using Pydantic,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 398.89 Td
+(  Instructor, and dynamic JSON Schema validation with tool calling, eliminating schema drift and) Tj
+ET
+BT
+/F1 9 Tf
+46.00 386.39 Td
+(  downstream integration parsing errors.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 372.39 Td
+(- Architected and deployed high-throughput healthcare backend microservices using Python) Tj
+ET
+BT
+/F1 9 Tf
+46.00 359.89 Td
+(  \(FastAPI\), Java \(Spring Boot\), and Node.js/NestJS, handling 15M+ monthly API transactions with) Tj
+ET
+BT
+/F1 9 Tf
+46.00 347.39 Td
+(  99.99% availability under strict HIPAA data privacy regulations.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 333.39 Td
+(- Designed type-safe REST and GraphQL APIs using TypeScript, Zod, and PostgreSQL, ensuring zero) Tj
+ET
+BT
+/F1 9 Tf
+46.00 320.89 Td
+(  regression and consistent bidirectional state synchronization.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 306.89 Td
+(- Built end-to-end GitOps delivery pipelines using GitHub Actions, ArgoCD, and Docker,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 294.39 Td
+(  implementing blue-green rollouts and automated canary analysis with zero deployment downtime.) Tj
+ET
+BT
+/F2 9.5 Tf
+40.00 275.39 Td
+(LTIMindtree Ltd. \(DBS Bank\) - Senior AI Engineer \(Financial Intelligence & Compliance\)) Tj
+ET
+BT
+/F1 9 Tf
+460.00 275.39 Td
+(Jul 2022 - Oct 2023) Tj
+ET
+BT
+/F1 9 Tf
+46.00 261.39 Td
+(- Developed autonomous financial inquiry AI agents with tool-calling capabilities to execute) Tj
+ET
+BT
+/F1 9 Tf
+46.00 248.89 Td
+(  banking ledger queries and currency conversion workflows securely.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 234.89 Td
+(- Engineered automated regulatory compliance classifiers for MAS banking transaction rules using) Tj
+ET
+BT
+/F1 9 Tf
+46.00 222.39 Td
+(  sentence embeddings and dense vector retrieval, achieving 96% classification accuracy.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 208.39 Td
+(- Implemented strict system prompt guardrails and output validation to prevent prompt injection) Tj
+ET
+BT
+/F1 9 Tf
+46.00 195.89 Td
+(  and confidential financial data exfiltration.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 181.89 Td
+(- Built high-volume core banking backend microservices and payment ledger integrations using Go,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 169.39 Td
+(  Java \(Spring Boot\), Node.js, and PostgreSQL under Monetary Authority of Singapore \(MAS\)) Tj
+ET
+BT
+/F1 9 Tf
+46.00 156.89 Td
+(  regulatory standards.) Tj
+ET
+BT
+/F2 9.5 Tf
+40.00 137.89 Td
+(Coforge Ltd. \(Walmart\) - Machine Learning & Search Intelligence Engineer) Tj
+ET
+BT
+/F1 9 Tf
+460.00 137.89 Td
+(Oct 2020 - Jun 2022) Tj
+ET
+BT
+/F1 9 Tf
+46.00 123.89 Td
+(- Implemented high-throughput product catalog semantic search pipelines using vector embeddings) Tj
+ET
+BT
+/F1 9 Tf
+46.00 111.39 Td
+(  and dense retrieval across 2M+ retail SKU records.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 97.39 Td
+(- Built automated inference caching pipelines with Redis, reducing duplicate search latency by 60%) Tj
+ET
+BT
+/F1 9 Tf
+46.00 84.89 Td
+(  during high-traffic retail campaigns.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 70.89 Td
+(- Trained and evaluated classification models for intent recognition and automated item) Tj
+ET
+BT
+/F1 9 Tf
+46.00 58.39 Td
+(  categorization.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<<
+  /Type /Page
+  /Parent 2 0 R
+  /MediaBox [0 0 595.28 841.89]
+  /Resources <<
+    /Font <<
+      /F1 7 0 R
+      /F2 8 0 R
+    >>
+  >>
+  /Contents 6 0 R
+>>
+endobj
+6 0 obj
+<<
+  /Length 3060
+>>
+stream
+BT
+/F1 9 Tf
+46.00 801.89 Td
+(- Built high-concurrency order processing and checkout backend microservices on Kubernetes for) Tj
+ET
+BT
+/F1 9 Tf
+46.00 789.39 Td
+(  Walmart's global e-commerce platform, handling 25M+ daily retail events during peak traffic) Tj
+ET
+BT
+/F1 9 Tf
+46.00 776.89 Td
+(  spikes.) Tj
+ET
+BT
+/F2 9.5 Tf
+40.00 757.89 Td
+(Previous Technology Organizations - Software Engineer \(Data & Backend Services\)) Tj
+ET
+BT
+/F1 9 Tf
+460.00 757.89 Td
+(Jan 2016 - Oct 2020) Tj
+ET
+BT
+/F1 9 Tf
+46.00 743.89 Td
+(- Built Python data extraction, transformation, and ETL pipelines processing multi-gigabyte) Tj
+ET
+BT
+/F1 9 Tf
+46.00 731.39 Td
+(  structured and unstructured enterprise datasets.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 717.39 Td
+(- Developed text preprocessing, tokenization, and named entity recognition \(NER\) scripts using) Tj
+ET
+BT
+/F1 9 Tf
+46.00 704.89 Td
+(  NLTK and spaCy for document classification.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 690.89 Td
+(- Integrated automated data pipelines with relational database storage and REST API endpoints.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 676.89 Td
+(- Architected and maintained scalable RESTful backend services and APIs using Python \(Django,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 664.39 Td
+(  Flask\) and Node.js/Express, supporting high-throughput CRUD workflows and third-party) Tj
+ET
+BT
+/F1 9 Tf
+46.00 651.89 Td
+(  integrations.) Tj
+ET
+BT
+/F2 11 Tf
+40.00 632.89 Td
+(SELECTED ENGINEERING PROJECTS) Tj
+ET
+0.75 w
+0.7 0.7 0.7 RG
+40 628.89 m
+555 628.89 l
+S
+BT
+/F2 9.5 Tf
+40.00 614.89 Td
+(High-Throughput Distributed RAG Ingestion Pipeline | Python, PyTorch, Apache Kafka, Redis, PostgreSQL, Cohere Rerank, Docker, Kubernetes) Tj
+ET
+BT
+/F1 9 Tf
+46.00 600.89 Td
+(- Implemented hierarchical semantic chunking and reciprocal rank fusion reranking with Cohere,) Tj
+ET
+BT
+/F1 9 Tf
+46.00 588.39 Td
+(  keeping retrieval hallucination rates below 1.5%.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 574.39 Td
+(- Deployed vLLM continuous batching inference endpoints alongside PyTorch embedding workers.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 560.39 Td
+(- Engineered distributed Kafka and Redis ingestion pipelines processing 10M+ documents) Tj
+ET
+BT
+/F1 9 Tf
+46.00 547.89 Td
+(  asynchronously with idempotent vector upserts.) Tj
+ET
+BT
+/F2 9.5 Tf
+40.00 528.89 Td
+(Enterprise Autonomous AI Agent & Model Context Protocol \(MCP\) Platform | Python, FastAPI, LangGraph, Model Context Protocol \(MCP\), pgvector, ChromaDB, Pydantic, Azure OpenAI, Ragas, Docker) Tj
+ET
+BT
+/F1 9 Tf
+46.00 514.89 Td
+(- Built stateful multi-agent workflows using LangGraph and Model Context Protocol \(MCP\) to) Tj
+ET
+BT
+/F1 9 Tf
+46.00 502.39 Td
+(  coordinate safe tool execution across enterprise systems.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 488.39 Td
+(- Integrated pgvector and ChromaDB for dense semantic search across 5M+ records with sub-45ms) Tj
+ET
+BT
+/F1 9 Tf
+46.00 475.89 Td
+(  retrieval latency and Ragas evaluation suites.) Tj
+ET
+BT
+/F1 9 Tf
+46.00 461.89 Td
+(- Enforced strict Pydantic structured outputs and tool-calling guardrails, eliminating downstream) Tj
+ET
+BT
+/F1 9 Tf
+46.00 449.39 Td
+(  parsing failures.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<<
+  /Type /Font
+  /Subtype /Type1
+  /BaseFont /Helvetica
+  /Encoding /StandardEncoding
+>>
+endobj
+8 0 obj
+<<
+  /Type /Font
+  /Subtype /Type1
+  /BaseFont /Helvetica-Bold
+  /Encoding /StandardEncoding
+>>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000015 00000 n 
+0000000068 00000 n 
+0000000137 00000 n 
+0000000311 00000 n 
+0000006658 00000 n 
+0000006832 00000 n 
+0000009946 00000 n 
+0000010052 00000 n 
+trailer
+<<
+  /Size 9
+  /Root 1 0 R
+>>
+startxref
+10163
+%%EOF

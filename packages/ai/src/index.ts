@@ -10,12 +10,15 @@ export * from './providers/agentrouter';
 export * from './agents/coordinator';
 export * from './agents/search';
 export * from './agents/visa-detection';
+export * from './agents/batch-visa-table';
 export * from './agents/resume-match';
 export * from './agents/resume-improvement';
 export * from './agents/cover-letter';
 export * from './agents/interview';
 export * from './agents/learning';
 export * from './agents/ats-optimizer';
+export * from './agents/form-question-responder';
+export * from './agents/persona-router';
 export * from './rag/service';
 export * from './types';
 

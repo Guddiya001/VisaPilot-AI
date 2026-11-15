@@ -275,11 +275,14 @@ function resumeReducer(state: ResumeData, action: ResumeAction): ResumeData {
       }
 
       if (unassigned.length > 0) {
-        const addIdx = updatedSkills.findIndex((l) => /^additional skills|^core competencies/i.test(l));
-        if (addIdx !== -1) {
-          updatedSkills[addIdx] = `${updatedSkills[addIdx]}, ${unassigned.join(', ')}`;
+        const compIdx = updatedSkills.findIndex((l) => /^core competencies|^technical expertise/i.test(l));
+        if (compIdx !== -1) {
+          updatedSkills[compIdx] = `${updatedSkills[compIdx]}, ${unassigned.join(', ')}`;
+        } else if (updatedSkills.length > 0) {
+          // Merge unassigned skills into the first existing technical category instead of dumping an "Additional Skills" bucket
+          updatedSkills[0] = `${updatedSkills[0]}, ${unassigned.join(', ')}`;
         } else {
-          updatedSkills.push(`Additional Skills: ${unassigned.join(', ')}`);
+          updatedSkills.push(`Core Technical Competencies: ${unassigned.join(', ')}`);
         }
       }
 

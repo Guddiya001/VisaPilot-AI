@@ -1,6 +1,6 @@
-import { JobSource, JobType, WorkMode, VisaSponsorshipStatus } from '@visapilot/shared';
+import { JobSource, JobType, WorkMode } from '@visapilot/shared';
 import type { SearchFilters, Job } from '@visapilot/shared';
-import { BaseCrawlerAdapter } from './base';
+import { BaseCrawlerAdapter } from './base.ts';
 
 export class AshbyAdapter extends BaseCrawlerAdapter {
   readonly source = JobSource.ASHBY;
@@ -17,27 +17,45 @@ export class AshbyAdapter extends BaseCrawlerAdapter {
     this.boardTokens = tokens.length > 0 ? tokens : ['linear'];
   }
 
+  getBoardTokens(): string[] {
+    return [...this.boardTokens];
+  }
+
   async initialize(): Promise<void> {
     this.initialized = true;
   }
 
   async *searchJobs(filters: SearchFilters): AsyncGenerator<Job> {
-    for (const boardToken of this.boardTokens) {
-      const apiUrl = `https://api.ashbyhq.com/posting-api/job-board/${boardToken}`;
+    const results = await this.mapWithConcurrency(
+      this.boardTokens,
+      8,
+      async (boardToken): Promise<Job[]> => {
+        const apiUrl = `https://api.ashbyhq.com/posting-api/job-board/${boardToken}`;
+        try {
+          const response = await this.makeRequest(apiUrl);
+          if (!response.ok) return [];
+          const data = (await response.json()) as { jobs?: AshbyJob[] };
+          const companyName = boardToken.charAt(0).toUpperCase() + boardToken.slice(1);
 
-      try {
-        const response = await this.makeRequest(apiUrl);
-        const data = (await response.json()) as { jobs?: AshbyJob[] };
-        const companyName = boardToken.charAt(0).toUpperCase() + boardToken.slice(1);
-
-        for (const ashbyJob of data.jobs || []) {
-          const job = this.createJobFromAshby(ashbyJob, boardToken, companyName);
-          if (this.matchesFilters(job, filters)) {
-            yield job;
+          const validJobs: Job[] = [];
+          for (const ashbyJob of data.jobs || []) {
+            const job = this.createJobFromAshby(ashbyJob, boardToken, companyName);
+            if (this.matchesFilters(job, filters)) {
+              validJobs.push(job);
+            }
           }
+          return validJobs;
+        } catch {
+          return [];
         }
-      } catch {
-        // Skip inaccessible Ashby boards
+      },
+    );
+
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
+        for (const job of result.value) {
+          yield job;
+        }
       }
     }
   }
@@ -55,11 +73,23 @@ export class AshbyAdapter extends BaseCrawlerAdapter {
     const country = this.extractCountry(location);
     const description = ashbyJob.descriptionPlain || ashbyJob.descriptionHtml || `Role at ${companyName}`;
 
+    const resolvedCompanyName = ashbyJob.board?.name || companyName;
+    const sourceUrl = `https://jobs.ashbyhq.com/${boardToken}/${ashbyJob.id}`;
+    const { visaSponsorship, visaNotes } = this.classifyVisaStatus({
+      title: ashbyJob.title || 'Untitled Position',
+      companyName: resolvedCompanyName,
+      location,
+      country,
+      description,
+      sourceUrl,
+      atsSlug: boardToken,
+    });
+
     return {
       id: '',
       externalId: ashbyJob.id,
       title: ashbyJob.title || 'Untitled Position',
-      company: { id: '', name: ashbyJob.board?.name || companyName, locations: [location], createdAt: new Date(), updatedAt: new Date() },
+      company: { id: '', name: resolvedCompanyName, locations: [location], createdAt: new Date(), updatedAt: new Date() },
       description,
       requirements: ashbyJob.descriptionPlain || '',
       responsibilities: ashbyJob.descriptionPlain || '',
@@ -72,8 +102,9 @@ export class AshbyAdapter extends BaseCrawlerAdapter {
       salaryMax: ashbyJob.salaryMax,
       salaryCurrency: ashbyJob.salaryCurrency,
       source: JobSource.ASHBY,
-      sourceUrl: `https://jobs.ashbyhq.com/${boardToken}/${ashbyJob.id}`,
-      visaSponsorship: VisaSponsorshipStatus.UNKNOWN,
+      sourceUrl,
+      visaSponsorship,
+      visaNotes,
       skills: this.extractSkills(description),
       postedAt: ashbyJob.publishedAt ? new Date(ashbyJob.publishedAt) : new Date(),
       createdAt: new Date(),

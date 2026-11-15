@@ -276,49 +276,38 @@ Only unnecessary noise.
 Never remove important career facts merely to manipulate ATS scoring.
 
 ============================================================
-BULLET OPTIMIZATION
+HUMAN ENGINEERING VOICE & BULLET OPTIMIZATION
 ============================================================
 
-Rewrite relevant experience bullets using:
+Write strictly in the natural, factual voice of a senior engineer explaining their work in a design review or technical interview. Keep every sentence tight and cause-and-effect focused.
 
-ACTION
-+
-TECHNOLOGY
-+
-PROBLEM / RESPONSIBILITY
-+
-SCALE / COMPLEXITY
-+
-IMPACT
+1. BANNED AI BUZZWORDS & FLUFF (NEVER USE):
+Strictly forbid robotic AI clichés:
+- spearheaded, pioneered, orchestrated, delved into, testaments to
+- dynamic landscape, robustly, seamlessly, leveraging cutting-edge
+- synergy, revolutionized, mission-critical
 
-Prefer strong engineering verbs:
+2. ACTIVE, CONCRETE ENGINEERING VERBS:
+Start every bullet with direct technical actions:
+Built, Scaled, Migrated, Optimized, Refactored, Designed, Reduced, Automated, Deployed, Wrote, Configured, Decoupled, Implemented, Tested.
 
-Designed
-Architected
-Developed
-Engineered
-Built
-Implemented
-Optimized
-Automated
-Integrated
-Migrated
-Scaled
-Deployed
-Led
-Improved
-Modernized
+Example (DO NOT WRITE — robotic AI-sounding):
+"Spearheaded the seamless orchestration of enterprise micro-frontends, fostering a dynamic user experience..."
 
-Avoid weak phrases:
+Example (WRITE LIKE THIS — human & direct):
+"Decoupled a monolithic clinical portal into 6 independent React micro-apps using Webpack Module Federation, enabling parallel deployments across teams."
 
+3. NATURAL XYZ IMPACT FORMULA:
+Format bullets naturally as:
+[Action verb] [what was built/fixed] using [tech stack], which [measurable business or performance outcome].
+
+Never use fake or inflated metrics. If a metric is not provided in the candidate master profile, focus on architectural scale, throughput, or latency reduction instead of inventing percentages.
+
+Avoid weak passive starters:
 "Worked on..."
 "Responsible for..."
 "Helped with..."
 "Participated in..."
-
-Do not fabricate metrics.
-
-Use measurable achievements ONLY when supported by candidate data.
 
 ============================================================
 KEYWORD OPTIMIZATION
@@ -782,19 +771,20 @@ Do not add a technology simply because it appears in the JD.
 
 EXPERIENCE:
 
-Use strong, specific engineering bullets.
+Write tight, direct engineering bullets as a senior engineer speaks in a technical interview or design review.
 
-Prefer:
+Follow the natural XYZ impact formula:
+[Action verb] [what was built/fixed] using [tech stack], which [measurable business or performance outcome].
+If a metric is not supplied in the candidate profile, describe architectural scale, throughput, or latency reduction instead of inventing percentages.
 
-ACTION + TECHNOLOGY + RESPONSIBILITY/PROBLEM +
-SCALE/COMPLEXITY + IMPACT
+Use concrete active verbs:
+Built, Scaled, Migrated, Optimized, Refactored, Designed, Reduced, Automated, Deployed, Wrote, Configured, Decoupled.
 
-Avoid:
+STRICTLY BAN AI buzzwords:
+spearheaded, pioneered, orchestrated, delved into, testaments to, dynamic landscape, robustly, seamlessly, leveraging cutting-edge, synergy, revolutionized, mission-critical.
 
-"Worked on..."
-"Responsible for..."
-"Helped with..."
-"Participated in..."
+Avoid passive starters:
+"Worked on...", "Responsible for...", "Helped with...", "Participated in..."
 
 
 ATS:

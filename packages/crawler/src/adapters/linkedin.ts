@@ -3,10 +3,10 @@ import {
   JobSource,
   JobType,
   WorkMode,
-  VisaSponsorshipStatus,
 } from '@visapilot/shared';
 import type { SearchFilters, Job } from '@visapilot/shared';
-import { BaseCrawlerAdapter } from './base';
+import { BaseCrawlerAdapter } from './base.ts';
+import { COUNTRY_CITY_LOOKUP, resolveCountryRegionCodes } from '../discovery/query-expander.ts';
 
 export class LinkedInAdapter extends BaseCrawlerAdapter {
   readonly source = JobSource.LINKEDIN;
@@ -189,11 +189,15 @@ export class LinkedInAdapter extends BaseCrawlerAdapter {
         ? WorkMode.HYBRID
         : WorkMode.ONSITE;
 
-    const sponsorsVisa = lowerDesc.includes('visa sponsorship')
-      ? VisaSponsorshipStatus.SPONSORS
-      : lowerDesc.includes('no visa sponsorship') || lowerDesc.includes('must be authorized')
-        ? VisaSponsorshipStatus.DOES_NOT_SPONSOR
-        : VisaSponsorshipStatus.UNKNOWN;
+    const sourceUrl = data.sourceUrl || `https://www.linkedin.com/jobs/view/${data.externalId}`;
+    const { visaSponsorship, visaNotes } = this.classifyVisaStatus({
+      title: data.title,
+      companyName: data.companyName,
+      location,
+      country,
+      description: data.description || '',
+      sourceUrl,
+    });
 
     return {
       id: '',
@@ -218,8 +222,9 @@ export class LinkedInAdapter extends BaseCrawlerAdapter {
       salaryMax: undefined,
       salaryCurrency: undefined,
       source: JobSource.LINKEDIN,
-      sourceUrl: data.sourceUrl || `https://www.linkedin.com/jobs/view/${data.externalId}`,
-      visaSponsorship: sponsorsVisa,
+      sourceUrl,
+      visaSponsorship,
+      visaNotes,
       skills: this.extractSkills(lowerDesc),
       postedAt: data.postedAt || new Date(),
       createdAt: new Date(),
@@ -228,21 +233,12 @@ export class LinkedInAdapter extends BaseCrawlerAdapter {
   }
 
   private extractLocationFromQuery(query: string): string | null {
-    const q = query.toLowerCase();
-    if (/\b(india|bangalore|bengaluru|hyderabad|pune|mumbai|delhi|noida|chennai)\b/i.test(q)) {
-      return 'India';
-    }
-    if (/\b(germany|berlin|munich|frankfurt|hamburg)\b/i.test(q)) {
-      return 'Germany';
-    }
-    if (/\b(uk|united kingdom|london|manchester|edinburgh)\b/i.test(q)) {
-      return 'United Kingdom';
-    }
-    if (/\b(us|usa|united states|new york|san francisco|seattle|austin)\b/i.test(q)) {
-      return 'United States';
-    }
-    if (/\b(canada|toronto|vancouver|montreal)\b/i.test(q)) {
-      return 'Canada';
+    const codes = resolveCountryRegionCodes(query, true);
+    if (codes.length > 0) {
+      const entry = COUNTRY_CITY_LOOKUP.find((c) => c.code === codes[0]);
+      if (entry) {
+        return entry.country;
+      }
     }
     return null;
   }

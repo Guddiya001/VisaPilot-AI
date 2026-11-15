@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "turbo dev --concurrency=14",
     "build": "turbo build",
-    "test": "turbo test",
+    "test": "node --test src/**/__tests__/*.test.ts tests/*.test.ts",
+    "test:workspace": "turbo test",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo clean && rm -rf node_modules",
@@ -31,6 +32,7 @@
     "husky": "^9.1.7",
     "prettier": "^3.4.0",
     "turbo": "^2.3.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "zod": "^3.25.76"
   }
 }
