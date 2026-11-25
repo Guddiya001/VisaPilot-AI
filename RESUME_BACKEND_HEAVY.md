@@ -8,7 +8,7 @@
 ---
 
 ## PROFESSIONAL SUMMARY
-Staff- and Senior-level Backend & Distributed Systems Engineer with **9+ years of experience** architecting, scaling, and operating high-throughput microservices, event-driven streaming architectures, and mission-critical cloud backends across Tier-1 healthcare, consumer banking, and global retail e-commerce. Proven track record handling **15M+ to 25M+ daily requests/events** under stringent latency budgets, driving a **40% reduction in endpoint latency and 45% reduction in primary database load**. Deep polyglot backend mastery in **Python (Asyncio, FastAPI), Go (Golang), Java (Spring Boot), Node.js, and TypeScript**, with extensive experience managing enterprise message queues (**Apache Kafka, RabbitMQ**), distributed caching (**Redis**), and relational/NoSQL datastores (**PostgreSQL, MongoDB, MySQL**). Expert in **PgBouncer connection pooling, database query plan tuning, sharding, zero-downtime database migrations, gRPC/RESTful API design, Linux systems internals, and container orchestration on AWS (EKS) and Kubernetes**—consistently maintaining 99.95%+ production availability under strict regulatory frameworks (HIPAA, MAS).
+Staff- and Senior-level Backend & Distributed Systems Engineer with **10+ years of experience** architecting, scaling, and operating high-throughput microservices, event-driven streaming architectures, and mission-critical cloud backends across Tier-1 healthcare, consumer banking, and global retail e-commerce. Proven track record handling **15M+ to 25M+ daily requests/events** under stringent latency budgets, driving a **40% reduction in endpoint latency and 45% reduction in primary database load**. Deep polyglot backend mastery in **Python (Asyncio, FastAPI), Go (Golang), Java (Spring Boot), Node.js, and TypeScript**, with extensive experience managing enterprise message queues (**Apache Kafka, RabbitMQ**), distributed caching (**Redis**), and relational/NoSQL datastores (**PostgreSQL, MongoDB, MySQL**). Expert in **PgBouncer connection pooling, database query plan tuning, sharding, zero-downtime database migrations, gRPC/RESTful API design, Linux systems internals, and container orchestration on AWS (EKS) and Kubernetes**—consistently maintaining 99.95%+ production availability under strict regulatory frameworks (HIPAA, MAS).
 
 ---
 
@@ -87,7 +87,7 @@ Staff- and Senior-level Backend & Distributed Systems Engineer with **9+ years o
 ---
 
 ## EDUCATION
-- **Master of Computer Applications (MCA)** — Uttar Pradesh Technical University (UPTU), India | *2013 – 2016*
+- **Master of Computer Application** — Guru Gobind Singh Indraprastha University, India | *2016*
 - **Bachelor of Computer Applications (BCA)** — UPRTO University, India | *2009 – 2012*
 
 ---

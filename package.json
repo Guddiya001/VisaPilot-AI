@@ -6,15 +6,15 @@
   "scripts": {
     "dev": "turbo dev --concurrency=14",
     "build": "turbo build",
+    "build:extension": "tsx scripts/build-extension.ts",
     "test": "node --test src/**/__tests__/*.test.ts tests/*.test.ts",
     "test:workspace": "turbo test",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo clean && rm -rf node_modules",
-    "db:generate": "pnpm --filter @visapilot/database db:generate",
-    "db:push": "pnpm --filter @visapilot/database db:push",
-    "db:migrate": "pnpm --filter @visapilot/database db:migrate",
-    "db:seed": "pnpm --filter @visapilot/database db:seed",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx src/db/seed.ts",
     "docker:build": "docker compose -f docker/docker-compose.yml build",
     "docker:up": "docker compose -f docker/docker-compose.yml up -d --build",
     "docker:down": "docker compose -f docker/docker-compose.yml down"
@@ -26,13 +26,27 @@
   "devDependencies": {
     "@commitlint/cli": "^19.6.0",
     "@commitlint/config-conventional": "^19.6.0",
+    "@types/jsdom": "^30.0.0",
+    "@types/pg": "^8.23.1",
     "@typescript-eslint/eslint-plugin": "^8.65.0",
     "@typescript-eslint/parser": "^8.65.0",
+    "drizzle-kit": "^0.30.5",
+    "esbuild": "^0.28.2",
     "eslint": "^9.15.0",
     "husky": "^9.1.7",
+    "jsdom": "^31.0.1",
+    "next": "^15.1.0",
     "prettier": "^3.4.0",
+    "tsx": "^4.19.3",
     "turbo": "^2.3.0",
     "typescript": "^5.7.0",
+    "vitest": "^5.1.0",
     "zod": "^3.25.76"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "drizzle-orm": "^0.45.4",
+    "pg": "^8.23.1",
+    "pgvector": "^0.3.1"
   }
 }

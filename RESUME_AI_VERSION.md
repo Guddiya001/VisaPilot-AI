@@ -8,7 +8,7 @@
 ---
 
 ## PROFESSIONAL SUMMARY
-Staff- and Senior-level AI & Software Engineer with **9+ years of experience** architecting high-throughput distributed backends and production-grade **Generative AI, agentic systems, and enterprise LLM platforms** across Tier-1 healthcare, consumer banking, and global retail e-commerce. Proven track record taking AI solutions from **initial exploration to high-throughput production (15M+ requests/month)**, designing advanced **RAG pipelines, vector search (pgvector, Chroma, Qdrant), dense semantic embeddings**, and structuring cyclical multi-agent workflows using **Python (FastAPI), LangGraph, LangChain, and Model Context Protocol (MCP)**. Expert in enforcing **prompt design, structured output validation (Pydantic, JSON Schema)**, and quantitative **LLM evaluation (Ragas, DeepEval)** alongside classical ML baselines (**PyTorch, scikit-learn, NLP**) to eliminate hallucinations (<1.5% rate) and slash clinician research time by **40%**. Deep production deployment mastery on **Microsoft Azure (Azure OpenAI Service, AKS) and AWS Bedrock**, instrumenting distributed tracing via **LangSmith and OpenTelemetry** to optimize token costs, latency budgets, and operational ROI (3.4x).
+Staff- and Senior-level AI & Software Engineer with **10+ years of experience** architecting high-throughput distributed backends and production-grade **Generative AI, agentic systems, and enterprise LLM platforms** across Tier-1 healthcare, consumer banking, and global retail e-commerce. Proven track record taking AI solutions from **initial exploration to high-throughput production (15M+ requests/month)**, designing advanced **RAG pipelines, vector search (pgvector, Chroma, Qdrant), dense semantic embeddings**, and structuring cyclical multi-agent workflows using **Python (FastAPI), LangGraph, LangChain, and Model Context Protocol (MCP)**. Expert in enforcing **prompt design, structured output validation (Pydantic, JSON Schema)**, and quantitative **LLM evaluation (Ragas, DeepEval)** alongside classical ML baselines (**PyTorch, scikit-learn, NLP**) to eliminate hallucinations (<1.5% rate) and slash clinician research time by **40%**. Deep production deployment mastery on **Microsoft Azure (Azure OpenAI Service, AKS) and AWS Bedrock**, instrumenting distributed tracing via **LangSmith and OpenTelemetry** to optimize token costs, latency budgets, and operational ROI (3.4x).
 
 ---
 
@@ -85,7 +85,7 @@ Staff- and Senior-level AI & Software Engineer with **9+ years of experience** a
 ---
 
 ## EDUCATION
-- **Master of Computer Applications (MCA)** — Uttar Pradesh Technical University (UPTU), India | *2013 – 2016*
+- **Master of Computer Application** — Guru Gobind Singh Indraprastha University, India | *2016*
 - **Bachelor of Computer Applications (BCA)** — UPRTO University, India | *2009 – 2012*
 
 ---

@@ -484,4 +484,17 @@
     page-break-inside: avoid;
     break-inside: avoid;
   }
+
+  /* Hide any Chrome extension injected UI (VisaPilot pill, field badges) */
+  #visapilot-autopilot-pill,
+  .visapilot-shadow-badge-host {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}
+
+/* Also hide extension UI on screen in the print-preview window */
+#visapilot-autopilot-pill,
+.visapilot-shadow-badge-host {
+  display: none !important;
 }

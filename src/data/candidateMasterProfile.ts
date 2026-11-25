@@ -586,9 +586,9 @@ const rawCandidateMasterProfile: CandidateMasterProfile = {
 
   education: [
     {
-      degree: 'Master of Computer Applications (MCA)',
-      school: 'Uttar Pradesh Technical University (UPTU)',
-      year: '2013 – 2016',
+      degree: 'Master of Computer Application',
+      school: 'Guru Gobind Singh Indraprastha University',
+      year: '2016',
       location: 'India',
     },
     {

@@ -1077,7 +1077,7 @@ Return ONLY a valid JSON object with this exact structure:
   "education": [
     {
       "id": "edu-1",
-      "degree": "Master of Computer Applications (MCA)",
+      "degree": "Master of Computer Application",
       "school": "Guru Gobind Singh Indraprastha University",
       "location": "India",
       "year": "2016"
@@ -1324,7 +1324,7 @@ Return ONLY the cover letter text (no JSON, no markdown):`;
     const fallbackSkills = ((jdAnalysis.requiredSkills as string[]) || []).slice(0, 4).join(', ');
     return `Dear Hiring Manager at ${jdAnalysis.companyName},
 
-I am writing to apply for the ${jdAnalysis.jobTitle} position based in ${fallbackLocation}. Having followed ${jdAnalysis.companyName}'s growth in the ${fallbackIndustry} space, I am genuinely excited by this opportunity. With 9+ years of engineering experience and deep expertise in ${fallbackSkills}, I am prepared to make an immediate and meaningful contribution to your team.
+I am writing to apply for the ${jdAnalysis.jobTitle} position based in ${fallbackLocation}. Having followed ${jdAnalysis.companyName}'s growth in the ${fallbackIndustry} space, I am genuinely excited by this opportunity. With 10+ years of engineering experience and deep expertise in ${fallbackSkills}, I am prepared to make an immediate and meaningful contribution to your team.
 
 In my current role at Persistent Systems (client: UnitedHealth Group), I have architected production-grade micro-frontend platforms supporting 6+ global engineering teams, reduced bundle sizes by 35%, and improved Lighthouse scores from 62 to 94. This directly maps to the responsibilities outlined in your job description — building scalable, reliable systems with the exact tech stack your team relies on.
 
@@ -1430,7 +1430,7 @@ Ashish Kumar Singh`;
     const phoneMatch = resumeText.match(/\+?[\d\s-]{10,}/)?.[0] || '+91 7982169443';
 
     const expMatch = resumeText.match(/(\d+)\+?\s*years/i);
-    const experience = expMatch ? `${expMatch[1]}+ years` : '9+ years';
+    const experience = expMatch ? `${expMatch[1]}+ years` : '10+ years';
 
     return {
       ...this.getCandidateMasterProfile(),
@@ -1450,7 +1450,7 @@ Ashish Kumar Singh`;
       return {
         name: 'Ashish Kumar Singh',
         title: 'Senior / Staff Frontend Engineer | Web Platform & UI Systems Lead',
-        experience: '9+ years',
+        experience: '10+ years',
         coreSkills: [
           'React.js', 'React 18/19', 'Next.js', 'TypeScript', 'JavaScript', 'HTML5', 'CSS3', 'Tailwind CSS',
           'Webpack Module Federation', 'Micro-frontends', 'Redux Toolkit', 'Zustand', 'React Query (TanStack Query)',
@@ -1523,7 +1523,7 @@ Ashish Kumar Singh`;
           },
         ],
         education: [
-          { degree: 'Master of Computer Applications (MCA)', school: 'Uttar Pradesh Technical University (UPTU)', year: '2016' },
+          { degree: 'Master of Computer Application', school: 'Guru Gobind Singh Indraprastha University', year: '2016' },
           { degree: 'Bachelor of Computer Applications (BCA)', school: 'UPRTO University', year: '2012' },
         ],
         achievements: [
@@ -1539,7 +1539,7 @@ Ashish Kumar Singh`;
       return {
         name: 'Ashish Kumar Singh',
         title: 'Staff Forward Deployed Engineer | Enterprise Solutions & Client Deployment Lead',
-        experience: '9+ years',
+        experience: '10+ years',
         coreSkills: [
           'Forward Deployed Engineering', 'Enterprise Solutions Architecture', 'Rapid Prototyping', 'Client Deployments',
           'TypeScript', 'JavaScript', 'Python', 'Node.js', 'Go', 'Golang', 'Java', 'Spring Boot', 'React',
@@ -1603,7 +1603,7 @@ Ashish Kumar Singh`;
           },
         ],
         education: [
-          { degree: 'Master of Computer Applications (MCA)', school: 'Uttar Pradesh Technical University (UPTU)', year: '2016' },
+          { degree: 'Master of Computer Application', school: 'Guru Gobind Singh Indraprastha University', year: '2016' },
           { degree: 'Bachelor of Computer Applications (BCA)', school: 'UPRTO University', year: '2012' },
         ],
         achievements: [
@@ -1617,7 +1617,7 @@ Ashish Kumar Singh`;
     return {
       name: 'Ashish Kumar Singh',
       title: 'Senior Software Engineer | Senior Site Reliability Engineer | AI / GenAI Engineer',
-      experience: '9+ years',
+      experience: '10+ years',
       coreSkills: [
         // Primary languages (candidate has professional proficiency)
         'Node.js', 'TypeScript', 'JavaScript', 'Python', 'Go', 'Golang',
@@ -1718,7 +1718,7 @@ Ashish Kumar Singh`;
         }
       ],
       education: [
-        { degree: 'Master of Computer Applications (MCA)', school: 'India', year: '2016' }
+        { degree: 'Master of Computer Application', school: 'Guru Gobind Singh Indraprastha University', year: '2016' }
       ],
       achievements: [
         'Architected a Module Federation-based micro-frontend platform supporting 6+ global engineering teams, delivering a 35% bundle size reduction and 40% page-speed improvement.',
@@ -1853,7 +1853,7 @@ Ashish Kumar Singh`;
           },
         ],
         education: [
-          { id: 'edu-1', degree: 'Master of Computer Applications (MCA)', school: 'Uttar Pradesh Technical University (UPTU)', location: 'India', year: '2013 – 2016' },
+          { id: 'edu-1', degree: 'Master of Computer Application', school: 'Guru Gobind Singh Indraprastha University', location: 'India', year: '2016' },
           { id: 'edu-2', degree: 'Bachelor of Computer Applications (BCA)', school: 'UPRTO University', location: 'India', year: '2009 – 2012' },
         ],
         certificates: [
@@ -1887,7 +1887,7 @@ Ashish Kumar Singh`;
           linkedin: 'https://www.linkedin.com/in/ashish-kumar-singh1986',
           github: 'https://github.com/guddiya001',
           portfolio: 'https://ashishkumarsingh.vercel.app',
-          summary: `High-impact ${finalTitle || 'Staff Forward Deployed Engineer'} with 9+ years of full-lifecycle software engineering experience, specializing in bridging enterprise client requirements and high-performance technical architecture. Proven track record deploying complex, mission-critical solutions in customer environments across healthcare, tier-1 banking, and global retail e-commerce, delivering quantifiable business impact including 3.4x client ROI and 40% reduction in operational turnaround time. Hands-on expertise across full-stack systems, cloud infrastructure (AWS, Azure, GCP), automated CI/CD client delivery, and stringent compliance governance (HIPAA, SOC 2, MAS).`,
+          summary: `High-impact ${finalTitle || 'Staff Forward Deployed Engineer'} with 10+ years of full-lifecycle software engineering experience, specializing in bridging enterprise client requirements and high-performance technical architecture. Proven track record deploying complex, mission-critical solutions in customer environments across healthcare, tier-1 banking, and global retail e-commerce, delivering quantifiable business impact including 3.4x client ROI and 40% reduction in operational turnaround time. Hands-on expertise across full-stack systems, cloud infrastructure (AWS, Azure, GCP), automated CI/CD client delivery, and stringent compliance governance (HIPAA, SOC 2, MAS).`,
           openTo: `${jdAnalysis.country || 'Global | Germany | UK | Europe | USA'} | Visa Sponsorship Required`,
         },
         experience: [
@@ -1965,7 +1965,7 @@ Ashish Kumar Singh`;
           },
         ],
         education: [
-          { id: 'edu-1', degree: 'Master of Computer Applications (MCA)', school: 'Uttar Pradesh Technical University (UPTU)', location: 'India', year: '2013 – 2016' },
+          { id: 'edu-1', degree: 'Master of Computer Application', school: 'Guru Gobind Singh Indraprastha University', location: 'India', year: '2016' },
           { id: 'edu-2', degree: 'Bachelor of Computer Applications (BCA)', school: 'UPRTO University', location: 'India', year: '2009 – 2012' },
         ],
         certificates: [
@@ -1997,7 +1997,7 @@ Ashish Kumar Singh`;
           linkedin: 'https://www.linkedin.com/in/ashish-kumar-singh1986',
           github: 'https://github.com/guddiya001',
           portfolio: 'https://ashishkumarsingh.vercel.app',
-          summary: `Accomplished ${finalTitle || 'Senior AI Engineer'} with 9+ years of software engineering experience, specializing in architecting and deploying production Generative AI, advanced RAG pipelines, high-throughput vector search, and autonomous agentic systems across healthcare, banking, and high-concurrency enterprise platforms. Hands-on expertise in Python, Model Context Protocol (MCP), LangGraph, LangChain, and dense embeddings across Azure (Azure OpenAI, AKS), AWS, and GCP. Proven track record taking enterprise AI solutions from exploration to production, establishing rigorous prompt design, structured output enforcement (Pydantic, JSON Schema), and quantitative LLM evaluation (Ragas, Deepeval), while maintaining full-stack MLOps/LLMOps observability (LangSmith, OpenTelemetry), classical ML baselines (PyTorch, scikit-learn), and delivering 99.95%+ availability.`,
+          summary: `Accomplished ${finalTitle || 'Senior AI Engineer'} with 10+ years of software engineering experience, specializing in architecting and deploying production Generative AI, advanced RAG pipelines, high-throughput vector search, and autonomous agentic systems across healthcare, banking, and high-concurrency enterprise platforms. Hands-on expertise in Python, Model Context Protocol (MCP), LangGraph, LangChain, and dense embeddings across Azure (Azure OpenAI, AKS), AWS, and GCP. Proven track record taking enterprise AI solutions from exploration to production, establishing rigorous prompt design, structured output enforcement (Pydantic, JSON Schema), and quantitative LLM evaluation (Ragas, Deepeval), while maintaining full-stack MLOps/LLMOps observability (LangSmith, OpenTelemetry), classical ML baselines (PyTorch, scikit-learn), and delivering 99.95%+ availability.`,
           openTo: `${jdAnalysis.country || 'Germany, UK, Europe, USA, Singapore'} | Visa Sponsorship Required`,
         },
         experience: [
@@ -2084,7 +2084,7 @@ Ashish Kumar Singh`;
           }
         ],
         education: [
-          { id: 'edu-1', degree: 'Master of Computer Applications (MCA)', school: 'Uttar Pradesh Technical University (UPTU)', location: 'India', year: '2013 – 2016' },
+          { id: 'edu-1', degree: 'Master of Computer Application', school: 'Guru Gobind Singh Indraprastha University', location: 'India', year: '2016' },
           { id: 'edu-2', degree: 'Bachelor of Computer Applications (BCA)', school: 'UPRTO University', location: 'India', year: '2009 – 2012' },
         ],
         certificates: [
@@ -2120,7 +2120,7 @@ Ashish Kumar Singh`;
           linkedin: 'https://www.linkedin.com/in/ashish-kumar-singh1986',
           github: 'https://github.com/guddiya001',
           portfolio: 'https://ashishkumarsingh.vercel.app',
-          summary: `Results-driven ${finalTitle} with 9+ years of experience architecting resilient cloud infrastructure, automating distributed systems, and maintaining high-availability production environments across Tier-1 enterprise platforms. Deep hands-on expertise in AWS, Kubernetes, Terraform, Ansible, and Bash scripting, specializing in zero-downtime infrastructure migrations, dynamic environments, and enterprise database and message queue administration (PostgreSQL, MongoDB, Redis, RabbitMQ). Proven track record reducing MTTR by 45%, eliminating production deployment downtime, and ensuring 99.95%+ availability through proactive observability (Prometheus, Grafana, Loki, Sentry), deep Linux troubleshooting (networking & filesystems), and disciplined incident response and alert management.`,
+          summary: `Results-driven ${finalTitle} with 10+ years of experience architecting resilient cloud infrastructure, automating distributed systems, and maintaining high-availability production environments across Tier-1 enterprise platforms. Deep hands-on expertise in AWS, Kubernetes, Terraform, Ansible, and Bash scripting, specializing in zero-downtime infrastructure migrations, dynamic environments, and enterprise database and message queue administration (PostgreSQL, MongoDB, Redis, RabbitMQ). Proven track record reducing MTTR by 45%, eliminating production deployment downtime, and ensuring 99.95%+ availability through proactive observability (Prometheus, Grafana, Loki, Sentry), deep Linux troubleshooting (networking & filesystems), and disciplined incident response and alert management.`,
           openTo: `${jdAnalysis.country || 'UK, Europe, USA, Singapore'} | Visa Sponsorship Required`,
         },
         experience: [
@@ -2207,7 +2207,7 @@ Ashish Kumar Singh`;
           }
         ],
         education: [
-          { id: 'edu-1', degree: 'Master of Computer Applications (MCA)', school: 'Uttar Pradesh Technical University (UPTU)', location: 'India', year: '2013 – 2016' },
+          { id: 'edu-1', degree: 'Master of Computer Application', school: 'Guru Gobind Singh Indraprastha University', location: 'India', year: '2016' },
           { id: 'edu-2', degree: 'Bachelor of Computer Applications (BCA)', school: 'UPRTO University', location: 'India', year: '2009 – 2012' },
         ],
         certificates: [
@@ -2238,8 +2238,8 @@ Ashish Kumar Singh`;
         github: 'https://github.com/guddiya001',
         portfolio: 'https://ashishkumarsingh.vercel.app',
         summary: allSkills.length > 0
-          ? `Staff- and Senior-level Software Engineer with 9+ years of experience architecting high-throughput distributed backends and production AI systems, specializing in ${allSkills.slice(0, 5).join(', ')}. Proven track record delivering 99.95% availability for mission-critical platforms across Healthcare, Banking, and Retail.`
-          : 'Staff- and Senior-level Software Engineer with 9+ years of experience architecting, scaling, and operating high-throughput backend systems, cloud-native microservices, and production-grade Generative AI platforms across enterprise healthcare, Tier-1 banking, and global retail e-commerce. Proven expertise in building autonomous agentic workflows using Python (FastAPI), Model Context Protocol (MCP), LangChain, LangGraph, and RAG retrieval pipelines, alongside resilient distributed backends with Node.js, TypeScript, Go, and Java (Spring Boot).',
+          ? `Staff- and Senior-level Software Engineer with 10+ years of experience architecting high-throughput distributed backends and production AI systems, specializing in ${allSkills.slice(0, 5).join(', ')}. Proven track record delivering 99.95% availability for mission-critical platforms across Healthcare, Banking, and Retail.`
+          : 'Staff- and Senior-level Software Engineer with 10+ years of experience architecting, scaling, and operating high-throughput backend systems, cloud-native microservices, and production-grade Generative AI platforms across enterprise healthcare, Tier-1 banking, and global retail e-commerce. Proven expertise in building autonomous agentic workflows using Python (FastAPI), Model Context Protocol (MCP), LangChain, LangGraph, and RAG retrieval pipelines, alongside resilient distributed backends with Node.js, TypeScript, Go, and Java (Spring Boot).',
         openTo: `${jdAnalysis.country || 'Germany, Netherlands, Ireland, UK, USA, Singapore'} | Visa Sponsorship Required`,
       },
       experience: [
@@ -2326,7 +2326,7 @@ Ashish Kumar Singh`;
         },
       ],
       education: [
-        { id: 'edu-1', degree: 'Master of Computer Applications (MCA)', school: 'Uttar Pradesh Technical University (UPTU)', location: 'India', year: '2013 – 2016' },
+        { id: 'edu-1', degree: 'Master of Computer Application', school: 'Guru Gobind Singh Indraprastha University', location: 'India', year: '2016' },
         { id: 'edu-2', degree: 'Bachelor of Computer Applications (BCA)', school: 'UPRTO University', location: 'India', year: '2009 – 2012' },
       ],
       certificates: [
@@ -2402,7 +2402,7 @@ Ashish Kumar Singh`;
         resumeData,
         atsScore: 78,
         atsBreakdown: { keywordMatch: 75, experienceMatch: 80, skillsMatch: 72, formattingScore: 95 },
-        coverLetter: `Dear Hiring Manager,\n\nI am excited to apply for the ${params.jobTitle || 'Software Engineer'} position at ${params.companyName || 'your company'}. With 9+ years of experience in ${skills.slice(0, 4).join(', ')}, I am confident in my ability to contribute immediately.\n\nI welcome the opportunity to discuss how my experience aligns with your requirements.\n\nBest regards,\nAshish Kumar Singh`,
+        coverLetter: `Dear Hiring Manager,\n\nI am excited to apply for the ${params.jobTitle || 'Software Engineer'} position at ${params.companyName || 'your company'}. With 10+ years of experience in ${skills.slice(0, 4).join(', ')}, I am confident in my ability to contribute immediately.\n\nI welcome the opportunity to discuss how my experience aligns with your requirements.\n\nBest regards,\nAshish Kumar Singh`,
         networkingTips: [
           `Connect with ${params.companyName || 'company'} engineers on LinkedIn.`,
           'Request an informational interview before applying.',
@@ -2480,7 +2480,7 @@ Ashish Kumar Singh`;
       const basics = resumeData.basics as Record<string, string> | undefined;
       if (basics && basics.summary) {
         if (/langgraph|model context protocol|\bmcp\b|fastapi|generative ai context retrieval/i.test(basics.summary)) {
-          basics.summary = `Staff- and Senior-level Frontend & Web Platform Engineer with 9+ years of experience architecting high-performance enterprise user interfaces, micro-frontends, design systems, and responsive web applications across Tier-1 healthcare, consumer banking, and global retail e-commerce. Proven track record leading frontend architecture across 6+ distributed engineering teams, pioneering enterprise Webpack Module Federation with React 18/19 and Next.js (App Router, Server Components), and driving dramatic performance optimizations: slashing bundle sizes by 35%, elevating Lighthouse scores from 62 to 94, and accelerating page load speeds by 40%. Deep expertise in TypeScript, state management (Redux Toolkit, Zustand, React Query), Core Web Vitals (LCP, INP, CLS), client-side caching, and WCAG 2.1 AA accessibility standards.`;
+          basics.summary = `Staff- and Senior-level Frontend & Web Platform Engineer with 10+ years of experience architecting high-performance enterprise user interfaces, micro-frontends, design systems, and responsive web applications across Tier-1 healthcare, consumer banking, and global retail e-commerce. Proven track record leading frontend architecture across 6+ distributed engineering teams, pioneering enterprise Webpack Module Federation with React 18/19 and Next.js (App Router, Server Components), and driving dramatic performance optimizations: slashing bundle sizes by 35%, elevating Lighthouse scores from 62 to 94, and accelerating page load speeds by 40%. Deep expertise in TypeScript, state management (Redux Toolkit, Zustand, React Query), Core Web Vitals (LCP, INP, CLS), client-side caching, and WCAG 2.1 AA accessibility standards.`;
         }
       }
 

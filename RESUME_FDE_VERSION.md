@@ -8,7 +8,7 @@
 ---
 
 ## PROFESSIONAL SUMMARY
-Staff-level Forward Deployed Engineer (FDE) and Technical Solutions Lead with **9+ years of experience** bridging enterprise client problem spaces and high-velocity engineering execution across Fortune 50 healthcare (**UnitedHealth Group**), Tier-1 consumer banking (**DBS Bank Singapore**), and global retail e-commerce (**Walmart**). Proven track record deploying complex AI platforms, distributed systems, and cloud architectures directly into customer environments—driving **0-to-1 solutions from initial discovery through resilient enterprise production**. Trusted technical advisor to C-level executives, medical directors, and security compliance boards, translating high-stakes business requirements into robust software while guaranteeing **99.95%+ availability**, strict regulatory compliance (**HIPAA, MAS**), zero transaction data loss, and quantifiable ROI (**3.4x operational ROI, 40% clinician workflow acceleration**). Deep hands-on full-stack and platform mastery in **Python (FastAPI), Go, Java (Spring Boot), TypeScript, React, Docker, Kubernetes, AWS, Azure, and Model Context Protocol (MCP)**.
+Staff-level Forward Deployed Engineer (FDE) and Technical Solutions Lead with **10+ years of experience** bridging enterprise client problem spaces and high-velocity engineering execution across Fortune 50 healthcare (**UnitedHealth Group**), Tier-1 consumer banking (**DBS Bank Singapore**), and global retail e-commerce (**Walmart**). Proven track record deploying complex AI platforms, distributed systems, and cloud architectures directly into customer environments—driving **0-to-1 solutions from initial discovery through resilient enterprise production**. Trusted technical advisor to C-level executives, medical directors, and security compliance boards, translating high-stakes business requirements into robust software while guaranteeing **99.95%+ availability**, strict regulatory compliance (**HIPAA, MAS**), zero transaction data loss, and quantifiable ROI (**3.4x operational ROI, 40% clinician workflow acceleration**). Deep hands-on full-stack and platform mastery in **Python (FastAPI), Go, Java (Spring Boot), TypeScript, React, Docker, Kubernetes, AWS, Azure, and Model Context Protocol (MCP)**.
 
 ---
 
@@ -82,7 +82,7 @@ Staff-level Forward Deployed Engineer (FDE) and Technical Solutions Lead with **
 ---
 
 ## EDUCATION
-- **Master of Computer Applications (MCA)** — Uttar Pradesh Technical University (UPTU), India | *2013 – 2016*
+- **Master of Computer Application** — Guru Gobind Singh Indraprastha University, India | *2016*
 - **Bachelor of Computer Applications (BCA)** — UPRTO University, India | *2009 – 2012*
 
 ---

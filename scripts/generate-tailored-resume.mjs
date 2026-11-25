@@ -1132,7 +1132,7 @@ export function generateTailoredResumePackage(resumeText, jdText, options = {}) 
   let experiences = [];
 
   if (isAI) {
-    summary = `Accomplished **${targetJobTitle}** with **9+ years of software engineering experience**, specializing in architecting and deploying production **Generative AI, RAG pipelines, vector search, and autonomous agentic systems** across healthcare, banking, and high-concurrency enterprise platforms. Hands-on expertise in **Python, Model Context Protocol (MCP), LangGraph, LangChain, and dense embeddings** across **Azure (Azure OpenAI, AKS), AWS, and GCP**. Proven track record taking enterprise AI solutions from **exploration to production**, establishing rigorous **prompt design, structured output enforcement (Pydantic, JSON Schema)**, and quantitative **LLM evaluation (Ragas, Deepeval)**, while maintaining full-stack **MLOps/LLMOps observability (LangSmith, OpenTelemetry)**, classical ML baselines (**PyTorch, scikit-learn**), and delivering 99.95%+ availability.`;
+    summary = `Accomplished **${targetJobTitle}** with **10+ years of software engineering experience**, specializing in architecting and deploying production **Generative AI, RAG pipelines, vector search, and autonomous agentic systems** across healthcare, banking, and high-concurrency enterprise platforms. Hands-on expertise in **Python, Model Context Protocol (MCP), LangGraph, LangChain, and dense embeddings** across **Azure (Azure OpenAI, AKS), AWS, and GCP**. Proven track record taking enterprise AI solutions from **exploration to production**, establishing rigorous **prompt design, structured output enforcement (Pydantic, JSON Schema)**, and quantitative **LLM evaluation (Ragas, Deepeval)**, while maintaining full-stack **MLOps/LLMOps observability (LangSmith, OpenTelemetry)**, classical ML baselines (**PyTorch, scikit-learn**), and delivering 99.95%+ availability.`;
 
     skillsCategories = [
       {
@@ -1232,7 +1232,7 @@ export function generateTailoredResumePackage(resumeText, jdText, options = {}) 
     ];
   } else {
     // SRE / Infrastructure / Systems Track
-    summary = `Results-driven **${targetJobTitle}** with **9+ years of experience** architecting resilient cloud infrastructure, automating distributed systems, and maintaining high-availability production environments across Tier-1 enterprise platforms. Deep hands-on expertise in **AWS, Kubernetes, Terraform, Ansible, and Bash scripting**, specializing in zero-downtime **infrastructure migrations**, **dynamic environments**, and enterprise database and message queue administration (**PostgreSQL, MongoDB, Redis, RabbitMQ**). Proven track record reducing MTTR by 45%, eliminating production deployment downtime, and ensuring 99.95%+ availability through proactive observability (**Prometheus, Grafana, Loki, Sentry**), deep **Linux troubleshooting (networking & filesystems)**, and disciplined **incident response and alert management**.`;
+    summary = `Results-driven **${targetJobTitle}** with **10+ years of experience** architecting resilient cloud infrastructure, automating distributed systems, and maintaining high-availability production environments across Tier-1 enterprise platforms. Deep hands-on expertise in **AWS, Kubernetes, Terraform, Ansible, and Bash scripting**, specializing in zero-downtime **infrastructure migrations**, **dynamic environments**, and enterprise database and message queue administration (**PostgreSQL, MongoDB, Redis, RabbitMQ**). Proven track record reducing MTTR by 45%, eliminating production deployment downtime, and ensuring 99.95%+ availability through proactive observability (**Prometheus, Grafana, Loki, Sentry**), deep **Linux troubleshooting (networking & filesystems)**, and disciplined **incident response and alert management**.`;
 
     skillsCategories = [
       {
@@ -1385,7 +1385,7 @@ ${isAI ? `### Enterprise Autonomous AI Agent & MCP Platform
 ---
 
 ## EDUCATION
-- **Master of Computer Applications (MCA)** — Uttar Pradesh Technical University (UPTU), India | *2013 – 2016*
+- **Master of Computer Application** — Guru Gobind Singh Indraprastha University, India | *2016*
 - **Bachelor of Computer Applications (BCA)** — UPRTO University, India | *2009 – 2012*
 
 ---
@@ -1487,7 +1487,7 @@ ${isAI ? `### Enterprise Autonomous AI Agent & MCP Platform
   // Cover Letter Generation
   const coverLetter = `Dear Hiring Manager at ${targetCompany},
 
-I am writing to express my enthusiastic interest in the ${targetJobTitle} position in ${targetLocation}. With over 9 years of hands-on software engineering experience architecting resilient cloud infrastructure, distributed backend platforms, and production-grade ${isAI ? 'Generative AI and agentic systems' : 'Site Reliability Engineering platforms'} across healthcare, Tier-1 banking, and high-volume retail e-commerce, I am excited by ${targetCompany}'s technical innovation.
+I am writing to express my enthusiastic interest in the ${targetJobTitle} position in ${targetLocation}. With over 10 years of hands-on software engineering experience architecting resilient cloud infrastructure, distributed backend platforms, and production-grade ${isAI ? 'Generative AI and agentic systems' : 'Site Reliability Engineering platforms'} across healthcare, Tier-1 banking, and high-volume retail e-commerce, I am excited by ${targetCompany}'s technical innovation.
 
 Throughout my career, I have specialized in ${isAI ? 'building production AI systems from exploration to enterprise scale, designing advanced RAG pipelines, vector search, prompt design, structured outputs, and LLM evaluation benchmarks using Python, LangGraph, LangChain, and Model Context Protocol (MCP)' : 'building and operating cloud-native infrastructure on AWS using Kubernetes, Terraform, Ansible, and Bash scripting, leading zero-downtime infrastructure migrations, and maintaining high-availability distributed systems'}. My background combines deep system architecture with disciplined operational rigor, consistently achieving 99.95%+ availability and measurable business ROI.
 

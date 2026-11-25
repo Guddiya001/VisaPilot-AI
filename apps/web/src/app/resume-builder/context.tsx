@@ -21,9 +21,10 @@ import {
 } from './types';
 
 // ─── Storage Key ───────────────────────────────────────────
-const STORAGE_KEY = 'visapilot_resume_data_v2_1';
+const STORAGE_KEY = 'visapilot_resume_data_v2_2';
 const LEGACY_STORAGE_KEY = 'visapilot_resume_data';
 const V2_STORAGE_KEY = 'visapilot_resume_data_v2';
+const V2_1_STORAGE_KEY = 'visapilot_resume_data_v2_1';
 export const STORED_SKILLS_KEY = 'visapilot_stored_skills';
 
 /**
@@ -462,12 +463,13 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
         // Clean up stale legacy storage
         localStorage.removeItem(LEGACY_STORAGE_KEY);
         localStorage.removeItem(V2_STORAGE_KEY);
+        localStorage.removeItem(V2_1_STORAGE_KEY);
 
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored);
-          // Only load if it matches profileVersion 2.1 and candidate profile
-          if (parsed.metadata?.profileVersion === '2.1' && parsed.basics?.name === 'Ashish Kumar Singh') {
+          // Only load if it matches profileVersion 2.2 and candidate profile
+          if (parsed.metadata?.profileVersion === '2.2' && parsed.basics?.name === 'Ashish Kumar Singh') {
             return { ...initial, ...parsed };
           }
         }

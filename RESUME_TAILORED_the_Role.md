@@ -9,7 +9,7 @@
 ---
 
 ## PROFESSIONAL SUMMARY
-Accomplished **At Siemens, we are transforming the everyday through digital innovation and industrial AI. We are looking for an exceptional Senior AI Engineer to join our global technology team to build mission-critical, enterprise-scale AI platforms and intelligent applications. You will spearhead our generative AI initiatives, transforming state-of-the-art research into robust, high-availability production AI systems.** with **9+ years of software engineering experience**, specializing in architecting and deploying production **Generative AI, RAG pipelines, vector search, and autonomous agentic systems** across healthcare, banking, and high-concurrency enterprise platforms. Hands-on expertise in **Python, Model Context Protocol (MCP), LangGraph, LangChain, and dense embeddings** across **Azure (Azure OpenAI, AKS), AWS, and GCP**. Proven track record taking enterprise AI solutions from **exploration to production**, establishing rigorous **prompt design, structured output enforcement (Pydantic, JSON Schema)**, and quantitative **LLM evaluation (Ragas, Deepeval)**, while maintaining full-stack **MLOps/LLMOps observability (LangSmith, OpenTelemetry)**, classical ML baselines (**PyTorch, scikit-learn**), and delivering 99.95%+ availability. Skilled in **Retrieval-Augmented Generation** for high-impact production engineering. Skilled in **AI Agents** for high-impact production engineering.
+Accomplished **At Siemens, we are transforming the everyday through digital innovation and industrial AI. We are looking for an exceptional Senior AI Engineer to join our global technology team to build mission-critical, enterprise-scale AI platforms and intelligent applications. You will spearhead our generative AI initiatives, transforming state-of-the-art research into robust, high-availability production AI systems.** with **10+ years of software engineering experience**, specializing in architecting and deploying production **Generative AI, RAG pipelines, vector search, and autonomous agentic systems** across healthcare, banking, and high-concurrency enterprise platforms. Hands-on expertise in **Python, Model Context Protocol (MCP), LangGraph, LangChain, and dense embeddings** across **Azure (Azure OpenAI, AKS), AWS, and GCP**. Proven track record taking enterprise AI solutions from **exploration to production**, establishing rigorous **prompt design, structured output enforcement (Pydantic, JSON Schema)**, and quantitative **LLM evaluation (Ragas, Deepeval)**, while maintaining full-stack **MLOps/LLMOps observability (LangSmith, OpenTelemetry)**, classical ML baselines (**PyTorch, scikit-learn**), and delivering 99.95%+ availability. Skilled in **Retrieval-Augmented Generation** for high-impact production engineering. Skilled in **AI Agents** for high-impact production engineering.
 
 ---
 
@@ -83,7 +83,7 @@ Accomplished **At Siemens, we are transforming the everyday through digital inno
 ---
 
 ## EDUCATION
-- **Master of Computer Applications (MCA)** — Uttar Pradesh Technical University (UPTU), India | *2013 – 2016*
+- **Master of Computer Application** — Guru Gobind Singh Indraprastha University, India | *2016*
 - **Bachelor of Computer Applications (BCA)** — UPRTO University, India | *2009 – 2012*
 
 ---

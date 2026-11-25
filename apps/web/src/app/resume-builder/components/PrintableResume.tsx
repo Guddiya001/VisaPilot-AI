@@ -14,21 +14,97 @@ export interface JobInfo {
 export function openPrintWindow(data: ResumeData, jobInfo?: JobInfo | null): void {
   const htmlContent = generatePrintHTML(data);
   
-  // Extract only the print CSS. In a real app we'd fetch the CSS file or rely on styled-components.
-  // For this, we'll inline the core print rules from resume-preview.css
   const printStyles = `
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       padding: 0;
-      background: white;
+      background: #f8fafc;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
-      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #1e293b;
+    }
+    .no-print-bar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+      z-index: 10000;
+      font-family: inherit;
+    }
+    .no-print-bar-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .no-print-bar-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .no-print-bar-tip {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .no-print-bar-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .print-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: background 0.15s ease;
+    }
+    .print-btn:hover {
+      background: #1d4ed8;
+    }
+    .close-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #334155;
+      color: #f1f5f9;
+      border: none;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .close-btn:hover {
+      background: #475569;
     }
     .resume-print-window {
       width: 100%;
       max-width: 210mm;
-      margin: 0 auto;
+      min-height: 297mm;
+      margin: 24px auto;
+      background: #ffffff;
+      padding: 12mm 15mm;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+      border-radius: 4px;
     }
     .rp-page {
       padding: 0;
@@ -146,8 +222,37 @@ export function openPrintWindow(data: ResumeData, jobInfo?: JobInfo | null): voi
       size: A4;
     }
     @media print {
-      body { margin: 0; padding: 0; }
-      .rp-role { page-break-inside: avoid; break-inside: avoid; }
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+      }
+      .no-print-bar {
+        display: none !important;
+      }
+      .resume-print-window {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        min-height: auto !important;
+      }
+      .rp-role {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+      /* Hide any Chrome extension injected UI (VisaPilot pill, field badges) */
+      #visapilot-autopilot-pill,
+      .visapilot-shadow-badge-host {
+        display: none !important;
+        visibility: hidden !important;
+      }
+    }
+    /* Also hide extension UI on screen in the print-preview window */
+    #visapilot-autopilot-pill,
+    .visapilot-shadow-badge-host {
+      display: none !important;
     }
   `;
 
@@ -171,23 +276,46 @@ export function openPrintWindow(data: ResumeData, jobInfo?: JobInfo | null): voi
       <style>${printStyles}</style>
     </head>
     <body>
+      <div class="no-print-bar">
+        <div class="no-print-bar-info">
+          <span class="no-print-bar-title">📄 ${docTitle.replace(/_/g, ' ')}</span>
+          <span class="no-print-bar-tip">💡 Tip: In print destination, select <strong>&quot;Save as PDF&quot;</strong> to export</span>
+        </div>
+        <div class="no-print-bar-actions">
+          <button class="print-btn" onclick="window.print()">
+            🖨️ Print / Save as PDF
+          </button>
+          <button class="close-btn" onclick="window.close()">
+            ✕ Close
+          </button>
+        </div>
+      </div>
       ${htmlContent}
       <script>
-        setTimeout(() => {
-          window.print();
-          window.close();
-        }, 500);
+        function triggerPrint() {
+          setTimeout(function() {
+            window.print();
+          }, 400);
+        }
+        if (document.readyState === 'complete') {
+          triggerPrint();
+        } else {
+          window.addEventListener('load', triggerPrint);
+        }
       </script>
     </body>
     </html>
   `;
 
   const printWin = window.open('', '_blank');
-  if (printWin) {
-    printWin.document.open();
-    printWin.document.write(fullHtml);
-    printWin.document.close();
+  if (!printWin) {
+    alert('Popup was blocked by your browser. Please allow popups for this site to export or print your resume.');
+    return;
   }
+  printWin.document.open();
+  printWin.document.write(fullHtml);
+  printWin.document.close();
+  printWin.focus();
 }
 
 export function openCoverLetterPrintWindow(data: ResumeData, jobInfo?: JobInfo | null): void {
@@ -205,30 +333,109 @@ export function openCoverLetterPrintWindow(data: ResumeData, jobInfo?: JobInfo |
     </header>
   `;
 
+  const paragraphs = data.coverLetter?.paragraphs || [];
   const coverLetterHtml = `
     <div class="resume-print-window">
       <main class="rp-page">
         ${generateHeader()}
         <section class="rp-section rp-cover-letter-content" style="margin-top: 30pt;">
-          ${data.coverLetter.paragraphs.map(p => `<p>${p}</p>`).join('')}
+          ${paragraphs.map(p => `<p>${p}</p>`).join('')}
         </section>
       </main>
     </div>
   `;
 
   const printStyles = `
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       padding: 0;
-      background: white;
+      background: #f8fafc;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
-      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #1e293b;
+    }
+    .no-print-bar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+      z-index: 10000;
+      font-family: inherit;
+    }
+    .no-print-bar-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .no-print-bar-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .no-print-bar-tip {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .no-print-bar-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .print-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: background 0.15s ease;
+    }
+    .print-btn:hover {
+      background: #1d4ed8;
+    }
+    .close-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #334155;
+      color: #f1f5f9;
+      border: none;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .close-btn:hover {
+      background: #475569;
     }
     .resume-print-window {
       width: 100%;
       max-width: 210mm;
-      margin: 0 auto;
+      min-height: 297mm;
+      margin: 24px auto;
+      background: #ffffff;
+      padding: 15mm 20mm;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+      border-radius: 4px;
     }
     .rp-page {
       padding: 0;
@@ -268,9 +475,36 @@ export function openCoverLetterPrintWindow(data: ResumeData, jobInfo?: JobInfo |
     }
     @page {
       margin: 15mm 20mm;
+      size: A4;
     }
     @media print {
-      body { margin: 0; }
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+      }
+      .no-print-bar {
+        display: none !important;
+      }
+      .resume-print-window {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        min-height: auto !important;
+      }
+      /* Hide any Chrome extension injected UI (VisaPilot pill, field badges) */
+      #visapilot-autopilot-pill,
+      .visapilot-shadow-badge-host {
+        display: none !important;
+        visibility: hidden !important;
+      }
+    }
+    /* Also hide extension UI on screen in the print-preview window */
+    #visapilot-autopilot-pill,
+    .visapilot-shadow-badge-host {
+      display: none !important;
     }
   `;
 
@@ -294,23 +528,46 @@ export function openCoverLetterPrintWindow(data: ResumeData, jobInfo?: JobInfo |
       <style>${printStyles}</style>
     </head>
     <body>
+      <div class="no-print-bar">
+        <div class="no-print-bar-info">
+          <span class="no-print-bar-title">📄 ${docTitle.replace(/_/g, ' ')}</span>
+          <span class="no-print-bar-tip">💡 Tip: In print destination, select <strong>&quot;Save as PDF&quot;</strong> to export</span>
+        </div>
+        <div class="no-print-bar-actions">
+          <button class="print-btn" onclick="window.print()">
+            🖨️ Print / Save as PDF
+          </button>
+          <button class="close-btn" onclick="window.close()">
+            ✕ Close
+          </button>
+        </div>
+      </div>
       ${coverLetterHtml}
       <script>
-        setTimeout(() => {
-          window.print();
-          window.close();
-        }, 500);
+        function triggerPrint() {
+          setTimeout(function() {
+            window.print();
+          }, 400);
+        }
+        if (document.readyState === 'complete') {
+          triggerPrint();
+        } else {
+          window.addEventListener('load', triggerPrint);
+        }
       </script>
     </body>
     </html>
   `;
 
   const printWin = window.open('', '_blank');
-  if (printWin) {
-    printWin.document.open();
-    printWin.document.write(fullHtml);
-    printWin.document.close();
+  if (!printWin) {
+    alert('Popup was blocked by your browser. Please allow popups for this site to export or print your cover letter.');
+    return;
   }
+  printWin.document.open();
+  printWin.document.write(fullHtml);
+  printWin.document.close();
+  printWin.focus();
 }
 
 export const PrintableResume = {

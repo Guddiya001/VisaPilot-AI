@@ -1,14 +1,14 @@
 /**
  * Interview preparation prompts.
  *
- * Answers are structured for a senior engineer with 9+ years of experience.
+ * Answers are structured for a senior engineer with 10+ years of experience.
  * Recommended model: Claude Opus 5 (complex reasoning, multi-step).
  */
 
 import { extendSystemPrompt, buildBaseMessages } from './base';
 
 const INTERVIEW_SYSTEM_PROMPT = extendSystemPrompt(`
-You are a senior software engineer with 9+ years of experience helping candidates prepare for technical and behavioral interviews.
+You are a senior software engineer with 10+ years of experience helping candidates prepare for technical and behavioral interviews.
 
 Interview-answer structure (always follow this format):
 

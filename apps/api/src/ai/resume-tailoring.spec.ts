@@ -38,7 +38,7 @@ describe('Resume Update & Tailoring against Job Description', () => {
       github: 'https://github.com/guddiya001',
       portfolio: 'https://ashishkumarsingh.vercel.app',
       summary:
-        'Staff-level Backend Engineer with 9+ years of experience architecting distributed systems and building production-grade AI intelligence layers. Specialized in designing high-autonomy Agentic workflows, Model Context Protocol (MCP) integrations, and scalable retrieval orchestration APIs.',
+        'Staff-level Backend Engineer with 10+ years of experience architecting distributed systems and building production-grade AI intelligence layers. Specialized in designing high-autonomy Agentic workflows, Model Context Protocol (MCP) integrations, and scalable retrieval orchestration APIs.',
     },
     experience: [
       {
@@ -105,7 +105,7 @@ Requirements:
         if (userMsg.includes('ATS Resume Tailor')) {
           return JSON.stringify({
             tailoredSummary:
-              'Senior Backend Platform Engineer with 9+ years of experience architecting high-throughput distributed systems and AI platform integrations. Expert in TypeScript, Node.js, Python, Kafka, and AWS, with a proven track record delivering resilient microservices and AI agent workflows tailored for Zalando SE.',
+              'Senior Backend Platform Engineer with 10+ years of experience architecting high-throughput distributed systems and AI platform integrations. Expert in TypeScript, Node.js, Python, Kafka, and AWS, with a proven track record delivering resilient microservices and AI agent workflows tailored for Zalando SE.',
             addedSkills: [
               'TypeScript',
               'Node.js',
@@ -172,7 +172,7 @@ Requirements:
               github: 'https://github.com/guddiya001',
               portfolio: 'https://ashishkumarsingh.vercel.app',
               summary:
-                'Accomplished Senior Backend Platform Engineer with 9+ years architecting event-driven microservices and distributed systems on AWS, Kafka, Node.js, and TypeScript. Proven expertise integrating AI Agents and high-throughput APIs serving millions of global users.',
+                'Accomplished Senior Backend Platform Engineer with 10+ years architecting event-driven microservices and distributed systems on AWS, Kafka, Node.js, and TypeScript. Proven expertise integrating AI Agents and high-throughput APIs serving millions of global users.',
               openTo: 'Berlin, Germany / European Union',
             },
             experience: [
@@ -206,7 +206,7 @@ Requirements:
             education: [
               {
                 id: 'edu-1',
-                degree: 'Master of Computer Applications (MCA)',
+                degree: 'Master of Computer Application',
                 school: 'Guru Gobind Singh Indraprastha University',
                 year: '2016',
               },

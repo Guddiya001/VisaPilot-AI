@@ -14,12 +14,14 @@ import {
   X,
   Plane,
   LogIn,
+  Zap,
 } from 'lucide-react';
 import { useState } from 'react';
 import clsx from 'clsx';
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/' },
+  { label: 'Autopilot', icon: Zap, href: '/autopilot' },
   { label: 'Job Search', icon: Search, href: '/jobs' },
   { label: 'Applications', icon: Briefcase, href: '/applications' },
   { label: 'Resume Builder', icon: FileText, href: '/resume-builder' },

@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "VisaPilot AI Autopilot",
+  "version": "1.0.0",
+  "description": "Zero-LLM First AI Autopilot for Autonomous Job Applications & Form Filling",
+  "permissions": [
+    "sidePanel",
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "*://*.greenhouse.io/*",
+    "*://*.myworkdayjobs.com/*",
+    "*://*.myworkday.com/*",
+    "*://*.lever.co/*"
+  ],
+  "background": {
+    "service_worker": "background/index.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.greenhouse.io/*",
+        "*://*.myworkdayjobs.com/*",
+        "*://*.myworkday.com/*",
+        "*://*.lever.co/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*"
+      ],
+      "js": [
+        "content/index.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "side_panel": {
+    "default_path": "sidepanel/index.html"
+  },
+  "action": {
+    "default_title": "Open VisaPilot Autopilot"
+  }
+}

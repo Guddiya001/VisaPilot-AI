@@ -9,7 +9,7 @@
 ---
 
 ## PROFESSIONAL SUMMARY
-Accomplished **Staff AI & Platform Engineer** with **9+ years of software engineering experience**, specializing in architecting and deploying production **Generative AI, RAG pipelines, vector search, and autonomous agentic systems** across healthcare, banking, and high-concurrency enterprise platforms. Hands-on expertise in **Python, Model Context Protocol (MCP), LangGraph, LangChain, and dense embeddings** across **Azure (Azure OpenAI, AKS), AWS, and GCP**. Proven track record taking enterprise AI solutions from **exploration to production**, establishing rigorous **prompt design, structured output enforcement (Pydantic, JSON Schema)**, and quantitative **LLM evaluation (Ragas, Deepeval)**, while maintaining full-stack **MLOps/LLMOps observability (LangSmith, OpenTelemetry)**, classical ML baselines (**PyTorch, scikit-learn**), and delivering 99.95%+ availability. Demonstrates advanced engineering expertise across **AI Agents**, **Tool Use**, **Milvus**, **Weaviate**, **vLLM**, **DeepSpeed**, **Triton Inference Server**, **Triton**, **TensorRT-LLM**, **TensorRT**, **CUDA**, **Ray**, **Claude API**, **Terraform**, **GitOps**, **Rust**, **C++**, establishing scalable architectures and high-throughput production delivery.
+Accomplished **Staff AI & Platform Engineer** with **10+ years of software engineering experience**, specializing in architecting and deploying production **Generative AI, RAG pipelines, vector search, and autonomous agentic systems** across healthcare, banking, and high-concurrency enterprise platforms. Hands-on expertise in **Python, Model Context Protocol (MCP), LangGraph, LangChain, and dense embeddings** across **Azure (Azure OpenAI, AKS), AWS, and GCP**. Proven track record taking enterprise AI solutions from **exploration to production**, establishing rigorous **prompt design, structured output enforcement (Pydantic, JSON Schema)**, and quantitative **LLM evaluation (Ragas, Deepeval)**, while maintaining full-stack **MLOps/LLMOps observability (LangSmith, OpenTelemetry)**, classical ML baselines (**PyTorch, scikit-learn**), and delivering 99.95%+ availability. Demonstrates advanced engineering expertise across **AI Agents**, **Tool Use**, **Milvus**, **Weaviate**, **vLLM**, **DeepSpeed**, **Triton Inference Server**, **Triton**, **TensorRT-LLM**, **TensorRT**, **CUDA**, **Ray**, **Claude API**, **Terraform**, **GitOps**, **Rust**, **C++**, establishing scalable architectures and high-throughput production delivery.
 
 ---
 
@@ -97,7 +97,7 @@ Accomplished **Staff AI & Platform Engineer** with **9+ years of software engine
 ---
 
 ## EDUCATION
-- **Master of Computer Applications (MCA)** — Uttar Pradesh Technical University (UPTU), India | *2013 – 2016*
+- **Master of Computer Application** — Guru Gobind Singh Indraprastha University, India | *2016*
 - **Bachelor of Computer Applications (BCA)** — UPRTO University, India | *2009 – 2012*
 
 ---

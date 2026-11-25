@@ -179,7 +179,7 @@ LinkedIn: https://www.linkedin.com/in/ashish-kumar-singh1986 | GitHub: https://g
 ---
 
 ## PROFESSIONAL SUMMARY
-Staff- and Senior-level Software Engineer with 9+ years of experience architecting, scaling, and operating high-throughput backend systems, cloud-native microservices, and production-grade Generative AI platforms across enterprise healthcare, Tier-1 banking, and global retail e-commerce. Proven expertise in building autonomous agentic workflows using Python (FastAPI), Model Context Protocol (MCP), LangChain, LangGraph, and RAG retrieval pipelines, alongside resilient distributed backends with Node.js, TypeScript, Go, and Java (Spring Boot). Track record of driving 0-to-1 greenfield engineering initiatives, optimizing high-scale databases (PostgreSQL, Redis, Kafka), lowering latency by 40%, and maintaining 99.95% production availability for systems handling millions of daily requests.
+Staff- and Senior-level Software Engineer with 10+ years of experience architecting, scaling, and operating high-throughput backend systems, cloud-native microservices, and production-grade Generative AI platforms across enterprise healthcare, Tier-1 banking, and global retail e-commerce. Proven expertise in building autonomous agentic workflows using Python (FastAPI), Model Context Protocol (MCP), LangChain, LangGraph, and RAG retrieval pipelines, alongside resilient distributed backends with Node.js, TypeScript, Go, and Java (Spring Boot). Track record of driving 0-to-1 greenfield engineering initiatives, optimizing high-scale databases (PostgreSQL, Redis, Kafka), lowering latency by 40%, and maintaining 99.95% production availability for systems handling millions of daily requests.
 
 ---
 
@@ -236,7 +236,7 @@ Staff- and Senior-level Software Engineer with 9+ years of experience architecti
 ## EDUCATION & CERTIFICATIONS
 
 ### Education
-- **Master of Computer Applications (MCA)** — Uttar Pradesh Technical University (UPTU), India | *2013 – 2016*
+- **Master of Computer Application** — Guru Gobind Singh Indraprastha University, India | *2016*
 - **Bachelor of Computer Applications (BCA)** — UPRTO University, India | *2009 – 2012*
 
 ### Certifications & Continuous Learning
@@ -272,14 +272,14 @@ export const SAMPLE_RESUME_DATA: ResumeData = {
       "https://ashishkumarsingh.vercel.app",
 
     summary:
-      "Staff- and Senior-level Software Engineer with 9+ years of experience architecting, scaling, and operating high-throughput backend systems, cloud-native microservices, and production-grade Generative AI platforms across enterprise healthcare, Tier-1 banking, and global retail e-commerce. Proven expertise in building autonomous agentic workflows using Python (FastAPI), Model Context Protocol (MCP), LangChain, LangGraph, and RAG retrieval pipelines, alongside resilient distributed backends with Node.js, TypeScript, Go, and Java (Spring Boot). Track record of driving 0-to-1 greenfield engineering initiatives, optimizing high-scale databases (PostgreSQL, Redis, Kafka), lowering latency by 40%, and maintaining 99.95% production availability for systems handling millions of daily requests.",
+      "Staff- and Senior-level Software Engineer with 10+ years of experience architecting, scaling, and operating high-throughput backend systems, cloud-native microservices, and production-grade Generative AI platforms across enterprise healthcare, Tier-1 banking, and global retail e-commerce. Proven expertise in building autonomous agentic workflows using Python (FastAPI), Model Context Protocol (MCP), LangChain, LangGraph, and RAG retrieval pipelines, alongside resilient distributed backends with Node.js, TypeScript, Go, and Java (Spring Boot). Track record of driving 0-to-1 greenfield engineering initiatives, optimizing high-scale databases (PostgreSQL, Redis, Kafka), lowering latency by 40%, and maintaining 99.95% production availability for systems handling millions of daily requests.",
 
     openTo:
       "Germany, Netherlands, Ireland, UK, USA, Singapore | Visa Sponsorship Required"
   },
 
   candidateProfile: {
-    totalExperienceYears: 9,
+    totalExperienceYears: 10,
 
     seniority: [
       "Senior Software Engineer",
@@ -984,10 +984,10 @@ export const SAMPLE_RESUME_DATA: ResumeData = {
   education: [
     {
       id: "edu-1",
-      degree: "Master of Computer Applications (MCA)",
-      school: "Uttar Pradesh Technical University (UPTU)",
+      degree: "Master of Computer Application",
+      school: "Guru Gobind Singh Indraprastha University",
       location: "India",
-      year: "2013 – 2016"
+      year: "2016"
     },
     {
       id: "edu-2",
@@ -1021,7 +1021,7 @@ export const SAMPLE_RESUME_DATA: ResumeData = {
   coverLetter: {
     paragraphs: [
       "Dear Hiring Manager,",
-      "I am a Senior Software Engineer with 9+ years of experience building production-grade AI, backend, full-stack, cloud-native, and distributed systems across healthcare, banking, retail, enterprise SaaS, and AI platforms.",
+      "I am a Senior Software Engineer with 10+ years of experience building production-grade AI, backend, full-stack, cloud-native, and distributed systems across healthcare, banking, retail, enterprise SaaS, and AI platforms.",
       "My recent work focuses on Generative AI, AI agents, agentic workflows, RAG, LangChain, LangGraph, MCP, LLM integrations, vector databases, and AI observability, combined with strong backend and cloud engineering experience using Python, FastAPI, Node.js, TypeScript, React, PostgreSQL, AWS, Azure, GCP, Docker, Kubernetes, and Terraform.",
       "I bring a technical-generalist mindset and enjoy owning problems end-to-end—from architecture and implementation through deployment, observability, reliability, and production operations. I have also led architecture discussions, code reviews, mentoring, and cross-functional delivery across distributed engineering teams.",
       "I am open to international relocation and require employer-sponsored work authorization where applicable.",
@@ -1033,7 +1033,7 @@ export const SAMPLE_RESUME_DATA: ResumeData = {
   },
 
   metadata: {
-    profileVersion: "2.1",
+    profileVersion: "2.2",
 
     optimizationMode:
       "JD-specific dynamic optimization",
@@ -1215,10 +1215,10 @@ export const FRONTEND_HEAVY_RESUME_DATA: ResumeData = {
   education: [
     {
       id: "fe-edu-1",
-      degree: "Master of Computer Applications (MCA)",
-      school: "Uttar Pradesh Technical University (UPTU)",
+      degree: "Master of Computer Application",
+      school: "Guru Gobind Singh Indraprastha University",
       location: "India",
-      year: "2013 – 2016",
+      year: "2016",
     },
     {
       id: "fe-edu-2",
@@ -1244,7 +1244,7 @@ export const FRONTEND_HEAVY_RESUME_DATA: ResumeData = {
   coverLetter: {
     paragraphs: [
       "Dear Hiring Manager,",
-      "I am a Senior / Staff Frontend Engineer with 9+ years of experience architecting enterprise web applications, micro-frontends, design systems, and high-performance user experiences across healthcare, banking, and global retail e-commerce.",
+      "I am a Senior / Staff Frontend Engineer with 10+ years of experience architecting enterprise web applications, micro-frontends, design systems, and high-performance user experiences across healthcare, banking, and global retail e-commerce.",
       "My core expertise centers on React 18/19, Next.js (App Router, Server Components), TypeScript, Webpack Module Federation, Tailwind CSS, state management (Redux Toolkit, Zustand, React Query), and deep Core Web Vitals optimization. At Persistent Systems supporting UnitedHealth Group, I decoupled monolithic portals into micro-frontends adopted across 6+ squads, reduced bundle sizes by 35%, and elevated Lighthouse scores from 62 to 94.",
       "I pride myself on bridging pixel-perfect design with rock-solid frontend engineering—enforcing WCAG 2.1 AA accessibility, end-to-end type safety, automated testing with Jest and Cypress, and seamless streaming API integrations.",
       "I would welcome the opportunity to discuss how my web platform architecture, performance tuning, and technical leadership experience can drive immediate value for your engineering team.",
@@ -1254,7 +1254,7 @@ export const FRONTEND_HEAVY_RESUME_DATA: ResumeData = {
     ],
   },
   metadata: {
-    profileVersion: "2.1",
+    profileVersion: "2.2",
     versionType: "frontend",
     optimizationMode: "Frontend & Web Platform Heavy ATS Alignment",
   },
@@ -1271,7 +1271,7 @@ export const BACKEND_HEAVY_RESUME_DATA: ResumeData = {
     linkedin: "https://www.linkedin.com/in/ashish-kumar-singh1986",
     github: "https://github.com/guddiya001",
     portfolio: "https://ashishkumarsingh.vercel.app",
-    summary: "Staff- and Senior-level Backend & Distributed Systems Engineer with 9+ years of experience architecting, scaling, and operating high-throughput microservices, event-driven streaming architectures, and mission-critical cloud backends across Tier-1 healthcare, consumer banking, and global retail e-commerce. Proven track record handling 15M+ to 25M+ daily requests/events under stringent latency budgets, driving a 40% reduction in endpoint latency and 45% reduction in primary database load. Deep polyglot backend mastery in Python (Asyncio, FastAPI), Go (Golang), Java (Spring Boot), Node.js, and TypeScript, with extensive experience managing enterprise message queues (Apache Kafka, RabbitMQ), distributed caching (Redis), and relational/NoSQL datastores (PostgreSQL, MongoDB, MySQL).",
+    summary: "Staff- and Senior-level Backend & Distributed Systems Engineer with 10+ years of experience architecting, scaling, and operating high-throughput microservices, event-driven streaming architectures, and mission-critical cloud backends across Tier-1 healthcare, consumer banking, and global retail e-commerce. Proven track record handling 15M+ to 25M+ daily requests/events under stringent latency budgets, driving a 40% reduction in endpoint latency and 45% reduction in primary database load. Deep polyglot backend mastery in Python (Asyncio, FastAPI), Go (Golang), Java (Spring Boot), Node.js, and TypeScript, with extensive experience managing enterprise message queues (Apache Kafka, RabbitMQ), distributed caching (Redis), and relational/NoSQL datastores (PostgreSQL, MongoDB, MySQL).",
     openTo: "Germany, Netherlands, Ireland, UK, USA, Singapore | Visa Sponsorship Required",
   },
   skillsFlat: [
@@ -1387,10 +1387,10 @@ export const BACKEND_HEAVY_RESUME_DATA: ResumeData = {
   education: [
     {
       id: "be-edu-1",
-      degree: "Master of Computer Applications (MCA)",
-      school: "Uttar Pradesh Technical University (UPTU)",
+      degree: "Master of Computer Application",
+      school: "Guru Gobind Singh Indraprastha University",
       location: "India",
-      year: "2013 – 2016",
+      year: "2016",
     },
     {
       id: "be-edu-2",
@@ -1416,7 +1416,7 @@ export const BACKEND_HEAVY_RESUME_DATA: ResumeData = {
   coverLetter: {
     paragraphs: [
       "Dear Hiring Manager,",
-      "I am a Senior Staff Software Engineer with 9+ years of experience designing, scaling, and operating high-throughput distributed backends, microservices architectures, and cloud-native systems across healthcare, banking, and retail e-commerce.",
+      "I am a Senior Staff Software Engineer with 10+ years of experience designing, scaling, and operating high-throughput distributed backends, microservices architectures, and cloud-native systems across healthcare, banking, and retail e-commerce.",
       "My technical background centers on Python (Asyncio, FastAPI), Go (Golang), Java (Spring Boot), Node.js, and TypeScript, combined with hands-on architecture across Apache Kafka, RabbitMQ, Redis caching, PostgreSQL (PgBouncer, query plan tuning), and container orchestration on AWS EKS and Kubernetes.",
       "Throughout my career, I have handled 15M+ to 25M+ daily event streams, lowered p99 endpoint latency by 40%, cut primary database load by 45%, and orchestrated zero-downtime cloud migrations under strict regulatory compliance (HIPAA, MAS).",
       "I look forward to discussing how my distributed systems engineering, database optimization, and backend leadership can help your organization scale its mission-critical platforms.",
@@ -1426,7 +1426,7 @@ export const BACKEND_HEAVY_RESUME_DATA: ResumeData = {
     ],
   },
   metadata: {
-    profileVersion: "2.1",
+    profileVersion: "2.2",
     versionType: "backend",
     optimizationMode: "Backend & Distributed Systems Heavy ATS Alignment",
   },
@@ -1443,7 +1443,7 @@ export const AI_VERSION_RESUME_DATA: ResumeData = {
     linkedin: "https://www.linkedin.com/in/ashish-kumar-singh1986",
     github: "https://github.com/guddiya001",
     portfolio: "https://ashishkumarsingh.vercel.app",
-    summary: "Staff- and Senior-level AI & Software Engineer with 9+ years of experience architecting high-throughput distributed backends and production-grade Generative AI, agentic systems, and enterprise LLM platforms across Tier-1 healthcare, consumer banking, and global retail e-commerce. Proven track record taking AI solutions from initial exploration to high-throughput production (15M+ requests/month), designing advanced RAG pipelines, vector search (pgvector, Chroma, Qdrant), dense semantic embeddings, and structuring cyclical multi-agent workflows using Python (FastAPI), LangGraph, LangChain, and Model Context Protocol (MCP). Expert in enforcing prompt design, structured output validation (Pydantic, JSON Schema), and quantitative LLM evaluation (Ragas, DeepEval) alongside classical ML baselines (PyTorch, scikit-learn, NLP) to eliminate hallucinations (<1.5% rate) and slash clinician research time by 40%.",
+    summary: "Staff- and Senior-level AI & Software Engineer with 10+ years of experience architecting high-throughput distributed backends and production-grade Generative AI, agentic systems, and enterprise LLM platforms across Tier-1 healthcare, consumer banking, and global retail e-commerce. Proven track record taking AI solutions from initial exploration to high-throughput production (15M+ requests/month), designing advanced RAG pipelines, vector search (pgvector, Chroma, Qdrant), dense semantic embeddings, and structuring cyclical multi-agent workflows using Python (FastAPI), LangGraph, LangChain, and Model Context Protocol (MCP). Expert in enforcing prompt design, structured output validation (Pydantic, JSON Schema), and quantitative LLM evaluation (Ragas, DeepEval) alongside classical ML baselines (PyTorch, scikit-learn, NLP) to eliminate hallucinations (<1.5% rate) and slash clinician research time by 40%.",
     openTo: "Germany, Netherlands, Ireland, UK, USA, Singapore | Visa Sponsorship Required",
   },
   skillsFlat: [
@@ -1557,10 +1557,10 @@ export const AI_VERSION_RESUME_DATA: ResumeData = {
   education: [
     {
       id: "ai-edu-1",
-      degree: "Master of Computer Applications (MCA)",
-      school: "Uttar Pradesh Technical University (UPTU)",
+      degree: "Master of Computer Application",
+      school: "Guru Gobind Singh Indraprastha University",
       location: "India",
-      year: "2013 – 2016",
+      year: "2016",
     },
     {
       id: "ai-edu-2",
@@ -1587,7 +1587,7 @@ export const AI_VERSION_RESUME_DATA: ResumeData = {
   coverLetter: {
     paragraphs: [
       "Dear Hiring Manager,",
-      "I am a Senior AI & Systems Software Engineer with 9+ years of experience architecting high-throughput distributed backends and production-grade Generative AI, agentic workflows, and LLM platforms.",
+      "I am a Senior AI & Systems Software Engineer with 10+ years of experience architecting high-throughput distributed backends and production-grade Generative AI, agentic workflows, and LLM platforms.",
       "My recent production work focuses on autonomous agentic workflows using Python (FastAPI), LangGraph, LangChain, and the Model Context Protocol (MCP), combined with advanced RAG pipelines (hierarchical chunking, pgvector, Chroma, Qdrant, hybrid BM25 + dense vectors, Cohere reranking). I enforce defensive prompt engineering, Pydantic structured output validation, and quantitative LLM evaluation with Ragas and DeepEval.",
       "At Persistent Systems supporting UnitedHealth Group, I architected AI diagnostic pipelines handling 15M+ requests/month, achieving a 40% clinician time reduction, sub-45ms latency, <1.5% hallucination rate, and 3.4x operational ROI.",
       "I would welcome the opportunity to discuss how my hands-on AI platform engineering, evaluation frameworks, and distributed systems background can accelerate your GenAI initiatives.",
@@ -1597,7 +1597,7 @@ export const AI_VERSION_RESUME_DATA: ResumeData = {
     ],
   },
   metadata: {
-    profileVersion: "2.1",
+    profileVersion: "2.2",
     versionType: "ai",
     optimizationMode: "AI & Generative AI / Agentic Systems Heavy ATS Alignment",
   },
@@ -1614,7 +1614,7 @@ export const FDE_VERSION_RESUME_DATA: ResumeData = {
     linkedin: "https://www.linkedin.com/in/ashish-kumar-singh1986",
     github: "https://github.com/guddiya001",
     portfolio: "https://ashishkumarsingh.vercel.app",
-    summary: "Staff-level Forward Deployed Engineer (FDE) and Technical Solutions Lead with 9+ years of experience bridging enterprise client problem spaces and high-velocity engineering execution across Fortune 50 healthcare (UnitedHealth Group), Tier-1 consumer banking (DBS Bank Singapore), and global retail e-commerce (Walmart). Proven track record deploying complex AI platforms, distributed systems, and cloud architectures directly into customer environments—driving 0-to-1 solutions from initial discovery through resilient enterprise production. Trusted technical advisor to C-level executives, medical directors, and security compliance boards, translating high-stakes business requirements into robust software while guaranteeing 99.95%+ availability, strict regulatory compliance (HIPAA, MAS), zero transaction data loss, and quantifiable ROI (3.4x operational ROI, 40% clinician workflow acceleration).",
+    summary: "Staff-level Forward Deployed Engineer (FDE) and Technical Solutions Lead with 10+ years of experience bridging enterprise client problem spaces and high-velocity engineering execution across Fortune 50 healthcare (UnitedHealth Group), Tier-1 consumer banking (DBS Bank Singapore), and global retail e-commerce (Walmart). Proven track record deploying complex AI platforms, distributed systems, and cloud architectures directly into customer environments—driving 0-to-1 solutions from initial discovery through resilient enterprise production. Trusted technical advisor to C-level executives, medical directors, and security compliance boards, translating high-stakes business requirements into robust software while guaranteeing 99.95%+ availability, strict regulatory compliance (HIPAA, MAS), zero transaction data loss, and quantifiable ROI (3.4x operational ROI, 40% clinician workflow acceleration).",
     openTo: "Germany, Netherlands, Ireland, UK, USA, Singapore | Visa Sponsorship Required",
   },
   skillsFlat: [
@@ -1725,10 +1725,10 @@ export const FDE_VERSION_RESUME_DATA: ResumeData = {
   education: [
     {
       id: "fde-edu-1",
-      degree: "Master of Computer Applications (MCA)",
-      school: "Uttar Pradesh Technical University (UPTU)",
+      degree: "Master of Computer Application",
+      school: "Guru Gobind Singh Indraprastha University",
       location: "India",
-      year: "2013 – 2016",
+      year: "2016",
     },
     {
       id: "fde-edu-2",
@@ -1755,7 +1755,7 @@ export const FDE_VERSION_RESUME_DATA: ResumeData = {
   coverLetter: {
     paragraphs: [
       "Dear Hiring Manager,",
-      "I am a Staff Forward Deployed Engineer (FDE) and Technical Solutions Lead with 9+ years of experience deploying mission-critical AI systems, distributed backends, and cloud platforms directly into Fortune 50 enterprise client environments.",
+      "I am a Staff Forward Deployed Engineer (FDE) and Technical Solutions Lead with 10+ years of experience deploying mission-critical AI systems, distributed backends, and cloud platforms directly into Fortune 50 enterprise client environments.",
       "My track record spans Tier-1 healthcare (UnitedHealth Group), consumer banking (DBS Bank Singapore), and global retail (Walmart). I specialize in rapidly translating ambiguous, high-stakes customer problem spaces into 0-to-1 production architectures—driving quantifiable business results such as 3.4x operational ROI, 40% workflow acceleration, and zero transaction data loss during high-stakes core banking migrations.",
       "With hands-on mastery in Python (FastAPI), Go, Java, TypeScript, React, Docker, Kubernetes, AWS/Azure, and the Model Context Protocol (MCP), I partner effectively with both C-suite business stakeholders and frontline engineering squads to scope, build, deploy, and operationalize high-impact solutions.",
       "I would welcome the opportunity to discuss how my customer-centric engineering leadership and rapid deployment experience can drive strategic success for your enterprise clients.",
@@ -1765,7 +1765,7 @@ export const FDE_VERSION_RESUME_DATA: ResumeData = {
     ],
   },
   metadata: {
-    profileVersion: "2.1",
+    profileVersion: "2.2",
     versionType: "fde",
     optimizationMode: "Forward Deployed Engineer (FDE) / Enterprise Solutions ATS Alignment",
   },
@@ -1793,7 +1793,7 @@ export const RESUME_PRESETS: ResumePresetMeta[] = [
     badge: 'Comprehensive',
     icon: 'FileText',
     roleTitle: 'Senior Software Engineer | Senior Backend Engineer | AI / GenAI Engineer',
-    tagline: 'Complete 9+ years career profile spanning AI, Backend, Full-Stack, and Cloud',
+    tagline: 'Complete 10+ years career profile spanning AI, Backend, Full-Stack, and Cloud',
     color: 'from-gray-700 to-gray-900',
     targetRoles: [
       'Staff Software Engineer',

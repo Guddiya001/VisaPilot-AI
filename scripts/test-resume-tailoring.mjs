@@ -14,7 +14,7 @@ const sampleCandidateResume = {
     github: 'https://github.com/guddiya001',
     portfolio: 'https://ashishkumarsingh.vercel.app',
     summary:
-      'Staff-level Backend Engineer with 9+ years of experience architecting distributed systems and building production-grade AI intelligence layers. Specialized in designing high-autonomy Agentic workflows, Model Context Protocol (MCP) integrations, and scalable retrieval orchestration APIs.',
+      'Staff-level Backend Engineer with 10+ years of experience architecting distributed systems and building production-grade AI intelligence layers. Specialized in designing high-autonomy Agentic workflows, Model Context Protocol (MCP) integrations, and scalable retrieval orchestration APIs.',
   },
   experience: [
     {
@@ -87,7 +87,7 @@ function simulateTailoring(resume, jd, jobTitle, companyName) {
   const atsScoreAfter = 95;
 
   // 3. Tailor Professional Summary
-  const tailoredSummary = `Results-driven Senior Backend Platform Engineer with 9+ years of experience architecting high-throughput distributed systems and event-driven microservices utilizing ${extractedSkills.slice(0, 4).join(', ')}. Proven track record delivering resilient cloud platforms on AWS & Kubernetes and integrating AI Agent workflows, customized specifically for ${companyName}.`;
+  const tailoredSummary = `Results-driven Senior Backend Platform Engineer with 10+ years of experience architecting high-throughput distributed systems and event-driven microservices utilizing ${extractedSkills.slice(0, 4).join(', ')}. Proven track record delivering resilient cloud platforms on AWS & Kubernetes and integrating AI Agent workflows, customized specifically for ${companyName}.`;
 
   // 4. Upgrade Experience Bullets for ATS & JD Fit
   const bulletImprovements = [
@@ -106,7 +106,7 @@ function simulateTailoring(resume, jd, jobTitle, companyName) {
   // 5. Generate Tailored Cover Letter
   const coverLetter = `Dear Hiring Manager at ${companyName},
 
-I am writing to express my strong enthusiasm for the ${jobTitle} position in Berlin, Germany. With over 9 years of hands-on experience architecting high-scale distributed backends, event-driven architectures (Kafka), and AI-driven platforms, I am excited by ${companyName}'s vision of modern e-commerce and AI-powered intelligence.
+I am writing to express my strong enthusiasm for the ${jobTitle} position in Berlin, Germany. With over 10 years of hands-on experience architecting high-scale distributed backends, event-driven architectures (Kafka), and AI-driven platforms, I am excited by ${companyName}'s vision of modern e-commerce and AI-powered intelligence.
 
 Throughout my career, I have engineered resilient microservices on AWS (Kubernetes, Docker), optimized data layers across PostgreSQL and Redis, and designed agentic workflows and retrieval systems. My background in building secure, highly available platforms aligns directly with the core technical requirements of this role.
 

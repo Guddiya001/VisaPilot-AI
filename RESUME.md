@@ -8,7 +8,7 @@ LinkedIn: [linkedin.com/in/ashish-kumar-singh1986](https://www.linkedin.com/in/a
 ---
 
 ## PROFESSIONAL SUMMARY
-Staff- and Senior-level Software Engineer with 9+ years of experience architecting, scaling, and operating high-throughput backend systems, cloud-native microservices, and production-grade Generative AI platforms across enterprise healthcare, Tier-1 banking, and global retail e-commerce. Proven expertise in building autonomous agentic workflows using Python (FastAPI), Model Context Protocol (MCP), LangChain, LangGraph, and RAG retrieval pipelines, alongside resilient distributed backends with Node.js, TypeScript, Go, and Java (Spring Boot). Track record of driving 0-to-1 greenfield engineering initiatives, optimizing high-scale databases (PostgreSQL, Redis, Kafka), lowering latency by 40%, and maintaining 99.95% production availability for systems handling millions of daily requests.
+Staff- and Senior-level Software Engineer with 10+ years of experience architecting, scaling, and operating high-throughput backend systems, cloud-native microservices, and production-grade Generative AI platforms across enterprise healthcare, Tier-1 banking, and global retail e-commerce. Proven expertise in building autonomous agentic workflows using Python (FastAPI), Model Context Protocol (MCP), LangChain, LangGraph, and RAG retrieval pipelines, alongside resilient distributed backends with Node.js, TypeScript, Go, and Java (Spring Boot). Track record of driving 0-to-1 greenfield engineering initiatives, optimizing high-scale databases (PostgreSQL, Redis, Kafka), lowering latency by 40%, and maintaining 99.95% production availability for systems handling millions of daily requests.
 
 ---
 
@@ -65,7 +65,7 @@ Staff- and Senior-level Software Engineer with 9+ years of experience architecti
 ## EDUCATION & CERTIFICATIONS
 
 ### Education
-- **Master of Computer Applications (MCA)** — Uttar Pradesh Technical University (UPTU), India | *2013 – 2016*
+- **Master of Computer Application** — Guru Gobind Singh Indraprastha University, India | *2016*
 - **Bachelor of Computer Applications (BCA)** — UPRTO University, India | *2009 – 2012*
 
 ### Certifications & Continuous Learning

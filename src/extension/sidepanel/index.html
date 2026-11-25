@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisaPilot Autopilot Side Panel</title>
+  <style>
+    :root {
+      --bg: #090D16;
+      --card-bg: #111827;
+      --border: #1F2937;
+      --primary: #3B82F6;
+      --primary-hover: #2563EB;
+      --text: #F9FAFB;
+      --text-muted: #9CA3AF;
+      --green: #10B981;
+      --amber: #F59E0B;
+      --red: #EF4444;
+      --blue: #3B82F6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      font-size: 13px;
+      min-width: 320px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input, select {
+      width: 100%;
+      background: #1F2937;
+      border: 1px solid #374151;
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+    }
+
+    .btn {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background-color 0.15s;
+    }
+
+    .btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .metric-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .metric-value.green { color: var(--green); }
+    .metric-value.blue { color: var(--blue); }
+    .metric-value.amber { color: var(--amber); }
+
+    .status-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      background: #374151;
+      color: var(--text);
+    }
+
+    .status-badge.review { background: #78350F; color: #FDE68A; }
+    .status-badge.submitted { background: #064E3B; color: #A7F3D0; }
+    .status-badge.running { background: #1E3A8A; color: #BFDBFE; }
+
+    .alert-box {
+      display: none;
+      background: #450A0A;
+      border: 1px solid var(--red);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+
+    .alert-box.show {
+      display: block;
+    }
+
+    .alert-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #FCA5A5;
+      margin-bottom: 4px;
+    }
+
+    .alert-desc {
+      font-size: 11px;
+      color: #FECACA;
+      line-height: 1.4;
+    }
+
+    .log-container {
+      background: #030712;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      height: 110px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 11px;
+      color: #9CA3AF;
+    }
+
+    .log-entry {
+      margin-bottom: 4px;
+    }
+    .log-entry.success { color: var(--green); }
+    .log-entry.warn { color: var(--amber); }
+    .log-entry.error { color: var(--red); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span>⚡ VisaPilot</span>
+      <span class="brand-badge">Autopilot</span>
+    </div>
+    <div id="connection-status" style="font-size: 10px; color: var(--green);">● Live</div>
+  </header>
+
+  <div class="card">
+    <div class="form-group">
+      <label for="company-input">Target Company</label>
+      <input type="text" id="company-input" placeholder="e.g. Stripe, Vercel" value="Stripe" />
+    </div>
+    <div class="form-group" style="margin-top: 8px;">
+      <label for="role-input">Role Title</label>
+      <input type="text" id="role-input" placeholder="e.g. Staff AI Engineer" value="Staff AI Engineer" />
+    </div>
+    <div class="form-group" style="margin-top: 8px;">
+      <label for="mode-select">Execution Mode</label>
+      <select id="mode-select">
+        <option value="REVIEW" selected>Review Mode (Halt on Drafts)</option>
+        <option value="AUTOPILOT">Full Autopilot (Auto-Submit)</option>
+      </select>
+    </div>
+    <div style="margin-top: 12px;">
+      <button id="btn-execute" class="btn">🚀 Execute Autopilot</button>
+    </div>
+    <div style="margin-top: 8px; text-align: center;">
+      <a href="http://localhost:3001/autopilot/demo" target="_blank" style="color: #60A5FA; font-size: 11px; text-decoration: none;">
+        👉 Open Live Application Demo Form
+      </a>
+    </div>
+  </div>
+
+  <div class="status-card">
+    <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">GATE STATUS</span>
+    <span id="gate-status-badge" class="status-badge">IDLE</span>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-title">Tier 1 Exact</div>
+      <div id="tier1-count" class="metric-value green">0</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Tier 2 Learned</div>
+      <div id="tier2-count" class="metric-value blue">0</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">Tier 3 LLM Calls</div>
+      <div id="tier3-count" class="metric-value amber">0</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">LLM Calls Saved</div>
+      <div id="saved-count" class="metric-value green">0</div>
+    </div>
+  </div>
+
+  <div id="review-alert-container" class="alert-box">
+    <div class="alert-title">⚠️ Review Required Before Submit</div>
+    <div id="review-alert-text" class="alert-desc">Field requires human approval or missing locked fact.</div>
+    <div style="margin-top: 10px;">
+      <button id="btn-approve-submit" class="btn" style="background: #D97706; padding: 7px 10px; font-size: 11px;">
+        ✅ Approve & Submit Application
+      </button>
+    </div>
+  </div>
+
+  <label>Telemetry & Action Log</label>
+  <div id="activity-log" class="log-container">
+    <div class="log-entry">Waiting for job application page scan...</div>
+  </div>
+
+  <script type="module" src="controller.js"></script>
+</body>
+</html>

@@ -9,7 +9,7 @@
 ---
 
 ## PROFESSIONAL SUMMARY
-Results-driven **Senior Full-Stack Engineer** with **9+ years of experience** architecting resilient cloud infrastructure, automating distributed systems, and maintaining high-availability production environments across Tier-1 enterprise platforms. Deep hands-on expertise in **AWS, Kubernetes, Terraform, Ansible, and Bash scripting**, specializing in zero-downtime **infrastructure migrations**, **dynamic environments**, and enterprise database and message queue administration (**PostgreSQL, MongoDB, Redis, RabbitMQ**). Proven track record reducing MTTR by 45%, eliminating production deployment downtime, and ensuring 99.95%+ availability through proactive observability (**Prometheus, Grafana, Loki, Sentry**), deep **Linux troubleshooting (networking & filesystems)**, and disciplined **incident response and alert management**. Skilled in **FastAPI** for high-impact production engineering. Skilled in **Express** for high-impact production engineering. Skilled in **React** for high-impact production engineering. Skilled in **Next.js** for high-impact production engineering. Skilled in **GraphQL** for high-impact production engineering. Skilled in **Project ownership** for high-impact production engineering. Skilled in **Mentoring** for high-impact production engineering. Skilled in **International collaboration** for high-impact production engineering.
+Results-driven **Senior Full-Stack Engineer** with **10+ years of experience** architecting resilient cloud infrastructure, automating distributed systems, and maintaining high-availability production environments across Tier-1 enterprise platforms. Deep hands-on expertise in **AWS, Kubernetes, Terraform, Ansible, and Bash scripting**, specializing in zero-downtime **infrastructure migrations**, **dynamic environments**, and enterprise database and message queue administration (**PostgreSQL, MongoDB, Redis, RabbitMQ**). Proven track record reducing MTTR by 45%, eliminating production deployment downtime, and ensuring 99.95%+ availability through proactive observability (**Prometheus, Grafana, Loki, Sentry**), deep **Linux troubleshooting (networking & filesystems)**, and disciplined **incident response and alert management**. Skilled in **FastAPI** for high-impact production engineering. Skilled in **Express** for high-impact production engineering. Skilled in **React** for high-impact production engineering. Skilled in **Next.js** for high-impact production engineering. Skilled in **GraphQL** for high-impact production engineering. Skilled in **Project ownership** for high-impact production engineering. Skilled in **Mentoring** for high-impact production engineering. Skilled in **International collaboration** for high-impact production engineering.
 
 ---
 
@@ -90,7 +90,7 @@ Results-driven **Senior Full-Stack Engineer** with **9+ years of experience** ar
 ---
 
 ## EDUCATION
-- **Master of Computer Applications (MCA)** — Uttar Pradesh Technical University (UPTU), India | *2013 – 2016*
+- **Master of Computer Application** — Guru Gobind Singh Indraprastha University, India | *2016*
 - **Bachelor of Computer Applications (BCA)** — UPRTO University, India | *2009 – 2012*
 
 ---

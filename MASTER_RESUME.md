@@ -8,7 +8,7 @@
 ---
 
 ## PROFESSIONAL SUMMARY
-Staff- and Senior-level Systems & AI Software Engineer with **9+ years of experience** architecting high-throughput distributed backends, enterprise cloud platforms, and production-grade **Generative AI, agentic systems, and Site Reliability Engineering (SRE)** across Tier-1 healthcare, consumer banking, and global retail e-commerce. Proven track record taking AI solutions from **exploration to production**, designing advanced **RAG pipelines, high-throughput vector search (pgvector, Chroma, Qdrant), dense semantic embeddings**, and structuring cyclical multi-agent workflows using **Python (FastAPI), LangGraph, LangChain, and Model Context Protocol (MCP)**. Expert in enforcing **prompt design, structured output validation (Pydantic, JSON Schema)**, and quantitative **LLM evaluation (Ragas, Deepeval)** alongside classical ML baselines (**PyTorch, scikit-learn, NLP**). Deep hands-on infrastructure mastery in **Microsoft Azure (Azure OpenAI, AKS), AWS, Kubernetes, Terraform, Ansible, and Linux systems internals (networking & filesystems)**, managing mission-critical databases (**PostgreSQL, MongoDB, Redis, RabbitMQ, Kafka**), and directing 24/7 **incident response and alert management**—maintaining 99.95%+ availability and delivering 3.4x operational ROI.
+Staff- and Senior-level Systems & AI Software Engineer with **10+ years of experience** architecting high-throughput distributed backends, enterprise cloud platforms, and production-grade **Generative AI, agentic systems, and Site Reliability Engineering (SRE)** across Tier-1 healthcare, consumer banking, and global retail e-commerce. Proven track record taking AI solutions from **exploration to production**, designing advanced **RAG pipelines, high-throughput vector search (pgvector, Chroma, Qdrant), dense semantic embeddings**, and structuring cyclical multi-agent workflows using **Python (FastAPI), LangGraph, LangChain, and Model Context Protocol (MCP)**. Expert in enforcing **prompt design, structured output validation (Pydantic, JSON Schema)**, and quantitative **LLM evaluation (Ragas, Deepeval)** alongside classical ML baselines (**PyTorch, scikit-learn, NLP**). Deep hands-on infrastructure mastery in **Microsoft Azure (Azure OpenAI, AKS), AWS, Kubernetes, Terraform, Ansible, and Linux systems internals (networking & filesystems)**, managing mission-critical databases (**PostgreSQL, MongoDB, Redis, RabbitMQ, Kafka**), and directing 24/7 **incident response and alert management**—maintaining 99.95%+ availability and delivering 3.4x operational ROI.
 
 ---
 
@@ -101,7 +101,7 @@ Staff- and Senior-level Systems & AI Software Engineer with **9+ years of experi
 ---
 
 ## EDUCATION
-- **Master of Computer Applications (MCA)** — Uttar Pradesh Technical University (UPTU), India | *2013 – 2016*
+- **Master of Computer Application** — Guru Gobind Singh Indraprastha University, India | *2016*
 - **Bachelor of Computer Applications (BCA)** — UPRTO University, India | *2009 – 2012*
 
 ---
